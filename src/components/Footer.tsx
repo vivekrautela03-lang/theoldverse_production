@@ -187,10 +187,10 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="font-bold text-oldverse-text uppercase tracking-wider text-[10px]">Company</h4>
             <ul className="space-y-1.5">
-              <li><Link href="/creator/creator-1" className="hover:text-oldverse-accent">About Us</Link></li>
-              <li><Link href="/watch/media-1" className="hover:text-oldverse-accent">Video Player</Link></li>
-              <li><Link href="/community" className="hover:text-oldverse-accent">Contact Us</Link></li>
-              <li><Link href="/community" className="hover:text-oldverse-accent">FAQ</Link></li>
+              <li><Link href="/about" className="hover:text-oldverse-accent">About Us</Link></li>
+              <li><Link href="/team" className="hover:text-oldverse-accent">Our Team</Link></li>
+              <li><Link href="/contact" className="hover:text-oldverse-accent">Contact Us</Link></li>
+              <li><Link href="/community" className="hover:text-oldverse-accent">FAQ / Hub</Link></li>
             </ul>
           </div>
 

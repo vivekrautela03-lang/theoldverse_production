@@ -3,32 +3,14 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Home, Menu, X, LayoutDashboard, Upload, LogOut, Bell, User } from "lucide-react";
+import { Search, Home, Menu, X, LayoutDashboard, Upload, Info, Users, Phone } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [desktopDrawerOpen, setDesktopDrawerOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string; isCreator: boolean } | null>(null);
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    localStorage.removeItem("oldverse_user");
-    window.location.reload();
-  };
-
-  const loadUser = () => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("oldverse_user");
-      setUser(stored ? JSON.parse(stored) : null);
-    }
-  };
-
   useEffect(() => {
-    loadUser();
-    window.addEventListener("oldverse_store_update", loadUser);
-    
     const handleScroll = () => {
       if (window.scrollY > 20) {
         setScrolled(true);
@@ -39,17 +21,15 @@ export default function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener("oldverse_store_update", loadUser);
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   const navLinks = [
-    { name: "Shows", href: "/browse?cat=Originals" },
-    { name: "Movies", href: "/browse?cat=Drama" },
-    { name: "VDesi", href: "/browse?cat=Experimental" },
-    { name: "New On Mx", href: "/browse" },
-    { name: "Trailers", href: "/browse?cat=BTS" }
+    { name: "Shows", href: "/browse" },
+    { name: "About Us", href: "/about" },
+    { name: "Our Team", href: "/team" },
+    { name: "Contact", href: "/contact" }
   ];
 
   const isActive = (path: string) => pathname === path;
@@ -65,7 +45,7 @@ export default function Navbar() {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           
-          {/* Logo & Category Links Group */}
+          {/* Logo & Links Group */}
           <div className="flex items-center gap-8 lg:gap-12">
             {/* The OldVerse Brand Logo */}
             <Link href="/" className="flex items-center select-none group gap-2">
@@ -114,23 +94,6 @@ export default function Navbar() {
               <Search className="h-5 w-5" />
             </Link>
 
-            {/* Login / Profile Text Action */}
-            {user ? (
-              <Link
-                href="/profile"
-                className="hidden md:block font-sans font-bold text-sm text-white/90 hover:text-white transition-colors"
-              >
-                {user.name.split(" ")[0]}
-              </Link>
-            ) : (
-              <button
-                onClick={() => window.location.reload()}
-                className="hidden md:block font-sans font-bold text-sm text-white/90 hover:text-white transition-colors cursor-pointer"
-              >
-                Login
-              </button>
-            )}
-
             {/* Hamburger Settings Menu */}
             <button
               onClick={() => setDesktopDrawerOpen(!desktopDrawerOpen)}
@@ -147,9 +110,9 @@ export default function Navbar() {
       {/* Desktop/Global Sliding Right Menu Drawer */}
       {desktopDrawerOpen && (
         <div className="fixed inset-y-0 right-0 w-80 bg-black/95 backdrop-blur-md z-[100] p-6 flex flex-col justify-between shadow-2xl border-l border-white/10 animate-slide-in font-sans">
-          <div className="space-y-6">
+          <div className="space-y-6 flex-grow overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
-              <span className="font-sans font-bold uppercase tracking-wider text-white text-xs">Settings & Features</span>
+              <span className="font-sans font-bold uppercase tracking-wider text-white text-xs">Menu & Features</span>
               <button
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="p-1.5 rounded text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
@@ -158,21 +121,8 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* User Profile info if logged in */}
-            {user && (
-              <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold uppercase">
-                  {user.name[0]}
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-white truncate">{user.name}</h4>
-                  <p className="text-[10px] text-white/60 truncate">{user.email}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Quick Links */}
-            <div className="flex flex-col gap-1 text-sm text-white/80">
+            {/* Navigation Links */}
+            <div className="flex flex-col gap-1 text-sm text-white/80 border-b border-white/5 pb-4">
               <Link
                 href="/"
                 onClick={() => setDesktopDrawerOpen(false)}
@@ -181,6 +131,47 @@ export default function Navbar() {
                 <Home className="h-4 w-4 text-[#0070f3]" />
                 <span>Home Page</span>
               </Link>
+
+              <Link
+                href="/browse"
+                onClick={() => setDesktopDrawerOpen(false)}
+                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <LayoutDashboard className="h-4 w-4 text-oldverse-accent" />
+                <span>Shows / Browse</span>
+              </Link>
+              
+              <Link
+                href="/about"
+                onClick={() => setDesktopDrawerOpen(false)}
+                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <Info className="h-4 w-4" />
+                <span>About Us</span>
+              </Link>
+
+              <Link
+                href="/team"
+                onClick={() => setDesktopDrawerOpen(false)}
+                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <Users className="h-4 w-4" />
+                <span>Our Team</span>
+              </Link>
+
+              <Link
+                href="/contact"
+                onClick={() => setDesktopDrawerOpen(false)}
+                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                <span>Contact Us</span>
+              </Link>
+            </div>
+
+            {/* Dashboards Section */}
+            <div className="flex flex-col gap-1 text-sm text-white/80 pt-2">
+              <span className="text-[10px] text-white/40 uppercase tracking-widest px-2 pb-1 font-bold">Creator Workspaces</span>
               
               <Link
                 href="/dashboard"
@@ -188,7 +179,7 @@ export default function Navbar() {
                 className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
               >
                 <LayoutDashboard className="h-4 w-4" />
-                <span>Creator Dashboard</span>
+                <span>Creator Hub</span>
               </Link>
 
               <Link
@@ -205,29 +196,14 @@ export default function Navbar() {
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
               >
-                <User className="h-4 w-4" />
+                <Users className="h-4 w-4" />
                 <span>Root Admin Dashboard</span>
               </Link>
             </div>
           </div>
-
-          <div className="space-y-4 pt-6 border-t border-white/5">
-            {user ? (
-              <button
-                onClick={handleLogout}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500 hover:text-white transition-all cursor-pointer"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out Account
-              </button>
-            ) : (
-              <button
-                onClick={() => window.location.reload()}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded bg-[#0070f3] text-white text-sm font-bold hover:bg-[#0070f3]/80 transition-all cursor-pointer"
-              >
-                Sign In
-              </button>
-            )}
+          
+          <div className="pt-4 border-t border-white/5 text-center text-[10px] text-white/40">
+            THE OLDVERSE &copy; {new Date().getFullYear()}
           </div>
         </div>
       )}
