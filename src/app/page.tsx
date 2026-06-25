@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Volume2, VolumeX, Info, Star, Plus, Check, Download, Languages, Flame, Tv } from "lucide-react";
+import { Play, Volume2, VolumeX, Info, Star, Plus, Check } from "lucide-react";
 import MovieRow from "@/components/MovieRow";
 import AuthPortal from "@/components/AuthPortal";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
@@ -274,37 +274,6 @@ export default function HomePage() {
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
               )}
-            </div>
-
-            {/* Quick Actions Panel (MX Player style) */}
-            <div className="flex flex-wrap gap-6 sm:gap-8 pt-6 border-t border-white/5">
-              <div className="flex flex-col items-center gap-1.5 group cursor-pointer" onClick={() => alert("Downloading The OldVerse App...")}>
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 hover:border-oldverse-accent hover:bg-oldverse-accent/15 flex items-center justify-center text-oldverse-secondary group-hover:text-oldverse-accent transition-all duration-300">
-                  <Download className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                </div>
-                <span className="text-[9px] sm:text-[10px] uppercase font-grotesk font-semibold text-oldverse-secondary tracking-widest group-hover:text-oldverse-accent transition-colors">Install App</span>
-              </div>
-              
-              <div className="flex flex-col items-center gap-1.5 group cursor-pointer" onClick={() => alert("Interface Language: English / Hindi / Español")}>
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 hover:border-oldverse-accent hover:bg-oldverse-accent/15 flex items-center justify-center text-oldverse-secondary group-hover:text-oldverse-accent transition-all duration-300">
-                  <Languages className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                </div>
-                <span className="text-[9px] sm:text-[10px] uppercase font-grotesk font-semibold text-oldverse-secondary tracking-widest group-hover:text-oldverse-accent transition-colors">Language</span>
-              </div>
-
-              <Link href="/browse" className="flex flex-col items-center gap-1.5 group cursor-pointer">
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 hover:border-oldverse-accent hover:bg-oldverse-accent/15 flex items-center justify-center text-oldverse-secondary group-hover:text-oldverse-accent transition-all duration-300">
-                  <Flame className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                </div>
-                <span className="text-[9px] sm:text-[10px] uppercase font-grotesk font-semibold text-oldverse-secondary tracking-widest group-hover:text-oldverse-accent transition-colors">New & Hot</span>
-              </Link>
-
-              <div className="flex flex-col items-center gap-1.5 group cursor-pointer" onClick={() => alert("Searching for casting devices...")}>
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 hover:border-oldverse-accent hover:bg-oldverse-accent/15 flex items-center justify-center text-oldverse-secondary group-hover:text-oldverse-accent transition-all duration-300">
-                  <Tv className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                </div>
-                <span className="text-[9px] sm:text-[10px] uppercase font-grotesk font-semibold text-oldverse-secondary tracking-widest group-hover:text-oldverse-accent transition-colors">Devices</span>
-              </div>
             </div>
 
           </div>
