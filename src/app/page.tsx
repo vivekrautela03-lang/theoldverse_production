@@ -133,7 +133,7 @@ export default function HomePage() {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0 z-0"
           >
-            {featuredItem.id === "media-1" || featuredItem.id.startsWith("media-love") ? (
+            {featuredItem.id === "media-1" || featuredItem.id.startsWith("media-love") || featuredItem.isHeroSlide ? (
               <img
                 src={featuredItem.bannerUrl}
                 alt={featuredItem.title}

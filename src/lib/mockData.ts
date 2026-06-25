@@ -283,7 +283,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: false,
     isOriginal: true,
-    isHeroSlide: false,
+    isHeroSlide: true,
     releaseDate: "Coming Soon",
     cast: ["Sumit Chauhan", "Soundarya", "Soni", "Sonu", "Harendra"],
     crew: [
@@ -310,7 +310,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: false,
     isOriginal: true,
-    isHeroSlide: false,
+    isHeroSlide: true,
     releaseDate: "Coming Soon",
     cast: ["Amarjeet", "Soundarya"],
     crew: [
@@ -337,7 +337,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: true,
     isOriginal: true,
-    isHeroSlide: true,
+    isHeroSlide: false,
     releaseDate: "Coming Soon",
     cast: ["Amarjeet", "Soundarya"],
     crew: [
@@ -364,7 +364,7 @@ export const mockMediaItems: MediaItem[] = [
   },
   {
     id: "media-love-2",
-    title: "And I Couldn't Help But Fall In Love Again",
+    title: "DESTINED",
     type: "original",
     category: "Originals",
     description: "Based on the song 'I thought I saw your face today'. An evocative music clip documenting a nostalgic road reconnecting two estranged paths.",
