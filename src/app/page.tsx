@@ -117,6 +117,7 @@ export default function HomePage() {
   const movies = mediaItems.filter(item => item.type === "movie");
   const documentaries = mediaItems.filter(item => item.category === "Documentary");
   const behindTheScenes = mediaItems.filter(item => item.type === "bts");
+  const comingSoon = mediaItems.filter(item => item.releaseDate === "Coming Soon");
 
   return (
     <div className="bg-oldverse-bg min-h-screen pb-16 relative">
@@ -319,6 +320,11 @@ export default function HomePage() {
 
         {/* Row 2: Trending This Week */}
         <MovieRow title="Trending This Week" items={trending} />
+
+        {/* Row 3: Coming Soon */}
+        {comingSoon.length > 0 && (
+          <MovieRow title="Coming Soon / Upcoming Originals" items={comingSoon} />
+        )}
 
         {/* 3. Creator Spotlight Section */}
         <div className="py-8 px-4 sm:px-6 lg:px-8 space-y-4">

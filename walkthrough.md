@@ -37,6 +37,11 @@ This document summarizes the files, features, architecture, and verification res
 - **Jobs & Applications Store**: Manages casting and crew job listings, application submissions, and application status approvals.
 - **Mock Datasets**: Pre-populated with detailed screenplays for Shivanshi's original clips and starter crew opportunities.
 
+### 6. Upcoming Releases & Show Posters (`src/app/page.tsx` & `src/lib/mockData.ts`)
+- **Coming Soon Carousel Row**: Displays the 5 newly announced titles (THE LIGHT FROM NOWHERE, CHEST PAIN, NISHAAN SERIES, DESTINY, SILENCE GLANCES) under a dedicated carousel track on the homepage.
+- **Poster Asset Synchronization**: Integrated the high-fidelity vertical poster images uploaded by the user directly into static public directory paths.
+- **Cache-Busting Storage Invalidation**: Bumped local storage schemas in `supabaseStore.ts` to invalidate obsolete media records and reload the upcoming catalog seamlessly for viewers.
+
 ---
 
 ## 📂 Project Architecture
