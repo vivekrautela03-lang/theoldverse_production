@@ -3,7 +3,7 @@ import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Cre
 
 const STORAGE_KEYS = {
   CREATORS: "oldverse_creators_v2",
-  MEDIA: "oldverse_media_v6",
+  MEDIA: "oldverse_media_v7",
   COMMUNITY: "oldverse_community",
   CASTING: "oldverse_casting",
   FOLLOWED: "oldverse_followed_ids", // set of creator-ids user follows

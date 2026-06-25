@@ -364,7 +364,7 @@ export const mockMediaItems: MediaItem[] = [
   },
   {
     id: "media-love-2",
-    title: "DESTINED",
+    title: "And I Couldn't Help But Fall In Love Again",
     type: "original",
     category: "Originals",
     description: "Based on the song 'I thought I saw your face today'. An evocative music clip documenting a nostalgic road reconnecting two estranged paths.",
