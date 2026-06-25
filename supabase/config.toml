@@ -1,0 +1,6 @@
+# Supabase configuration file
+
+project_id = "theoldverse"
+
+[functions.todos]
+verify_jwt = false
