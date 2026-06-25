@@ -22,7 +22,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
   const [customGmail, setCustomGmail] = useState("");
 
-  const handleCredentialsSubmit = (e: React.FormEvent) => {
+  const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const input = emailOrPhone.trim();
     if (!input) {
@@ -40,21 +40,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
         alert("Please enter a valid email address.");
         return;
       }
-      
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        const code = Math.floor(1000 + Math.random() * 9000).toString();
-        setGeneratedOtp(code);
-        setTempUser({
-          name: input.split("@")[0],
-          email: input,
-          isCreator: false
-        });
-        setToastMessage(`✉️ Email Server: Your OldVerse verification code is ${code}`);
-        setMode("otp");
-      }, 1000);
-
     } else {
       // Validate phone number (should be 10 digits)
       const digitsOnly = input.replace(/\D/g, "");
@@ -62,51 +47,116 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
         alert("Please enter a valid 10-digit mobile number.");
         return;
       }
+    }
 
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        const code = Math.floor(1000 + Math.random() * 9000).toString();
-        setGeneratedOtp(code);
-        setTempUser({
-          name: `User +91${digitsOnly.slice(-4)}`,
-          email: `user_${digitsOnly.slice(-4)}@oldverse.com`,
-          isCreator: false
-        });
-        setToastMessage(`💬 SMS Gateway: Your OldVerse verification code is ${code}`);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailOrPhone: input })
+      });
+      
+      const data = await response.json();
+      setIsLoading(false);
+
+      if (data.success) {
+        // Store code locally ONLY for simulated mode; real mode verifies on the server
+        if (data.mode === "simulated") {
+          setGeneratedOtp(data.code);
+        } else {
+          setGeneratedOtp("");
+        }
+
+        // Set temp user details
+        if (isEmail) {
+          setTempUser({
+            name: input.split("@")[0],
+            email: input,
+            isCreator: false
+          });
+        } else {
+          const digitsOnly = input.replace(/\D/g, "");
+          setTempUser({
+            name: `User +91${digitsOnly.slice(-4)}`,
+            email: `user_${digitsOnly.slice(-4)}@oldverse.com`,
+            isCreator: false
+          });
+        }
+
+        setToastMessage(data.message);
         setMode("otp");
-      }, 1000);
+      } else {
+        alert(data.error || "Failed to send verification code. Please try again.");
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      alert("Network error: " + err.message);
     }
   };
 
-  const handleOtpVerify = (e: React.FormEvent) => {
+  const handleOtpVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpCode !== generatedOtp) {
-      alert("Invalid verification code. Please check the OTP sent to you.");
+    const code = otpCode.trim();
+    if (!code) {
+      alert("Please enter the verification code.");
       return;
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailOrPhone: emailOrPhone.trim(), otpCode: code })
+      });
+      
+      const data = await response.json();
       setIsLoading(false);
-      if (tempUser) {
-        setMode("welcome");
-        triggerEnterSequence(tempUser);
+
+      if (data.success) {
+        if (tempUser) {
+          setMode("welcome");
+          triggerEnterSequence(tempUser);
+        }
+      } else {
+        alert(data.error || "Invalid verification code. Please try again.");
       }
-    }, 1000);
+    } catch (err: any) {
+      setIsLoading(false);
+      alert("Network error: " + err.message);
+    }
   };
 
-  const handleResendCode = () => {
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedOtp(code);
-    
-    const isEmail = emailOrPhone.includes("@") || /[a-zA-Z]/.test(emailOrPhone);
-    if (isEmail) {
-      setToastMessage(`✉️ Email Server: New verification code sent: ${code}`);
-    } else {
-      setToastMessage(`💬 SMS Gateway: New verification code sent: ${code}`);
+  const handleResendCode = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailOrPhone: emailOrPhone.trim() })
+      });
+      
+      const data = await response.json();
+      setIsLoading(false);
+
+      if (data.success) {
+        if (data.mode === "simulated") {
+          setGeneratedOtp(data.code);
+        } else {
+          setGeneratedOtp("");
+        }
+        setToastMessage(data.message);
+        setOtpCode("");
+      } else {
+        alert(data.error || "Failed to resend code.");
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      alert("Network error: " + err.message);
     }
-    setOtpCode("");
   };
 
   const handleSocialSelect = (account: { name: string; email: string }) => {
