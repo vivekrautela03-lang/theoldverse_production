@@ -71,10 +71,8 @@ export default function Footer() {
             <ul className="space-y-2 text-xs font-light">
               <li><Link href="/watch/media-1" className="hover:text-oldverse-accent">Silent Connections</Link></li>
               <li><Link href="/watch/media-3" className="hover:text-oldverse-accent">Neon Monsoon</Link></li>
-              <li><Link href="/watch/media-5" className="hover:text-oldverse-accent">Cyberpunk Redux</Link></li>
               {expandedSection && (
                 <>
-                  <li><Link href="/watch/media-2" className="hover:text-oldverse-accent">Silent Reflections</Link></li>
                   <li><Link href="/watch/media-4" className="hover:text-oldverse-accent">Chasing Shadows</Link></li>
                 </>
               )}

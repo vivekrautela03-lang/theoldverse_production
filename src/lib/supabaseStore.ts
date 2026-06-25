@@ -3,7 +3,7 @@ import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Cre
 
 const STORAGE_KEYS = {
   CREATORS: "oldverse_creators_v2",
-  MEDIA: "oldverse_media_v7",
+  MEDIA: "oldverse_media_v8",
   COMMUNITY: "oldverse_community",
   CASTING: "oldverse_casting",
   FOLLOWED: "oldverse_followed_ids", // set of creator-ids user follows
@@ -92,7 +92,7 @@ export const getStoreData = {
     const stored = localStorage.getItem(STORAGE_KEYS.HISTORY);
     if (!stored) {
       const defaultHistory = [
-        { id: "hist-1", mediaId: "media-2", title: "Silent Reflections", posterUrl: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600", date: "Just now" },
+        { id: "hist-1", mediaId: "media-1", title: "Silent Connections", posterUrl: "/media_1.jpg", date: "Just now" },
         { id: "hist-2", mediaId: "media-3", title: "Neon Monsoon", posterUrl: "https://images.unsplash.com/photo-1515621061946-eff1c2a352bd?q=80&w=600", date: "Yesterday" }
       ];
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(defaultHistory));
@@ -106,7 +106,7 @@ export const getStoreData = {
     const stored = localStorage.getItem(STORAGE_KEYS.DOWNLOADS);
     if (!stored) {
       const defaultDownloads = [
-        { mediaId: "media-2", title: "Silent Reflections", size: "432 MB", progress: 100 },
+        { mediaId: "media-1", title: "Silent Connections", size: "432 MB", progress: 100 },
         { mediaId: "media-6", title: "The Sound of Stone", size: "112 MB", progress: 100 }
       ];
       localStorage.setItem(STORAGE_KEYS.DOWNLOADS, JSON.stringify(defaultDownloads));

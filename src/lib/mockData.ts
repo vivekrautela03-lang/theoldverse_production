@@ -400,61 +400,6 @@ export const mockMediaItems: MediaItem[] = [
     ]
   },
   {
-    id: "media-1",
-    title: "Silent Connections",
-    type: "original",
-    category: "Drama",
-    description: "Deep inside the silent ancient redwood forests, a quiet, unspoken bond between two distant souls faces a sudden test of truth when a single phone call echoes through the trees. An award-winning film capturing memory, proximity, and choices.",
-    duration: "1h 42m",
-    rating: "9.6",
-    posterUrl: "/media_1.jpg",
-    bannerUrl: "/media_1_landscape.jpg",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    creatorId: "creator-1",
-    creatorName: "Elena Rostova",
-    isTrending: true,
-    isOriginal: true,
-    releaseDate: "June 2026",
-    cast: ["Sofia Larson", "Mikael Blomqvist"],
-    crew: [
-      { role: "Director", name: "Elena Rostova" },
-      { role: "Director of Photography", name: "Sarah Chen" },
-      { role: "Composer", name: "Vikram Malhotra" }
-    ],
-    gallery: [
-      "/media_1_landscape.jpg",
-      "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=400&fit=crop",
-      "https://images.unsplash.com/photo-1460881680858-30d872d5b530?q=80&w=400&fit=crop"
-    ]
-  },
-  {
-    id: "media-2",
-    title: "Silent Reflections",
-    type: "movie",
-    category: "Drama",
-    description: "An elegant, dialogue-free exploration of grief and reconciliation. Following the sudden passing of her mother, a classical pianist travels to a remote cabin in Norway, seeking silence, only to find herself haunted by the melodies of her past.",
-    duration: "1h 15m",
-    rating: "8.9",
-    posterUrl: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600&auto=format&fit=crop",
-    bannerUrl: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?q=80&w=1200&auto=format&fit=crop",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    creatorId: "creator-1",
-    creatorName: "Elena Rostova",
-    isTrending: true,
-    isOriginal: false,
-    continueWatchingProgress: 35,
-    releaseDate: "Jan 2026",
-    cast: ["Sofia Larson", "Mikael Blomqvist"],
-    crew: [
-      { role: "Director", name: "Elena Rostova" },
-      { role: "Composer", name: "Vikram Malhotra" }
-    ],
-    gallery: [
-      "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=400&fit=crop",
-      "https://images.unsplash.com/photo-1460881680858-30d872d5b530?q=80&w=400&fit=crop"
-    ]
-  },
-  {
     id: "media-3",
     title: "Neon Monsoon",
     type: "series",
@@ -543,32 +488,6 @@ export const mockMediaItems: MediaItem[] = [
     gallery: [
       "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=400&fit=crop",
       "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=400&fit=crop"
-    ]
-  },
-  {
-    id: "media-5",
-    title: "Cyberpunk Redux",
-    type: "original",
-    category: "Animation",
-    description: "An animated futuristic epic tracing the collision of cybernetic enhancements and biological ancestry in Neo-Kyoto. Fully rendered using custom AI engine blending and traditional stop-motion.",
-    duration: "1h 05m",
-    rating: "9.2",
-    posterUrl: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600&auto=format&fit=crop",
-    bannerUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1200&auto=format&fit=crop",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-    creatorId: "creator-2",
-    creatorName: "Marcus Vance",
-    isTrending: true,
-    isOriginal: true,
-    releaseDate: "June 2026",
-    cast: ["Takahashi Sato", "Lin Zhou"],
-    crew: [
-      { role: "VFX Supervisor", name: "Marcus Vance" },
-      { role: "Co-writer", name: "Sarah Chen" }
-    ],
-    gallery: [
-      "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=400&fit=crop",
-      "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=400&fit=crop"
     ]
   },
   {

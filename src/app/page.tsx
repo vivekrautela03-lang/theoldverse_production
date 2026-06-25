@@ -133,7 +133,7 @@ export default function HomePage() {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0 z-0"
           >
-            {featuredItem.id === "media-1" || featuredItem.id.startsWith("media-love") || featuredItem.isHeroSlide ? (
+            {featuredItem.id.startsWith("media-love") || featuredItem.isHeroSlide ? (
               <img
                 src={featuredItem.bannerUrl}
                 alt={featuredItem.title}
@@ -265,7 +265,7 @@ export default function HomePage() {
               </Link>
 
               {/* Mute toggle button (only for videos) */}
-              {!featuredItem.id.startsWith("media-love") && featuredItem.id !== "media-1" && (
+              {!featuredItem.id.startsWith("media-love") && (
                 <button
                   onClick={() => setIsMuted(!isMuted)}
                   className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
