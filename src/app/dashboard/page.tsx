@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { BarChart3, Upload, MessageSquare, Settings, Check, DollarSign, Users, Eye, Clock, Film, Sparkles, Plus, Trash2 } from "lucide-react";
+import { BarChart3, Upload, MessageSquare, Settings, Check, DollarSign, Users, Eye, Clock, Film, Sparkles, Plus, Trash2, Briefcase, Mail, FileText, ExternalLink } from "lucide-react";
 import confetti from "canvas-confetti";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
-import { MediaItem, Creator } from "@/lib/mockData";
+import { MediaItem, Creator, CastingCall, JobApplication } from "@/lib/mockData";
 
 export default function CreatorDashboard() {
-  const [activeTab, setActiveTab] = useState<"analytics" | "upload" | "community" | "settings">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "upload" | "jobs" | "community" | "settings">("analytics");
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   // Form states for Media Upload
@@ -21,6 +22,18 @@ export default function CreatorDashboard() {
   const [uploadPosterUrl, setUploadPosterUrl] = useState("https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600");
   const [uploadVideoUrl, setUploadVideoUrl] = useState("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4");
 
+  // Form states for Job Posting
+  const [jobTitle, setJobTitle] = useState("");
+  const [jobProject, setJobProject] = useState("");
+  const [jobRoleType, setJobRoleType] = useState<"casting" | "crew">("crew");
+  const [jobRoleName, setJobRoleName] = useState("");
+  const [jobBudget, setJobBudget] = useState("");
+  const [jobLocationType, setJobLocationType] = useState<"Remote" | "On-Set" | "Hybrid">("Remote");
+  const [jobLocation, setJobLocation] = useState("Remote");
+  const [jobContractType, setJobContractType] = useState<CastingCall["type"]>("Contract");
+  const [jobDescription, setJobDescription] = useState("");
+  const [jobRequirements, setJobRequirements] = useState("");
+
   // Form states for Community Post
   const [postContent, setPostContent] = useState("");
   const [postCategory, setPostCategory] = useState<"behind-the-scenes" | "discussion" | "announcement">("behind-the-scenes");
@@ -29,6 +42,8 @@ export default function CreatorDashboard() {
   const loadDashboardData = () => {
     setMediaItems(getStoreData.media());
     setCreators(getStoreData.creators());
+    // Filter applications where creatorId is current user creator
+    setApplications(getStoreData.jobApplications().filter(app => app.creatorId === "creator-current-user"));
   };
 
   useEffect(() => {
@@ -70,6 +85,46 @@ export default function CreatorDashboard() {
     alert("Project published successfully to The OldVerse!");
   };
 
+  const handleJobSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!jobTitle.trim() || !jobDescription.trim()) return;
+
+    // Parse requirements
+    const reqs = jobRequirements
+      .split(",")
+      .map(r => r.trim())
+      .filter(r => r.length > 0);
+
+    mutateStore.postJob({
+      title: jobTitle,
+      project: jobProject || "Untitled Production",
+      role: jobRoleName || jobTitle,
+      description: jobDescription,
+      requirements: reqs.length > 0 ? reqs : ["Prior film production experience preferred"],
+      location: jobLocation,
+      type: jobContractType,
+      roleType: jobRoleType,
+      budget: jobBudget || "Paid / Contract",
+      locationType: jobLocationType
+    });
+
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      colors: ["#34D399", "#F5A623"]
+    });
+
+    // Reset Form
+    setJobTitle("");
+    setJobProject("");
+    setJobRoleName("");
+    setJobBudget("");
+    setJobLocation("Remote");
+    setJobDescription("");
+    setJobRequirements("");
+    alert("Job listing posted successfully to the community opportunities board!");
+  };
+
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!postContent.trim()) return;
@@ -85,6 +140,15 @@ export default function CreatorDashboard() {
     setPostContent("");
     setPostImageUrl("");
     alert("Community post published successfully!");
+  };
+
+  const handleAppStatus = (appId: string, status: "approved" | "declined") => {
+    mutateStore.updateApplicationStatus(appId, status);
+    confetti({
+      particleCount: 40,
+      spread: 40,
+      colors: status === "approved" ? ["#34D399", "#ffffff"] : ["#EF4444", "#ffffff"]
+    });
   };
 
   if (!isClient) {
@@ -127,7 +191,7 @@ export default function CreatorDashboard() {
           <aside className="lg:col-span-1 space-y-2">
             <button
               onClick={() => setActiveTab("analytics")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
                 activeTab === "analytics"
                   ? "bg-oldverse-accent text-oldverse-bg shadow-lg shadow-oldverse-accent/15"
                   : "text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
@@ -138,7 +202,7 @@ export default function CreatorDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("upload")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
                 activeTab === "upload"
                   ? "bg-oldverse-accent text-oldverse-bg shadow-lg shadow-oldverse-accent/15"
                   : "text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
@@ -148,8 +212,19 @@ export default function CreatorDashboard() {
               Upload Project
             </button>
             <button
+              onClick={() => setActiveTab("jobs")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
+                activeTab === "jobs"
+                  ? "bg-oldverse-accent text-oldverse-bg shadow-lg shadow-oldverse-accent/15"
+                  : "text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
+              }`}
+            >
+              <Briefcase className="h-4 w-4" />
+              Casting & Crews ({applications.length})
+            </button>
+            <button
               onClick={() => setActiveTab("community")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
                 activeTab === "community"
                   ? "bg-oldverse-accent text-oldverse-bg shadow-lg shadow-oldverse-accent/15"
                   : "text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
@@ -160,7 +235,7 @@ export default function CreatorDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
                 activeTab === "settings"
                   ? "bg-oldverse-accent text-oldverse-bg shadow-lg shadow-oldverse-accent/15"
                   : "text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
@@ -269,7 +344,7 @@ export default function CreatorDashboard() {
                   </div>
                 </div>
 
-                {/* My Active Shows list */}
+                {/* My Published Shows list */}
                 <div className="bg-oldverse-card border border-white/5 rounded-xl p-5 space-y-4">
                   <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text">
                     My Published Projects ({creatorShows.length})
@@ -326,7 +401,7 @@ export default function CreatorDashboard() {
                     <select
                       value={uploadCategory}
                       onChange={(e) => setUploadCategory(e.target.value)}
-                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer outline-none"
                     >
                       {["Action", "Romance", "Drama", "Comedy", "Horror", "Documentary", "Animation", "Photography", "Travel", "Experimental"].map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -341,7 +416,7 @@ export default function CreatorDashboard() {
                     <select
                       value={uploadType}
                       onChange={(e) => setUploadType(e.target.value as MediaItem["type"])}
-                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer outline-none"
                     >
                       <option value="movie">Short Film / Movie</option>
                       <option value="series">Episodic Series</option>
@@ -366,7 +441,7 @@ export default function CreatorDashboard() {
                     <select
                       value={uploadVideoUrl}
                       onChange={(e) => setUploadVideoUrl(e.target.value)}
-                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer outline-none"
                     >
                       <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4">Cinema Demo (Tears of Steel)</option>
                       <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4">Indie Narrative (Sintel)</option>
@@ -401,12 +476,239 @@ export default function CreatorDashboard() {
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase text-xs tracking-wider transition-all duration-300"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase text-xs tracking-wider transition-all duration-300 cursor-pointer"
                 >
                   <Upload className="h-4 w-4" />
                   Publish Project
                 </button>
               </form>
+            )}
+
+            {/* JOBS / OPPORTUNITIES TAB */}
+            {activeTab === "jobs" && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-fade-in">
+                {/* Left Column: Post Job */}
+                <form onSubmit={handleJobSubmit} className="bg-oldverse-card border border-white/5 rounded-xl p-6 space-y-4 self-start">
+                  <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Plus className="h-4.5 w-4.5 text-oldverse-accent" />
+                    <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text">
+                      Post Casting / Crew Listing
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Opportunity Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                      placeholder="e.g. Lead Colorist for Cyberpunk Film"
+                      className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Role Category</label>
+                      <select
+                        value={jobRoleType}
+                        onChange={(e) => setJobRoleType(e.target.value as "casting" | "crew")}
+                        className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer"
+                      >
+                        <option value="crew">Crew Finder (DP, Editor, Sound)</option>
+                        <option value="casting">Casting Call (Actor, Model)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Project Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={jobProject}
+                        onChange={(e) => setJobProject(e.target.value)}
+                        placeholder="e.g. Vector Zero"
+                        className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Budget Details</label>
+                      <input
+                        type="text"
+                        required
+                        value={jobBudget}
+                        onChange={(e) => setJobBudget(e.target.value)}
+                        placeholder="e.g. $250/day or Profit Share"
+                        className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Specific Role</label>
+                      <input
+                        type="text"
+                        required
+                        value={jobRoleName}
+                        onChange={(e) => setJobRoleName(e.target.value)}
+                        placeholder="e.g. Director of Photography"
+                        className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Work Type</label>
+                      <select
+                        value={jobContractType}
+                        onChange={(e) => setJobContractType(e.target.value as CastingCall["type"])}
+                        className="w-full text-xs pl-2 pr-2 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer"
+                      >
+                        <option value="Contract">Contract</option>
+                        <option value="Collaboration">Collab</option>
+                        <option value="Part-Time">Part-Time</option>
+                        <option value="Full-Time">Full-Time</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Location Type</label>
+                      <select
+                        value={jobLocationType}
+                        onChange={(e) => setJobLocationType(e.target.value as any)}
+                        className="w-full text-xs pl-2 pr-2 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer"
+                      >
+                        <option value="Remote">Remote</option>
+                        <option value="On-Set">On-Set</option>
+                        <option value="Hybrid">Hybrid</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">City / Region</label>
+                      <input
+                        type="text"
+                        required
+                        value={jobLocation}
+                        onChange={(e) => setJobLocation(e.target.value)}
+                        placeholder="e.g. London or Remote"
+                        className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Requirements (comma-separated)</label>
+                    <input
+                      type="text"
+                      value={jobRequirements}
+                      onChange={(e) => setJobRequirements(e.target.value)}
+                      placeholder="e.g. Owns RED camera, 5+ yrs experience, DaVinci Suite"
+                      className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-grotesk font-bold text-oldverse-secondary uppercase">Listing Description</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder="Outline details of the production, shoot schedule, expectations..."
+                      className="w-full text-xs pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase text-xs tracking-wider transition-colors cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Post Opportunity
+                  </button>
+                </form>
+
+                {/* Right Column: Applications Received */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <FileText className="h-4.5 w-4.5 text-oldverse-accent" />
+                    <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text">
+                      Applications Received ({applications.length})
+                    </h3>
+                  </div>
+
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1 no-scrollbar">
+                    {applications.map((app) => (
+                      <div
+                        key={app.id}
+                        className="bg-oldverse-card border border-white/5 rounded-xl p-5 space-y-3 relative hover:border-white/10 transition-all"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-sm font-bold text-oldverse-text font-grotesk">{app.applicantName}</h4>
+                            <span className="text-[10px] text-oldverse-accent font-semibold block">{app.jobTitle}</span>
+                            <span className="text-[9px] text-oldverse-secondary font-light">Applied: {app.createdAt}</span>
+                          </div>
+
+                          <div className="text-right">
+                            <span className={`text-[9px] uppercase font-grotesk font-bold px-2 py-0.5 rounded ${
+                              app.status === "pending"
+                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                : app.status === "approved"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                            }`}>
+                              {app.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Details */}
+                        <div className="space-y-2 text-xs text-oldverse-secondary font-light pt-2 border-t border-white/5">
+                          <div className="flex flex-wrap gap-4 text-[10px] font-mono">
+                            <a href={`mailto:${app.applicantEmail}`} className="flex items-center gap-1 hover:text-oldverse-accent">
+                              <Mail className="h-3 w-3" />
+                              {app.applicantEmail}
+                            </a>
+                            <a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-oldverse-accent hover:underline">
+                              <ExternalLink className="h-3 w-3" />
+                              Portfolio Link
+                            </a>
+                          </div>
+                          
+                          <p className="font-sans italic bg-black/25 p-2.5 rounded border border-white/5 leading-relaxed text-[11px]">
+                            "{app.coverLetter}"
+                          </p>
+                        </div>
+
+                        {/* Action buttons */}
+                        {app.status === "pending" && (
+                          <div className="flex justify-end gap-2 pt-2 border-t border-white/5">
+                            <button
+                              onClick={() => handleAppStatus(app.id, "declined")}
+                              className="px-3 py-1 text-[10px] font-grotesk uppercase font-bold text-red-400 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
+                            >
+                              Decline
+                            </button>
+                            <button
+                              onClick={() => handleAppStatus(app.id, "approved")}
+                              className="px-3 py-1 text-[10px] font-grotesk uppercase font-bold bg-oldverse-accent text-oldverse-bg hover:bg-oldverse-accent-secondary rounded transition-colors cursor-pointer"
+                            >
+                              Approve
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {applications.length === 0 && (
+                      <div className="text-center py-16 text-oldverse-secondary/40 text-xs font-light">
+                        No applications received yet for your postings.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* COMMUNITY FEED TAB */}
@@ -425,7 +727,7 @@ export default function CreatorDashboard() {
                     <select
                       value={postCategory}
                       onChange={(e) => setPostCategory(e.target.value as any)}
-                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer outline-none"
                     >
                       <option value="behind-the-scenes">Behind the Scenes</option>
                       <option value="discussion">Discussion / Question</option>
@@ -459,7 +761,7 @@ export default function CreatorDashboard() {
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase text-xs tracking-wider transition-all duration-300"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase text-xs tracking-wider transition-all duration-300 cursor-pointer"
                 >
                   <MessageSquare className="h-4 w-4" />
                   Publish Post

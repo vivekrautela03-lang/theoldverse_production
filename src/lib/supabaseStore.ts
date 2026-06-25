@@ -1,4 +1,5 @@
-import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Creator, MediaItem, CommunityPost, CastingCall } from "./mockData";
+import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Creator, MediaItem, CommunityPost, CastingCall, Review, JobApplication } from "./mockData";
+
 
 const STORAGE_KEYS = {
   CREATORS: "oldverse_creators_v2",
@@ -10,7 +11,10 @@ const STORAGE_KEYS = {
   WATCHLIST: "oldverse_watchlist_ids", // set of media-ids user saved
   LIKES: "oldverse_liked_ids", // set of media-ids user liked
   HISTORY: "oldverse_history_logs", // array of watch history entries
-  DOWNLOADS: "oldverse_offline_downloads" // list of offline download items
+  DOWNLOADS: "oldverse_offline_downloads", // list of offline download items
+  REVIEWS: "oldverse_media_reviews_v1",
+  JOBS: "oldverse_jobs_v1",
+  JOB_APPLICATIONS: "oldverse_job_applications_v1"
 };
 
 // Helper to check if window is available (SSR protection)
@@ -122,6 +126,67 @@ export const getStoreData = {
       ];
       localStorage.setItem(key, JSON.stringify(defaultComments));
       return defaultComments;
+    }
+    return JSON.parse(stored);
+  },
+
+  reviews: (mediaId: string): Review[] => {
+    if (!isBrowser()) return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+    if (!stored) {
+      const defaultReviews: Review[] = [
+        {
+          id: "rev-1",
+          mediaId: "media-love-1",
+          author: "Daniel Craig",
+          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&fit=crop",
+          rating: 5.0,
+          text: "Absolutely stunning. The monochrome tones are so rich, and the chemistry is electric. Shivanshi is a genius.",
+          date: "Yesterday",
+          likes: 24
+        },
+        {
+          id: "rev-2",
+          mediaId: "media-love-1",
+          author: "Keira Knightley",
+          avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&h=100&fit=crop",
+          rating: 4.5,
+          text: "A beautiful, moody piece of cinema. The silence says so much more than dialogues could. The music cue at the end is perfect.",
+          date: "2 days ago",
+          likes: 12
+        },
+        {
+          id: "rev-3",
+          mediaId: "media-love-2",
+          author: "Daniel Craig",
+          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&fit=crop",
+          rating: 4.0,
+          text: "Gorgeous cinematography on the road. Truly captures the nostalgia of returning to a past love.",
+          date: "3 days ago",
+          likes: 8
+        }
+      ];
+      localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(defaultReviews));
+      return defaultReviews.filter(r => r.mediaId === mediaId);
+    }
+    const allReviews: Review[] = JSON.parse(stored);
+    return allReviews.filter(r => r.mediaId === mediaId);
+  },
+
+  allReviews: (): Review[] => {
+    if (!isBrowser()) return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+    if (!stored) return [];
+    return JSON.parse(stored);
+  },
+
+  jobApplications: (): JobApplication[] => {
+    if (!isBrowser()) return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.JOB_APPLICATIONS);
+    if (!stored) {
+      const defaultApps: JobApplication[] = [];
+      localStorage.setItem(STORAGE_KEYS.JOB_APPLICATIONS, JSON.stringify(defaultApps));
+      return defaultApps;
     }
     return JSON.parse(stored);
   }
@@ -345,6 +410,106 @@ export const mutateStore = {
       return c;
     });
     localStorage.setItem(STORAGE_KEYS.CREATORS, JSON.stringify(updated));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+  },
+
+  addReview: (mediaId: string, author: string, rating: number, text: string): void => {
+    if (!isBrowser()) return;
+    const stored = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+    const reviews: Review[] = stored ? JSON.parse(stored) : [];
+    
+    const newReview: Review = {
+      id: `rev-${Date.now()}`,
+      mediaId,
+      author,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop",
+      rating,
+      text,
+      date: "Just now",
+      likes: 0
+    };
+
+    const updatedReviews = [newReview, ...reviews];
+    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(updatedReviews));
+
+    // Recalculate average rating of the media item and update media store
+    const media = getStoreData.media();
+    const updatedMedia = media.map(m => {
+      if (m.id === mediaId) {
+        // Filter reviews for this media item (including the new one)
+        const movieReviews = updatedReviews.filter(r => r.mediaId === mediaId);
+        const sum = movieReviews.reduce((acc, r) => acc + r.rating, 0);
+        const avg = movieReviews.length > 0 ? (sum / movieReviews.length) : rating;
+        
+        // Convert to a 10-point scale for main display
+        const displayRating = (avg * 2).toFixed(1);
+        return { ...m, rating: displayRating };
+      }
+      return m;
+    });
+    localStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(updatedMedia));
+
+    window.dispatchEvent(new Event("oldverse_store_update"));
+  },
+
+  postJob: (job: Omit<CastingCall, "id" | "datePosted" | "creatorId" | "creatorName" | "creatorAvatar">): CastingCall => {
+    const list = getStoreData.casting();
+    const newJob: CastingCall = {
+      ...job,
+      id: `job-custom-${Date.now()}`,
+      datePosted: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+      creatorId: "creator-current-user",
+      creatorName: "Current User",
+      creatorAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop"
+    };
+    localStorage.setItem(STORAGE_KEYS.CASTING, JSON.stringify([newJob, ...list]));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+    return newJob;
+  },
+
+  applyToJob: (
+    jobId: string,
+    jobTitle: string,
+    creatorId: string,
+    applicantName: string,
+    applicantEmail: string,
+    portfolioUrl: string,
+    coverLetter: string
+  ): void => {
+    if (!isBrowser()) return;
+    const apps = getStoreData.jobApplications();
+    const newApp: JobApplication = {
+      id: `app-${Date.now()}`,
+      jobId,
+      jobTitle,
+      creatorId,
+      applicantName,
+      applicantEmail,
+      portfolioUrl,
+      coverLetter,
+      status: "pending",
+      createdAt: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    };
+    localStorage.setItem(STORAGE_KEYS.JOB_APPLICATIONS, JSON.stringify([newApp, ...apps]));
+    
+    // Mark in standard applications record
+    const castingApps = getStoreData.applications();
+    castingApps[jobId] = true;
+    localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(castingApps));
+
+    window.dispatchEvent(new Event("oldverse_store_update"));
+  },
+
+  updateApplicationStatus: (appId: string, status: "approved" | "declined"): void => {
+    if (!isBrowser()) return;
+    const apps = getStoreData.jobApplications();
+    const updated = apps.map(app => {
+      if (app.id === appId) {
+        return { ...app, status };
+      }
+      return app;
+    });
+    localStorage.setItem(STORAGE_KEYS.JOB_APPLICATIONS, JSON.stringify(updated));
     window.dispatchEvent(new Event("oldverse_store_update"));
   }
 };

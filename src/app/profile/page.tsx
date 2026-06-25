@@ -2,22 +2,24 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { User, Film, Clock, Download, CreditCard, Star, Play, Sparkles, Check, Trash2 } from "lucide-react";
+import { User, Film, Clock, Download, CreditCard, Star, Play, Sparkles, Check, Trash2, Share2, FileDown, Briefcase, Award } from "lucide-react";
 import confetti from "canvas-confetti";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
-import { MediaItem } from "@/lib/mockData";
+import { MediaItem, Review, JobApplication } from "@/lib/mockData";
 
 export default function UserProfile() {
-  const [activeTab, setActiveTab] = useState<"watchlist" | "history" | "downloads" | "billing">("watchlist");
+  const [activeTab, setActiveTab] = useState<"watchlist" | "history" | "portfolio" | "downloads" | "billing">("watchlist");
   const [user, setUser] = useState<{ name: string; email: string; isCreator: boolean } | null>(null);
   
   // Lists data
   const [watchlist, setWatchlist] = useState<MediaItem[]>([]);
   const [history, setHistory] = useState<{ id: string; mediaId: string; title: string; posterUrl: string; date: string }[]>([]);
   const [downloads, setDownloads] = useState<{ mediaId: string; title: string; size: string; progress: number }[]>([]);
-  const [likedIds, setLikedIds] = useState<string[]>([]);
   const [billingPlan, setBillingPlan] = useState("Viewer Free Tier");
-
+  
+  // Phase 3 States
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   const loadUserData = () => {
@@ -26,7 +28,7 @@ export default function UserProfile() {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     } else {
-      setUser({ name: "Visual Pioneer", email: "pioneer@oldverse.com", isCreator: false });
+      setUser({ name: "Visual Pioneer", email: "pioneer@oldverse.com", isCreator: true });
     }
 
     // Lists
@@ -37,8 +39,12 @@ export default function UserProfile() {
 
     setHistory(getStoreData.history());
     setDownloads(getStoreData.downloads());
-    setLikedIds(getStoreData.likedIds());
     
+    // Load user's logged reviews and job applications
+    const allReviews = getStoreData.allReviews();
+    setReviews(allReviews.filter(r => r.author === "Visual Pioneer" || r.author === "Current User" || r.author === "Daniel Craig"));
+    setApplications(getStoreData.jobApplications());
+
     // Billing plan Cache check
     const plan = localStorage.getItem("oldverse_billing_plan") || "Viewer Free Tier";
     setBillingPlan(plan);
@@ -71,6 +77,25 @@ export default function UserProfile() {
     mutateStore.toggleWatchlist(id);
   };
 
+  const handleShareLink = () => {
+    navigator.clipboard.writeText("https://theoldverse.com/portfolio/visual-pioneer");
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      colors: ["#F5A623", "#34D399"]
+    });
+    alert("Your sharable portfolio link has been copied to your clipboard!");
+  };
+
+  const handleExportPDF = () => {
+    alert("Exporting your OldVerse Creative Resume... PDF download will begin shortly.");
+    confetti({
+      particleCount: 30,
+      spread: 30,
+      colors: ["#34D399", "#FFFFFF"]
+    });
+  };
+
   if (!isClient) {
     return (
       <div className="min-h-screen bg-oldverse-bg flex items-center justify-center">
@@ -78,6 +103,9 @@ export default function UserProfile() {
       </div>
     );
   }
+
+  // Calculate statistics
+  const totalWatchHours = (history.length * 1.5).toFixed(1);
 
   return (
     <div className="bg-oldverse-bg min-h-screen pt-24 pb-16">
@@ -115,7 +143,7 @@ export default function UserProfile() {
         <div className="flex gap-6 border-b border-white/5 text-sm font-grotesk tracking-wide font-medium">
           <button
             onClick={() => setActiveTab("watchlist")}
-            className={`pb-3 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === "watchlist" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
             }`}
           >
@@ -124,7 +152,7 @@ export default function UserProfile() {
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`pb-3 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === "history" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
             }`}
           >
@@ -132,8 +160,17 @@ export default function UserProfile() {
             Watch History ({history.length})
           </button>
           <button
+            onClick={() => setActiveTab("portfolio")}
+            className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
+              activeTab === "portfolio" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
+            }`}
+          >
+            <Briefcase className="h-4 w-4" />
+            Creative Resume
+          </button>
+          <button
             onClick={() => setActiveTab("downloads")}
-            className={`pb-3 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === "downloads" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
             }`}
           >
@@ -142,7 +179,7 @@ export default function UserProfile() {
           </button>
           <button
             onClick={() => setActiveTab("billing")}
-            className={`pb-3 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === "billing" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
             }`}
           >
@@ -156,7 +193,7 @@ export default function UserProfile() {
           
           {/* WATCHLIST */}
           {activeTab === "watchlist" && (
-            <div>
+            <div className="animate-fade-in">
               {watchlist.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                   {watchlist.map((item) => (
@@ -201,7 +238,7 @@ export default function UserProfile() {
 
           {/* WATCH HISTORY */}
           {activeTab === "history" && (
-            <div className="max-w-2xl mx-auto space-y-3">
+            <div className="max-w-2xl mx-auto space-y-3 animate-fade-in">
               {history.map((hist) => (
                 <div
                   key={hist.id}
@@ -233,9 +270,175 @@ export default function UserProfile() {
             </div>
           )}
 
+          {/* CREATIVE RESUME BUILDER */}
+          {activeTab === "portfolio" && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+              {/* Resume Card (Left columns) */}
+              <div className="lg:col-span-2 bg-oldverse-card/50 border border-white/5 rounded-xl p-6 space-y-6 relative">
+                
+                {/* Brand Banner */}
+                <div className="flex justify-between items-start pb-4 border-b border-white/5">
+                  <div>
+                    <span className="text-[9px] uppercase font-bold tracking-widest font-grotesk text-oldverse-accent">
+                      OldVerse Creative Credentials
+                    </span>
+                    <h2 className="font-bebas text-3xl text-oldverse-text tracking-wider uppercase">
+                      Visual Resume
+                    </h2>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleShareLink}
+                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-oldverse-secondary hover:text-white transition-colors cursor-pointer"
+                      title="Share Portfolio Link"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={handleExportPDF}
+                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-oldverse-secondary hover:text-white transition-colors cursor-pointer"
+                      title="Export PDF Resume"
+                    >
+                      <FileDown className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Professional Summary */}
+                <div className="space-y-2">
+                  <h4 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text tracking-widest">
+                    Professional Headline
+                  </h4>
+                  <p className="font-mono text-xs text-oldverse-accent">
+                    Director / Independent Cinematographer / Visual Foley Architect
+                  </p>
+                  <p className="text-xs text-oldverse-secondary leading-relaxed font-light font-sans pt-1">
+                    Independent visual artist specializing in high-contrast monochromatic staging, natural light photography grids, and ambient atmospheric soundscapes. Fully vetted on The OldVerse streaming ecosystem.
+                  </p>
+                </div>
+
+                {/* Metric Widgets */}
+                <div className="grid grid-cols-3 gap-4 border-y border-white/5 py-4">
+                  <div className="text-center space-y-0.5">
+                    <span className="block text-[9px] uppercase font-grotesk text-oldverse-secondary">Time Logged</span>
+                    <span className="font-bebas text-xl text-oldverse-text">{totalWatchHours} Hours</span>
+                  </div>
+                  <div className="text-center space-y-0.5">
+                    <span className="block text-[9px] uppercase font-grotesk text-oldverse-secondary">Reviews Written</span>
+                    <span className="font-bebas text-xl text-oldverse-text">{reviews.length} Titles</span>
+                  </div>
+                  <div className="text-center space-y-0.5">
+                    <span className="block text-[9px] uppercase font-grotesk text-oldverse-secondary">Verified Projects</span>
+                    <span className="font-bebas text-xl text-oldverse-accent">1 Show</span>
+                  </div>
+                </div>
+
+                {/* Experience Timeline */}
+                <div className="space-y-4">
+                  <h4 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text tracking-widest">
+                    Ecosystem Projects & Credits
+                  </h4>
+                  
+                  <div className="relative border-l border-white/5 pl-4 ml-2 space-y-4">
+                    <div className="space-y-1 relative">
+                      <div className="absolute -left-6 top-1 h-3 w-3 rounded-full bg-oldverse-accent border-2 border-oldverse-bg" />
+                      <div className="flex justify-between items-baseline">
+                        <h5 className="text-xs font-bold text-oldverse-text">Director & Co-Editor</h5>
+                        <span className="text-[9px] font-mono text-oldverse-secondary">Current Production</span>
+                      </div>
+                      <p className="text-[10px] text-oldverse-accent">"I Think they call this love...." — Original Short Film</p>
+                      <p className="text-[10px] text-oldverse-secondary font-light">Collaborated with Prince and Amarjeet to direct a monochromatic study on unspoken urban relationships.</p>
+                    </div>
+
+                    <div className="space-y-1 relative">
+                      <div className="absolute -left-6 top-1 h-3 w-3 rounded-full bg-white/20 border-2 border-oldverse-bg" />
+                      <div className="flex justify-between items-baseline">
+                        <h5 className="text-xs font-bold text-oldverse-text">Foley Sound Sync Consultant</h5>
+                        <span className="text-[9px] font-mono text-oldverse-secondary">April 2026</span>
+                      </div>
+                      <p className="text-[10px] text-oldverse-secondary">"The Sound of Stone" — VFX/BTS Masterclass</p>
+                      <p className="text-[10px] text-oldverse-secondary font-light">Assisted sound mixing in experimental sub-surface microphone recordings with Vikram Malhotra.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logged Diary Entries / Letterboxd reviews */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text tracking-widest">
+                    Recent Film Diary Logs
+                  </h4>
+                  <div className="space-y-2">
+                    {reviews.slice(0, 2).map(r => (
+                      <div key={r.id} className="p-3 bg-black/20 border border-white/5 rounded-lg text-xs flex justify-between gap-4">
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-oldverse-text truncate">{r.mediaId.replace("media-", "Project ID: ")}</span>
+                            <span className="text-[9px] text-oldverse-secondary/50 font-mono">({r.date})</span>
+                          </div>
+                          <p className="text-oldverse-secondary font-light line-clamp-1 italic">"{r.text}"</p>
+                        </div>
+                        <div className="flex-none flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-oldverse-accent text-oldverse-accent" />
+                          <span className="font-bold text-oldverse-text text-[10px]">{r.rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {reviews.length === 0 && (
+                      <p className="text-[10px] text-oldverse-secondary/40 font-light italic">No review diary entries logged yet.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Applications (Right column) */}
+              <div className="bg-oldverse-card/30 border border-white/5 rounded-xl p-5 space-y-4 self-start">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                  <Briefcase className="h-4 w-4 text-oldverse-accent" />
+                  <h3 className="font-grotesk text-xs uppercase tracking-widest font-bold text-oldverse-text">
+                    Active Applications ({applications.length})
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  {applications.map((app) => (
+                    <div
+                      key={app.id}
+                      className="p-3 rounded-lg border border-white/5 bg-black/20 space-y-2"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="text-xs font-bold text-oldverse-text font-grotesk line-clamp-1">
+                            {app.jobTitle}
+                          </h4>
+                          <span className="text-[9px] text-oldverse-secondary/60">Applied: {app.createdAt}</span>
+                        </div>
+                        <span className={`text-[9px] uppercase font-grotesk font-bold px-1.5 py-0.5 rounded ${
+                          app.status === "pending"
+                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            : app.status === "approved"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : "bg-red-500/10 text-red-400 border border-red-500/20"
+                        }`}>
+                          {app.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {applications.length === 0 && (
+                    <p className="text-xs text-oldverse-secondary/40 text-center py-8 font-light">
+                      No active job applications found. Apply to listings in the Casting Marketplace!
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* OFFLINE DOWNLOADS */}
           {activeTab === "downloads" && (
-            <div className="max-w-2xl mx-auto space-y-3">
+            <div className="max-w-2xl mx-auto space-y-3 animate-fade-in">
               {downloads.map((dl, idx) => (
                 <div
                   key={idx}
@@ -269,7 +472,7 @@ export default function UserProfile() {
 
           {/* BILLING AND PLANS */}
           {activeTab === "billing" && (
-            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 animate-fade-in">
               
               {/* Current details */}
               <div className="bg-oldverse-card border border-white/5 rounded-xl p-6 space-y-5 self-start">

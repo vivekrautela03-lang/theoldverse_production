@@ -1,14 +1,18 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, Settings, FastForward } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, Settings, FastForward, FileText } from "lucide-react";
 
 interface VideoPlayerProps {
   src: string;
   poster: string;
+  onTimeUpdate?: (currentTime: number) => void;
+  hasScreenplay?: boolean;
+  isScreenplayOpen?: boolean;
+  onToggleScreenplay?: () => void;
 }
 
-export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
+export default function VideoPlayer({ src, poster, onTimeUpdate, hasScreenplay, isScreenplayOpen, onToggleScreenplay }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -58,7 +62,11 @@ export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
+      const time = videoRef.current.currentTime;
+      setCurrentTime(time);
+      if (onTimeUpdate) {
+        onTimeUpdate(time);
+      }
     }
   };
 
@@ -269,6 +277,22 @@ export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
           </div>
 
           <div className="flex items-center gap-4 sm:gap-6 relative">
+            {/* Screenplay Script Toggle */}
+            {hasScreenplay && (
+              <button
+                onClick={onToggleScreenplay}
+                className={`flex items-center gap-1.5 text-xs font-grotesk font-semibold hover:text-oldverse-accent px-2.5 py-1 rounded-md border transition-all duration-300 cursor-pointer ${
+                  isScreenplayOpen
+                    ? "bg-oldverse-accent border-oldverse-accent text-oldverse-bg font-bold shadow-lg shadow-oldverse-accent/20"
+                    : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                }`}
+                title="Toggle Screenplay Panel"
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>Script</span>
+              </button>
+            )}
+
             {/* Speed Selector */}
             <div className="relative">
               <button

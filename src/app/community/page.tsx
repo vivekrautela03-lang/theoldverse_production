@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageSquare, Users, Award, Film, User, Send, Heart, Check, Plus, Landmark, NotebookText } from "lucide-react";
+import { MessageSquare, Users, Award, Film, User, Send, Heart, Check, Plus, Landmark, NotebookText, Filter, Mail, Briefcase, Globe, DollarSign } from "lucide-react";
 import confetti from "canvas-confetti";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
 import { CommunityPost, CastingCall } from "@/lib/mockData";
@@ -17,10 +17,17 @@ export default function CommunityPage() {
   const [postCategory, setPostCategory] = useState<CommunityPost["category"]>("discussion");
   const [postImageUrl, setPostImageUrl] = useState("");
 
+  // Phase 3 Opportunity Filters
+  const [filterRoleType, setFilterRoleType] = useState<"all" | "casting" | "crew">("all");
+  const [filterBudget, setFilterBudget] = useState<"all" | "paid" | "collab">("all");
+  const [filterLocationType, setFilterLocationType] = useState<"all" | "Remote" | "On-Set" | "Hybrid">("all");
+
   // Application Modal state
   const [activeApplication, setActiveApplication] = useState<CastingCall | null>(null);
   const [applicantName, setApplicantName] = useState("");
-  const [applicantBio, setApplicantBio] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
 
   const loadCommunityData = () => {
     setPosts(getStoreData.community());
@@ -61,11 +68,18 @@ export default function CommunityPage() {
 
   const handleApplySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeApplication || !applicantName.trim()) return;
+    if (!activeApplication || !applicantName.trim() || !applicantEmail.trim()) return;
 
-    mutateStore.applyToCasting(activeApplication.id);
+    mutateStore.applyToJob(
+      activeApplication.id,
+      activeApplication.title,
+      activeApplication.creatorId,
+      applicantName,
+      applicantEmail,
+      portfolioUrl,
+      coverLetter
+    );
     
-    // Confetti shower
     confetti({
       particleCount: 80,
       spread: 60,
@@ -74,9 +88,28 @@ export default function CommunityPage() {
 
     setActiveApplication(null);
     setApplicantName("");
-    setApplicantBio("");
-    alert("Your portfolio and audition tape have been submitted to the director!");
+    setApplicantEmail("");
+    setPortfolioUrl("");
+    setCoverLetter("");
+    alert(`Success! Your portfolio has been submitted to the project lead for "${activeApplication.title}".`);
   };
+
+  // Filter listings
+  const filteredJobs = castingCalls.filter(job => {
+    const matchRole = filterRoleType === "all" || job.roleType === filterRoleType;
+    
+    const isCollab = job.budget && (
+      job.budget.toLowerCase().includes("share") || 
+      job.budget.toLowerCase().includes("collab") || 
+      job.budget.toLowerCase().includes("unpaid")
+    );
+    const matchBudget = filterBudget === "all" || 
+      (filterBudget === "paid" && !isCollab) || 
+      (filterBudget === "collab" && isCollab);
+      
+    const matchLocation = filterLocationType === "all" || job.locationType === filterLocationType;
+    return matchRole && matchBudget && matchLocation;
+  });
 
   return (
     <div className="bg-oldverse-bg min-h-screen pt-24 pb-16">
@@ -110,7 +143,7 @@ export default function CommunityPage() {
             }`}
           >
             <Users className="h-4 w-4" />
-            Casting & Crews
+            Casting & Crews Marketplace
           </button>
           <button
             onClick={() => setActiveTab("writing")}
@@ -156,7 +189,7 @@ export default function CommunityPage() {
                     <select
                       value={postCategory}
                       onChange={(e) => setPostCategory(e.target.value as any)}
-                      className="text-xs pl-3 pr-3 py-1.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text"
+                      className="text-xs pl-3 pr-3 py-1.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer outline-none"
                     >
                       <option value="discussion">Discussion</option>
                       <option value="behind-the-scenes">Behind the scenes</option>
@@ -164,7 +197,7 @@ export default function CommunityPage() {
                     </select>
                     <button
                       type="submit"
-                      className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase"
+                      className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase cursor-pointer"
                     >
                       <Send className="h-3.5 w-3.5" />
                       Post
@@ -177,7 +210,7 @@ export default function CommunityPage() {
                   {posts.map((post) => (
                     <div
                       key={post.id}
-                      className="glassmorphism-card rounded-xl p-5 space-y-4 border border-white/5"
+                      className="glassmorphism-card rounded-xl p-5 space-y-4 border border-white/5 bg-oldverse-card/30"
                     >
                       <div className="flex items-center gap-3">
                         <img
@@ -220,11 +253,11 @@ export default function CommunityPage() {
                       )}
 
                       <div className="flex items-center gap-4 text-xs text-oldverse-secondary pt-2 border-t border-white/5">
-                        <button className="flex items-center gap-1 hover:text-oldverse-accent transition-colors">
+                        <button className="flex items-center gap-1 hover:text-oldverse-accent transition-colors cursor-pointer">
                           <Heart className="h-4 w-4" />
                           <span>{post.likes} Likes</span>
                         </button>
-                        <button className="flex items-center gap-1 hover:text-oldverse-accent transition-colors">
+                        <button className="flex items-center gap-1 hover:text-oldverse-accent transition-colors cursor-pointer">
                           <MessageSquare className="h-4 w-4" />
                           <span>{post.commentsCount} Comments</span>
                         </button>
@@ -235,75 +268,172 @@ export default function CommunityPage() {
               </div>
             )}
 
-            {/* CASTING TAB */}
+            {/* CASTING & CREWS TAB */}
             {activeTab === "casting" && (
-              <div className="space-y-4">
-                {castingCalls.map((job) => {
-                  const hasApplied = appliedJobs[job.id];
-                  return (
-                    <div
-                      key={job.id}
-                      className="bg-oldverse-card border border-white/5 rounded-xl p-5 space-y-4 hover:border-oldverse-accent/25 transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={job.creatorAvatar}
-                          alt={job.creatorName}
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
-                        <div>
-                          <h4 className="font-grotesk text-xs text-oldverse-secondary font-medium">
-                            Posted by {job.creatorName}
-                          </h4>
-                          <span className="text-[10px] text-oldverse-secondary/60">
-                            {job.datePosted}
-                          </span>
-                        </div>
-                        <span className="ml-auto text-[9px] uppercase font-grotesk font-bold bg-oldverse-accent/10 border border-oldverse-accent/20 px-2 py-0.5 text-oldverse-accent rounded">
-                          {job.type}
-                        </span>
-                      </div>
+              <div className="space-y-6">
+                
+                {/* Search / Filters Bar */}
+                <div className="bg-oldverse-card/50 border border-white/5 rounded-xl p-4 space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-bold text-oldverse-accent uppercase tracking-wider">
+                    <Filter className="h-4 w-4" />
+                    <span>Filter Opportunities</span>
+                  </div>
 
-                      <div className="space-y-2">
-                        <h3 className="font-grotesk text-base font-bold text-oldverse-text">
-                          {job.title}
-                        </h3>
-                        <p className="text-[10px] uppercase font-grotesk font-bold text-oldverse-accent tracking-wider">
-                          Project: {job.project}
-                        </p>
-                        <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                          {job.description}
-                        </p>
-                      </div>
-
-                      <div className="pt-2 border-t border-white/5 space-y-2">
-                        <h5 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text">Requirements</h5>
-                        <ul className="text-xs text-oldverse-secondary font-light space-y-1 list-disc pl-4">
-                          {job.requirements.map((req, i) => (
-                            <li key={i}>{req}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <span className="text-xs text-oldverse-secondary font-light">📍 {job.location}</span>
-                        {hasApplied ? (
-                          <span className="flex items-center gap-1.5 text-xs text-oldverse-success font-semibold px-4 py-1.5 rounded-full border border-oldverse-success/20 bg-oldverse-success/5">
-                            <Check className="h-3.5 w-3.5 stroke-[3]" />
-                            Applied
-                          </span>
-                        ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Role Type Filter */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-oldverse-secondary uppercase font-grotesk">Role Type</span>
+                      <div className="flex rounded-lg overflow-hidden border border-white/10 bg-black/25">
+                        {(["all", "casting", "crew"] as const).map(t => (
                           <button
-                            onClick={() => setActiveApplication(job)}
-                            className="px-4 py-1.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase transition-colors"
+                            key={t}
+                            onClick={() => setFilterRoleType(t)}
+                            className={`flex-1 text-[10px] uppercase py-1.5 font-grotesk font-bold transition-colors cursor-pointer ${
+                              filterRoleType === t ? "bg-oldverse-accent text-oldverse-bg" : "text-oldverse-secondary hover:text-white"
+                            }`}
                           >
-                            Apply Now
+                            {t}
                           </button>
-                        )}
+                        ))}
                       </div>
                     </div>
-                  );
-                })}
+
+                    {/* Budget Filter */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-oldverse-secondary uppercase font-grotesk">Budget Type</span>
+                      <div className="flex rounded-lg overflow-hidden border border-white/10 bg-black/25">
+                        {(["all", "paid", "collab"] as const).map(t => (
+                          <button
+                            key={t}
+                            onClick={() => setFilterBudget(t)}
+                            className={`flex-1 text-[10px] uppercase py-1.5 font-grotesk font-bold transition-colors cursor-pointer ${
+                              filterBudget === t ? "bg-oldverse-accent text-oldverse-bg" : "text-oldverse-secondary hover:text-white"
+                            }`}
+                          >
+                            {t === "collab" ? "Collab" : t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Location Type Filter */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-oldverse-secondary uppercase font-grotesk">Location</span>
+                      <div className="flex rounded-lg overflow-hidden border border-white/10 bg-black/25">
+                        {(["all", "Remote", "On-Set", "Hybrid"] as const).map(t => (
+                          <button
+                            key={t}
+                            onClick={() => setFilterLocationType(t)}
+                            className={`flex-1 text-[10px] uppercase py-1.5 font-grotesk font-bold transition-colors cursor-pointer ${
+                              filterLocationType === t ? "bg-oldverse-accent text-oldverse-bg" : "text-oldverse-secondary hover:text-white"
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Jobs Listings */}
+                <div className="space-y-4">
+                  {filteredJobs.map((job) => {
+                    const hasApplied = appliedJobs[job.id];
+                    return (
+                      <div
+                        key={job.id}
+                        className="bg-oldverse-card border border-white/5 rounded-xl p-5 space-y-4 hover:border-oldverse-accent/25 transition-all animate-fade-in"
+                      >
+                        <div className="flex flex-wrap items-center gap-3">
+                          <img
+                            src={job.creatorAvatar}
+                            alt={job.creatorName}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="font-grotesk text-xs text-oldverse-secondary font-medium">
+                              Posted by {job.creatorName}
+                            </h4>
+                            <span className="text-[10px] text-oldverse-secondary/60">
+                              {job.datePosted}
+                            </span>
+                          </div>
+                          
+                          {/* Tags */}
+                          <div className="ml-auto flex items-center gap-2">
+                            <span className={`text-[9px] uppercase font-grotesk font-bold px-2 py-0.5 rounded border ${
+                              job.roleType === "casting" 
+                                ? "bg-cyan-500/10 border-cyan-500/25 text-cyan-400" 
+                                : "bg-emerald-500/10 border-emerald-500/25 text-emerald-400"
+                            }`}>
+                              {job.roleType}
+                            </span>
+                            <span className="text-[9px] uppercase font-grotesk font-bold bg-oldverse-accent/10 border border-oldverse-accent/20 px-2 py-0.5 text-oldverse-accent rounded">
+                              {job.type}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h3 className="font-grotesk text-base font-bold text-oldverse-text">
+                            {job.title}
+                          </h3>
+                          <div className="flex flex-wrap gap-4 text-xs text-oldverse-secondary font-light">
+                            <span className="flex items-center gap-1 text-oldverse-accent font-semibold">
+                              <DollarSign className="h-3.5 w-3.5" />
+                              {job.budget || "Unpaid / Profit Share"}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Globe className="h-3.5 w-3.5" />
+                              {job.locationType}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Briefcase className="h-3.5 w-3.5" />
+                              {job.project}
+                            </span>
+                          </div>
+                          <p className="text-xs text-oldverse-secondary font-light leading-relaxed pt-1">
+                            {job.description}
+                          </p>
+                        </div>
+
+                        {job.requirements && job.requirements.length > 0 && (
+                          <div className="pt-2 border-t border-white/5 space-y-2">
+                            <h5 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text">Requirements</h5>
+                            <ul className="text-xs text-oldverse-secondary font-light space-y-1 list-disc pl-4">
+                              {job.requirements.map((req, i) => (
+                                <li key={i}>{req}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                          <span className="text-xs text-oldverse-secondary font-light">📍 {job.location}</span>
+                          {hasApplied ? (
+                            <span className="flex items-center gap-1.5 text-xs text-oldverse-success font-semibold px-4 py-1.5 rounded-full border border-oldverse-success/20 bg-oldverse-success/5">
+                              <Check className="h-3.5 w-3.5 stroke-[3]" />
+                              Applied
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setActiveApplication(job)}
+                              className="px-4 py-1.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase transition-colors cursor-pointer"
+                            >
+                              Apply Now
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {filteredJobs.length === 0 && (
+                    <p className="text-center py-12 text-oldverse-secondary/40 text-xs font-light">
+                      No listings match your filter selections. Keep exploring!
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -375,21 +505,21 @@ export default function CommunityPage() {
               <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                 <Film className="h-4.5 w-4.5 text-oldverse-accent" />
                 <h3 className="font-grotesk text-xs uppercase tracking-widest font-bold text-oldverse-text">
-                  Crew Recruitment
+                  Marketplace Demands
                 </h3>
               </div>
               
               <div className="space-y-4 text-xs">
                 <div className="flex justify-between items-center text-oldverse-secondary">
-                  <span>🎬 Assistant Director</span>
+                  <span>🎬 Assistant Directors</span>
                   <span className="text-[10px] text-oldverse-accent font-semibold font-grotesk">2 Offers</span>
                 </div>
                 <div className="flex justify-between items-center text-oldverse-secondary">
-                  <span>🎨 Production Designer</span>
+                  <span>🎨 Composers & Foley Artists</span>
                   <span className="text-[10px] text-oldverse-accent font-semibold font-grotesk">1 Offer</span>
                 </div>
                 <div className="flex justify-between items-center text-oldverse-secondary">
-                  <span>🔊 Boom Operator</span>
+                  <span>🔊 Directors of Photography</span>
                   <span className="text-[10px] text-oldverse-accent font-semibold font-grotesk">3 Offers</span>
                 </div>
               </div>
@@ -398,13 +528,16 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* Audition application modal */}
+      {/* Audition & Crew application modal */}
       {activeApplication && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-oldverse-card border border-white/10 rounded-xl p-6 max-w-md w-full space-y-4 relative animate-fade-in">
             <h3 className="font-grotesk text-base font-bold text-oldverse-text">
-              Audition for "{activeApplication.title}"
+              Apply for "{activeApplication.title}"
             </h3>
+            <p className="text-[11px] text-oldverse-secondary font-light">
+              Submit your professional portfolio and pitch details directly to the creator.
+            </p>
             
             <form onSubmit={handleApplySubmit} className="space-y-4 text-xs">
               <div className="space-y-1">
@@ -420,13 +553,37 @@ export default function CommunityPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-grotesk font-semibold text-oldverse-secondary uppercase">Cover Note / Experience</label>
+                <label className="font-grotesk font-semibold text-oldverse-secondary uppercase">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={applicantEmail}
+                  onChange={(e) => setApplicantEmail(e.target.value)}
+                  placeholder="e.g. john@example.com"
+                  className="w-full pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-grotesk font-semibold text-oldverse-secondary uppercase">Portfolio / Showcase URL</label>
+                <input
+                  type="url"
+                  required
+                  value={portfolioUrl}
+                  onChange={(e) => setPortfolioUrl(e.target.value)}
+                  placeholder="e.g. https://myportfolio.film or youtube link"
+                  className="w-full pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-grotesk font-semibold text-oldverse-secondary uppercase">Cover Note / Experience Pitch</label>
                 <textarea
                   required
                   rows={3}
-                  value={applicantBio}
-                  onChange={(e) => setApplicantBio(e.target.value)}
-                  placeholder="Briefly state your acting experience or links to showcase reels..."
+                  value={coverLetter}
+                  onChange={(e) => setCoverLetter(e.target.value)}
+                  placeholder="Briefly pitch yourself... What qualifies you for this project? State relevant equipment if applying for crew."
                   className="w-full pl-3 pr-3 py-2 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent resize-none"
                 />
               </div>
@@ -435,15 +592,15 @@ export default function CommunityPage() {
                 <button
                   type="button"
                   onClick={() => setActiveApplication(null)}
-                  className="px-4 py-2 rounded-full border border-white/10 text-oldverse-text hover:bg-white/5 transition-colors"
+                  className="px-4 py-2 rounded-full border border-white/10 text-oldverse-text hover:bg-white/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase transition-colors"
+                  className="px-5 py-2 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase transition-colors cursor-pointer"
                 >
-                  Submit Audition
+                  Submit Application
                 </button>
               </div>
             </form>

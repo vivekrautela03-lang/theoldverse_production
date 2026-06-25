@@ -50,6 +50,7 @@ export interface MediaItem {
   episodes?: Episode[];
   isApproved?: boolean;
   isHeroSlide?: boolean;
+  screenplay?: ScreenplaySegment[];
 }
 
 export interface CommunityPost {
@@ -66,6 +67,13 @@ export interface CommunityPost {
   category: "behind-the-scenes" | "casting-call" | "announcement" | "discussion" | "writing-room" | "photography";
 }
 
+export interface ScreenplaySegment {
+  id: string;
+  time: number; // time in seconds
+  character?: string; // character name, or undefined/empty for actions
+  text: string;
+}
+
 export interface CastingCall {
   id: string;
   title: string;
@@ -79,7 +87,35 @@ export interface CastingCall {
   location: string;
   type: "Full-Time" | "Part-Time" | "Contract" | "Collaboration";
   datePosted: string;
+  roleType: "casting" | "crew";
+  budget: string;
+  locationType: "Remote" | "On-Set" | "Hybrid";
 }
+
+export interface Review {
+  id: string;
+  mediaId: string;
+  author: string;
+  avatar: string;
+  rating: number; // e.g. 0.5 to 5.0
+  text: string;
+  date: string;
+  likes: number;
+}
+
+export interface JobApplication {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  creatorId: string; // creator who posted the job
+  applicantName: string;
+  applicantEmail: string;
+  portfolioUrl: string;
+  coverLetter: string;
+  status: "pending" | "approved" | "declined";
+  createdAt: string;
+}
+
 
 // 1. Initial Creators
 export const mockCreators: Creator[] = [
@@ -176,7 +212,21 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Cameraman", name: "Prince" },
       { role: "Assistant Director", name: "Rishika" }
     ],
-    gallery: ["/media_1.jpg"]
+    gallery: ["/media_1.jpg"],
+    screenplay: [
+      { id: "s1-1", time: 0, text: "[SCENE START] The steam rises slowly from a single cup of black coffee. The neon street light flickers through the rain-streaked window." },
+      { id: "s1-2", time: 5, character: "AMARJEET (V.O.)", text: "They always tell you that love is a fire. A sudden blaze that consumes everything." },
+      { id: "s1-3", time: 15, character: "SOUNDARYA", text: "Do you think it's going to rain all night?" },
+      { id: "s1-4", time: 25, character: "AMARJEET", text: "I hope so. The city looks cleaner when it rains. Less... crowded." },
+      { id: "s1-5", time: 35, character: "SOUNDARYA", text: "Or maybe it's just that people stay inside, hiding from each other." },
+      { id: "s1-6", time: 48, text: "[ACTION] Soundarya wraps her hands around the warm mug, looking down. Amarjeet watches the reflection of the neon sign in her eyes." },
+      { id: "s1-7", time: 60, character: "AMARJEET (V.O.)", text: "But I think they call this love... the silence. The electric gaps between words." },
+      { id: "s1-8", time: 75, character: "SOUNDARYA", text: "Why did you come back?" },
+      { id: "s1-9", time: 90, character: "AMARJEET", text: "Because I forgot how to breathe out there." },
+      { id: "s1-10", time: 105, text: "[ACTION] A train rumbles on the elevated tracks outside, casting moving shadows across their faces." },
+      { id: "s1-11", time: 120, character: "SOUNDARYA", text: "We can't stay here forever, Amar." },
+      { id: "s1-12", time: 135, character: "AMARJEET", text: "Just until the coffee gets cold." }
+    ]
   },
   {
     id: "media-love-2",
@@ -202,7 +252,18 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Cameraman", name: "Prince" },
       { role: "Editor", name: "Shivansh Mourya" }
     ],
-    gallery: ["/media_2.jpg"]
+    gallery: ["/media_2.jpg"],
+    screenplay: [
+      { id: "s2-1", time: 0, text: "[SCENE START] An open road stretches under a golden, late-afternoon sky. Dry leaves blow across the tarmac." },
+      { id: "s2-2", time: 6, character: "ANJALI (V.O.)", text: "I thought I saw your face today, in a crowd on the street. It was just a stranger with your jacket." },
+      { id: "s2-3", time: 15, character: "AKSHIT", text: "You haven't changed the radio station. It's still playing that same song." },
+      { id: "s2-4", time: 28, character: "ANJALI", text: "Some songs don't get old. They just get heavy." },
+      { id: "s2-5", time: 40, character: "AKSHIT", text: "I missed you, Anjali." },
+      { id: "s2-6", time: 50, text: "[ACTION] Anjali turns her head towards the passing trees, a faint smile playing on her lips." },
+      { id: "s2-7", time: 62, character: "ANJALI (V.O.)", text: "And I couldn't help but fall in love again... with the memory of who we were." },
+      { id: "s2-8", time: 80, character: "ANJALI", text: "We aren't those kids anymore, Akshit." },
+      { id: "s2-9", time: 95, character: "AKSHIT", text: "Maybe not. But we're still driving the same road." }
+    ]
   },
   {
     id: "media-1",
@@ -463,7 +524,10 @@ export const mockCastingCalls: CastingCall[] = [
     ],
     location: "London, UK (Studio & On-location)",
     type: "Contract",
-    datePosted: "June 20, 2026"
+    datePosted: "June 20, 2026",
+    roleType: "casting",
+    budget: "$350 / Day",
+    locationType: "On-Set"
   },
   {
     id: "casting-2",
@@ -481,6 +545,51 @@ export const mockCastingCalls: CastingCall[] = [
     ],
     location: "Remote",
     type: "Collaboration",
-    datePosted: "June 22, 2026"
+    datePosted: "June 22, 2026",
+    roleType: "crew",
+    budget: "Profit Share",
+    locationType: "Remote"
+  },
+  {
+    id: "casting-3",
+    title: "Director of Photography for 'Echoes of Silence'",
+    creatorId: "creator-love",
+    creatorName: "Shivanshi",
+    creatorAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop",
+    project: "Echoes of Silence (Artistic indie drama)",
+    role: "Cinematographer / DP",
+    description: "Seeking a DP with an eye for high-contrast monochrome cinematography and natural lighting setups. You will collaborate closely with the director to establish the visual language of the short film.",
+    requirements: [
+      "Must own or have access to a cinema package (RED, ARRI, or Sony FX series)",
+      "Strong portfolio of narrative short films",
+      "Available for a 5-day shoot in Shimla, India"
+    ],
+    location: "Shimla, India (On-Location)",
+    type: "Contract",
+    datePosted: "June 24, 2026",
+    roleType: "crew",
+    budget: "$300 / Day",
+    locationType: "On-Set"
+  },
+  {
+    id: "casting-4",
+    title: "Film Editor & Colorist for Neon Thriller",
+    creatorId: "creator-2",
+    creatorName: "Marcus Vance",
+    creatorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&fit=crop",
+    project: "Neon Monsoon: Director's Cut",
+    role: "Lead Editor & Colorist",
+    description: "Looking for an editor who excels at fast-paced action sequencing and color grading neon-drenched cyberpunk aesthetic. Experience with DaVinci Resolve is highly preferred.",
+    requirements: [
+      "Advanced knowledge of DaVinci Resolve & Premiere Pro",
+      "Experience with visual effects integration and sound syncing",
+      "Ability to handle 4K ProRes footage"
+    ],
+    location: "Remote",
+    type: "Contract",
+    datePosted: "June 25, 2026",
+    roleType: "crew",
+    budget: "$2,500 Flat",
+    locationType: "Remote"
   }
 ];
