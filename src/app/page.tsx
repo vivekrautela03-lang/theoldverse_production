@@ -369,19 +369,6 @@ export default function HomePage() {
 
         {/* Row 4: Featured Originals */}
         <MovieRow title="Originals & Series" items={originals} />
-
-        {/* Row 5: Short Films & Dramas */}
-        <MovieRow title="Short Films" items={movies} />
-
-        {/* Row 6: Documentaries */}
-        {documentaries.length > 0 && (
-          <MovieRow title="Cinematic Documentaries" items={documentaries} />
-        )}
-
-        {/* Row 7: Behind The Scenes */}
-        {behindTheScenes.length > 0 && (
-          <MovieRow title="Behind the Scenes" items={behindTheScenes} subtitle="Learn the Craft Directly from the Creators" />
-        )}
       </section>
     </div>
   );
