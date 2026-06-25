@@ -321,51 +321,7 @@ export default function HomePage() {
           <MovieRow title="Coming Soon / Upcoming Originals" items={comingSoon} />
         )}
 
-        {/* 3. Creator Spotlight Section */}
-        <div className="py-8 px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="flex flex-col">
-            <h3 className="font-bebas text-2xl tracking-wider text-oldverse-text uppercase">
-              Creator Spotlight
-            </h3>
-            <p className="font-grotesk text-xs text-oldverse-secondary font-medium tracking-wide uppercase">
-              Meet the Visionaries Behind the Lens
-            </p>
-          </div>
-          
-          <div className="flex gap-6 overflow-x-auto no-scrollbar py-2">
-            {creators.map((creator) => (
-              <Link
-                key={creator.id}
-                href={`/creator/${creator.id}`}
-                className="flex-none flex flex-col items-center text-center space-y-3 group cursor-pointer w-28 sm:w-36"
-              >
-                <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-oldverse-accent transition-all duration-300 scale-100 group-hover:scale-105 shadow-lg group-hover:shadow-oldverse-accent/10">
-                  <img
-                    src={creator.avatar}
-                    alt={creator.name}
-                    className="h-full w-full object-cover"
-                  />
-                  {creator.isVerified && (
-                    <div className="absolute bottom-0 right-0 p-0.5 bg-oldverse-accent rounded-full border-2 border-oldverse-bg">
-                      <Check className="h-3 w-3 text-oldverse-bg stroke-[4]" />
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-0.5">
-                  <h4 className="font-grotesk text-xs sm:text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors truncate w-24 sm:w-32">
-                    {creator.name}
-                  </h4>
-                  <p className="text-[10px] text-oldverse-secondary font-light">
-                    @{creator.username}
-                  </p>
-                  <p className="text-[9px] text-oldverse-accent uppercase tracking-wider font-semibold font-grotesk pt-1">
-                    {creator.followers.toLocaleString()} Follows
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+
 
         {/* Row 4: Featured Originals */}
         <MovieRow title="Originals & Series" items={originals} />
