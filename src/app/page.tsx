@@ -313,11 +313,6 @@ export default function HomePage() {
 
       {/* 2. Media Rows Container */}
       <section className="relative z-20 space-y-4 md:space-y-8 -mt-20 sm:-mt-24 md:-mt-28">
-        {/* Row 1: Continue Watching */}
-        {continueWatching.length > 0 && (
-          <MovieRow title="Continue Watching" items={continueWatching} />
-        )}
-
         {/* Row 2: Trending This Week */}
         <MovieRow title="Trending This Week" items={trending} />
 
