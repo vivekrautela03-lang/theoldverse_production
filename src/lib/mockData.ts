@@ -201,7 +201,7 @@ export const mockMediaItems: MediaItem[] = [
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
-    isTrending: false,
+    isTrending: true,
     isOriginal: true,
     isHeroSlide: false,
     releaseDate: "Coming Soon",
@@ -217,10 +217,10 @@ export const mockMediaItems: MediaItem[] = [
   },
   {
     id: "media-coming-2",
-    title: "CHEST PAIN (I Love)",
+    title: "NISHAAN",
     type: "original",
     category: "Originals",
-    description: "Some people enter our lives by chance. Some stay because they were meant to. A music short clip destined to someone. Happy, childish, joyful.",
+    description: "A murder mystery thriller series. Some marks don't fade.",
     duration: "Coming Soon",
     rating: "0.0",
     posterUrl: "/chest_pain.jpg",
@@ -228,33 +228,7 @@ export const mockMediaItems: MediaItem[] = [
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
-    isTrending: false,
-    isOriginal: true,
-    isHeroSlide: false,
-    releaseDate: "Coming Soon",
-    cast: ["Amarjeet", "Soni"],
-    crew: [
-      { role: "Director & Producer", name: "Shivanshi & Vivek Rautela" },
-      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
-      { role: "Cameraman", name: "Prince & Ujjwal Gurung" },
-      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal and Prince" }
-    ],
-    gallery: ["/chest_pain.jpg"]
-  },
-  {
-    id: "media-coming-3",
-    title: "NISHAAN SERIES",
-    type: "series",
-    category: "Originals",
-    description: "A murder mystery thriller series. Some marks don't fade.",
-    duration: "Coming Soon",
-    rating: "0.0",
-    posterUrl: "/nishaan.jpg",
-    bannerUrl: "/nishaan.jpg",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    creatorId: "creator-love",
-    creatorName: "Shivanshi",
-    isTrending: false,
+    isTrending: true,
     isOriginal: true,
     isHeroSlide: false,
     releaseDate: "Coming Soon",
@@ -266,22 +240,22 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Cinematography", name: "Prince, Ujjwal Gurung" },
       { role: "Production Team", name: "Shivanshi (DOP), Ujjwal Gurung, Ujjwal Sangal" }
     ],
-    gallery: ["/nishaan.jpg"]
+    gallery: ["/chest_pain.jpg"]
   },
   {
-    id: "media-coming-4",
+    id: "media-coming-3",
     title: "DESTINY",
     type: "original",
     category: "Originals",
     description: "In the pursuit of a love never meant to be... we find the one destiny always promised. Song: Line Without a Hook.",
     duration: "Coming Soon",
     rating: "0.0",
-    posterUrl: "/destiny.jpg",
-    bannerUrl: "/destiny.jpg",
+    posterUrl: "/nishaan.jpg",
+    bannerUrl: "/nishaan.jpg",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
-    isTrending: false,
+    isTrending: true,
     isOriginal: true,
     isHeroSlide: true,
     releaseDate: "Coming Soon",
@@ -293,7 +267,7 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Cinematography", name: "Prince & Ujjwal Gurung" },
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal & Prince" }
     ],
-    gallery: ["/destiny.jpg"]
+    gallery: ["/nishaan.jpg"]
   },
   {
     id: "media-coming-5",
