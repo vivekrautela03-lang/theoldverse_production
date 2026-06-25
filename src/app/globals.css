@@ -119,3 +119,19 @@ body {
 .cinematic-glow {
   text-shadow: 0 0 10px rgba(245, 166, 35, 0.15), 0 0 20px rgba(245, 166, 35, 0.1);
 }
+
+@keyframes slideDown {
+  0% {
+    transform: translate(-50%, -30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+

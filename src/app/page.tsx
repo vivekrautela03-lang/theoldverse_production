@@ -98,9 +98,6 @@ export default function HomePage() {
     );
   }
 
-  if (!isLoggedIn) {
-    return <AuthPortal onLoginSuccess={() => setIsLoggedIn(true)} />;
-  }
 
   if (!featuredItem) {
     return (
