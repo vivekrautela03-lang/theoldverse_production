@@ -238,7 +238,7 @@ export default function HomePage() {
                     href={`/creator/${featuredItem.creatorId}`}
                     className="text-xs font-grotesk font-bold text-oldverse-text hover:text-oldverse-accent transition-colors"
                   >
-                    {featuredItem.creatorName}
+                    Shivanshi & Vivek Rautela
                   </Link>
                 </div>
               </motion.div>
