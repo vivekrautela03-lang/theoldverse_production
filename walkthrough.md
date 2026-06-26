@@ -37,10 +37,10 @@ This document summarizes the files, features, architecture, and verification res
 - **Jobs & Applications Store**: Manages casting and crew job listings, application submissions, and application status approvals.
 - **Mock Datasets**: Pre-populated with detailed screenplays for Shivanshi's original clips and starter crew opportunities.
 
-### 6. Upcoming Releases & Show Posters (`src/app/page.tsx` & `src/lib/mockData.ts`)
-- **Coming Soon Carousel Row**: Displays the 5 newly announced titles (THE LIGHT FROM NOWHERE, CHEST PAIN, NISHAAN SERIES, DESTINY, SILENCE GLANCES) under a dedicated carousel track on the homepage.
-- **Poster Asset Synchronization**: Integrated the high-fidelity vertical poster images uploaded by the user directly into static public directory paths.
-- **Cache-Busting Storage Invalidation**: Bumped local storage schemas in `supabaseStore.ts` to invalidate obsolete media records and reload the upcoming catalog seamlessly for viewers.
+### 6. Catalog Cleanups & Cache-Busting Storage Invalidation (`src/lib/mockData.ts` & `src/lib/supabaseStore.ts`)
+- **Removed Media Items**: Removed "Neon Monsoon" (`media-3`), "Chasing Shadows" (`media-4`), "The Sound of Stone" (`media-6`), and "SILENCE GLANCES, GOLDEN MOMENTS" (`media-coming-5`) from the mock database, homepage tracks, and footer links.
+- **Watch History Defaults**: Replaced deleted mock media items in default user history and offline downloads with active ones.
+- **Cache-Busting Storage Invalidation**: Bumped local storage schemas in `supabaseStore.ts` to `oldverse_media_v11`, `oldverse_history_logs_v3`, and `oldverse_offline_downloads_v3` to invalidate obsolete media records and load the updated catalog cleanly.
 
 ---
 
@@ -78,7 +78,7 @@ oldverse_production/
 │   ├── components/
 │   │   ├── AuthPortal.tsx        # Modular auth portal (login, signup, OTP validation, Google OAuth)
 │   │   ├── Navbar.tsx            # Floating glassmorphism header, notification drawer, profile toggle
-│   │   ├── Footer.tsx            # Premium layout, category linkages, newsletter forms
+│   │   ├── Footer.tsx            # OVERHAULED: Premium minimalist footer with Craft (What We Do) and Collaborate (Work With Us) panels, Navigation map, and social Connect details
 │   │   ├── MovieRow.tsx          # Horizontal Netflix rows with hover expansions
 │   │   └── VideoPlayer.tsx       # Custom seek, volume, speed, fullscreen, and screenplay toggle
 │   └── lib/

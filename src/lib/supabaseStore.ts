@@ -3,15 +3,15 @@ import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Cre
 
 const STORAGE_KEYS = {
   CREATORS: "oldverse_creators_v2",
-  MEDIA: "oldverse_media_v9",
+  MEDIA: "oldverse_media_v11",
   COMMUNITY: "oldverse_community",
   CASTING: "oldverse_casting",
   FOLLOWED: "oldverse_followed_ids", // set of creator-ids user follows
   APPLICATIONS: "oldverse_casting_applications", // casting-id -> applied status
-  WATCHLIST: "oldverse_watchlist_ids", // set of media-ids user saved
-  LIKES: "oldverse_liked_ids", // set of media-ids user liked
-  HISTORY: "oldverse_history_logs", // array of watch history entries
-  DOWNLOADS: "oldverse_offline_downloads", // list of offline download items
+  WATCHLIST: "oldverse_watchlist_ids_v2", // set of media-ids user saved
+  LIKES: "oldverse_liked_ids_v2", // set of media-ids user liked
+  HISTORY: "oldverse_history_logs_v3", // array of watch history entries
+  DOWNLOADS: "oldverse_offline_downloads_v3", // list of offline download items
   REVIEWS: "oldverse_media_reviews_v1",
   JOBS: "oldverse_jobs_v1",
   JOB_APPLICATIONS: "oldverse_job_applications_v1"
@@ -92,8 +92,8 @@ export const getStoreData = {
     const stored = localStorage.getItem(STORAGE_KEYS.HISTORY);
     if (!stored) {
       const defaultHistory = [
-        { id: "hist-1", mediaId: "media-1", title: "Silent Connections", posterUrl: "/media_1.jpg", date: "Just now" },
-        { id: "hist-2", mediaId: "media-3", title: "Neon Monsoon", posterUrl: "https://images.unsplash.com/photo-1515621061946-eff1c2a352bd?q=80&w=600", date: "Yesterday" }
+        { id: "hist-1", mediaId: "media-love-1", title: "I Think they call this love....", posterUrl: "/media_1.jpg", date: "Just now" },
+        { id: "hist-2", mediaId: "media-love-2", title: "And I Couldn't Help But Fall In Love Again", posterUrl: "/media_2.jpg", date: "Yesterday" }
       ];
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(defaultHistory));
       return defaultHistory;
@@ -106,8 +106,8 @@ export const getStoreData = {
     const stored = localStorage.getItem(STORAGE_KEYS.DOWNLOADS);
     if (!stored) {
       const defaultDownloads = [
-        { mediaId: "media-1", title: "Silent Connections", size: "432 MB", progress: 100 },
-        { mediaId: "media-6", title: "The Sound of Stone", size: "112 MB", progress: 100 }
+        { mediaId: "media-love-1", title: "I Think they call this love....", size: "432 MB", progress: 100 },
+        { mediaId: "media-love-2", title: "And I Couldn't Help But Fall In Love Again", size: "320 MB", progress: 100 }
       ];
       localStorage.setItem(STORAGE_KEYS.DOWNLOADS, JSON.stringify(defaultDownloads));
       return defaultDownloads;
