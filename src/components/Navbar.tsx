@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Home, Menu, X, LayoutDashboard, Upload, Info, Users, Phone } from "lucide-react";
+import { Search, Home, Menu, X, LayoutDashboard, Info, Users, Phone } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -175,38 +175,6 @@ export default function Navbar() {
               >
                 <Phone className="h-4 w-4" />
                 <span>Contact Us</span>
-              </Link>
-            </div>
-
-            {/* Dashboards Section */}
-            <div className="flex flex-col gap-1 text-sm text-white/80 pt-2">
-              <span className="text-[10px] text-white/40 uppercase tracking-widest px-2 pb-1 font-bold">Creator Workspaces</span>
-              
-              <Link
-                href="/dashboard"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Creator Hub</span>
-              </Link>
-
-              <Link
-                href="/upload"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-              >
-                <Upload className="h-4 w-4" />
-                <span>Upload Content</span>
-              </Link>
-
-              <Link
-                href="/admin"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-              >
-                <Users className="h-4 w-4" />
-                <span>Root Admin Dashboard</span>
               </Link>
             </div>
           </div>
