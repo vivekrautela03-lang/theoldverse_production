@@ -55,10 +55,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
   }, [id]);
 
   const handleFollowToggle = () => {
-    if (creator) {
-      const isNowFollowing = mutateStore.followCreator(creator.id);
-      setIsFollowing(isNowFollowing);
-    }
+    window.open("https://instagram.com/theoldverse_", "_blank", "noopener,noreferrer");
   };
 
   if (!isClient) {
@@ -184,13 +181,9 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
 
             <button
               onClick={handleFollowToggle}
-              className={`px-6 py-2.5 rounded-full font-grotesk font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
-                isFollowing
-                  ? "border border-oldverse-accent text-oldverse-accent bg-oldverse-accent/5 hover:bg-oldverse-error hover:border-oldverse-error hover:text-oldverse-bg"
-                  : "bg-oldverse-accent text-oldverse-bg hover:bg-oldverse-accent-secondary"
-              }`}
+              className="px-6 py-2.5 rounded-full font-grotesk font-bold text-xs uppercase tracking-wider transition-all duration-300 bg-oldverse-accent text-oldverse-bg hover:bg-oldverse-accent-secondary"
             >
-              {isFollowing ? "Unfollow" : "Follow Creator"}
+              Follow Creator
             </button>
           </div>
         </div>

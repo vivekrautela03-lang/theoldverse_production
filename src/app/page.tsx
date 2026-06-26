@@ -81,10 +81,7 @@ export default function HomePage() {
   };
 
   const handleFollowToggle = () => {
-    if (featuredItem) {
-      const isNowFollowing = mutateStore.followCreator(featuredItem.creatorId);
-      setIsFollowingCreator(isNowFollowing);
-    }
+    window.open("https://instagram.com/theoldverse_", "_blank", "noopener,noreferrer");
   };
 
   if (!isClient) {
@@ -260,17 +257,8 @@ export default function HomePage() {
                 onClick={handleFollowToggle}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text font-grotesk font-bold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-105"
               >
-                {isFollowingCreator ? (
-                  <>
-                    <Check className="h-4 w-4 text-oldverse-success" />
-                    Following
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4" />
-                    Follow
-                  </>
-                )}
+                <Plus className="h-4 w-4" />
+                Follow
               </button>
 
               <Link
