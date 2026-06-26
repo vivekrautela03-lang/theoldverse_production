@@ -285,6 +285,23 @@ export default function HomePage() {
         {/* Row 2: Trending This Week */}
         <MovieRow title="Trending This Week" items={trending} />
 
+        {/* Section 1: Craft / What We Do */}
+        <div className="px-4 sm:px-6 lg:px-8 py-4 space-y-4 w-full">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-oldverse-accent uppercase tracking-widest block">Craft</span>
+            <h2 className="font-bebas text-4xl sm:text-5xl text-oldverse-text tracking-wider uppercase">What We Do</h2>
+          </div>
+          <div className="bg-white/[0.02] border border-white/5 p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold text-oldverse-secondary uppercase tracking-widest block">Signature Service</span>
+              <h3 className="font-bebas text-2xl sm:text-3xl text-oldverse-text tracking-wide uppercase">Film Production</h3>
+            </div>
+            <p className="text-sm font-light text-oldverse-secondary max-w-xl md:text-right">
+              We bring stories to life through short films, cinematic reels, web series, and music videos.
+            </p>
+          </div>
+        </div>
+
         {/* Row 3: Coming Soon */}
         {comingSoon.length > 0 && (
           <MovieRow title="Coming Soon / Upcoming Originals" items={comingSoon} />

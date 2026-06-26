@@ -12,24 +12,6 @@ export default function Footer() {
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-oldverse-accent/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        
-        {/* Section 1: Craft / What We Do */}
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-oldverse-accent uppercase tracking-widest block">Craft</span>
-            <h2 className="font-bebas text-4xl sm:text-5xl text-oldverse-text tracking-wider uppercase">What We Do</h2>
-          </div>
-          <div className="bg-white/[0.02] border border-white/5 p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <span className="text-[9px] font-bold text-oldverse-secondary uppercase tracking-widest block">Signature Service</span>
-              <h3 className="font-bebas text-2xl sm:text-3xl text-oldverse-text tracking-wide uppercase">Film Production</h3>
-            </div>
-            <p className="text-sm font-light text-oldverse-secondary max-w-xl md:text-left">
-              We bring stories to life through short films, cinematic reels, web series, and music videos.
-            </p>
-          </div>
-        </div>
-
         {/* Section 2: Collaborate / Work With Us */}
         <div className="space-y-4">
           <div className="space-y-1">

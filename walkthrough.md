@@ -96,7 +96,7 @@ We successfully verified the compilation pipeline using the Next.js production b
 - **Static Page Prerendering**: All routes prerendered without any payload exceptions:
   - `/` (Static)
   - `/admin` (Static)
-  - `/browse` (Static)
+  - `/projects` (Static)
   - `/community` (Static)
   - `/dashboard` (Static)
   - `/profile` (Static)
