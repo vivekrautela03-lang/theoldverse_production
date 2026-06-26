@@ -65,8 +65,10 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
   };
 
   useEffect(() => {
-    if (id === "media-love-1") {
-      window.location.href = "https://www.instagram.com/reel/DQoeuk1kopu/?igsh=MWg0M2I3ZmRnOTF5dQ==";
+    const allMedia = getStoreData.media();
+    const found = allMedia.find(item => item.id === id);
+    if (found && found.videoUrl.includes("instagram.com")) {
+      window.location.href = found.videoUrl;
       return;
     }
 

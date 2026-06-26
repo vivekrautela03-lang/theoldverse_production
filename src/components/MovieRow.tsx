@@ -133,9 +133,9 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
                 {/* Quick actions (Play Now, View Profile) */}
                 <div className="flex items-center gap-2 pt-2 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-75">
                   <Link
-                    href={item.id === "media-love-1" ? "https://www.instagram.com/reel/DQoeuk1kopu/?igsh=MWg0M2I3ZmRnOTF5dQ==" : `/watch/${item.id}`}
-                    target={item.id === "media-love-1" ? "_blank" : undefined}
-                    rel={item.id === "media-love-1" ? "noopener noreferrer" : undefined}
+                    href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+                    target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+                    rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
                   >
                     <Play className="h-3.5 w-3.5 fill-oldverse-bg" />

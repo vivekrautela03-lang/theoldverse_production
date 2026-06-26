@@ -130,7 +130,8 @@ export default function HomePage() {
     item.id === "media-music-2" ||
     item.id === "media-music-3" ||
     item.id === "media-music-4" ||
-    item.id === "media-music-5"
+    item.id === "media-music-5" ||
+    item.id === "media-music-6"
   );
 
   return (
@@ -246,9 +247,9 @@ export default function HomePage() {
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
-                href={featuredItem.id === "media-love-1" ? "https://www.instagram.com/reel/DQoeuk1kopu/?igsh=MWg0M2I3ZmRnOTF5dQ==" : `/watch/${featuredItem.id}`}
-                target={featuredItem.id === "media-love-1" ? "_blank" : undefined}
-                rel={featuredItem.id === "media-love-1" ? "noopener noreferrer" : undefined}
+                href={featuredItem.videoUrl.includes("instagram.com") ? featuredItem.videoUrl : `/watch/${featuredItem.id}`}
+                target={featuredItem.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+                rel={featuredItem.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
               >
                 <Play className="h-4 w-4 fill-oldverse-bg" />
