@@ -113,11 +113,19 @@ export default function HomePage() {
   // Filter media items into categories
   const continueWatching = mediaItems.filter(item => item.continueWatchingProgress !== undefined);
   const trending = mediaItems.filter(item => item.isTrending);
-  const originals = mediaItems.filter(item => item.isOriginal);
-  const movies = mediaItems.filter(item => item.type === "movie");
-  const documentaries = mediaItems.filter(item => item.category === "Documentary");
-  const behindTheScenes = mediaItems.filter(item => item.type === "bts");
-  const comingSoon = mediaItems.filter(item => item.releaseDate === "Coming Soon");
+  
+  // Originals & Series row items (The Light From Nowhere, Nishaan)
+  const originals = mediaItems.filter(item => 
+    item.id === "media-coming-1" || 
+    item.id === "media-coming-2"
+  );
+  
+  // MUSIC VIDEOS row items (Destiny, Love 1, Love 2)
+  const comingSoon = mediaItems.filter(item => 
+    item.id === "media-coming-3" || 
+    item.id === "media-love-1" || 
+    item.id === "media-love-2"
+  );
 
   return (
     <div className="bg-oldverse-bg min-h-screen pb-16 relative">
@@ -305,6 +313,11 @@ export default function HomePage() {
         {/* Row 3: Coming Soon */}
         {comingSoon.length > 0 && (
           <MovieRow title="MUSIC VIDEOS" items={comingSoon} />
+        )}
+
+        {/* Row 4: Originals & Series */}
+        {originals.length > 0 && (
+          <MovieRow title="Originals & Series" items={originals} />
         )}
       </section>
     </div>

@@ -38,7 +38,7 @@ This document summarizes the files, features, architecture, and verification res
 - **Mock Datasets**: Pre-populated with detailed screenplays for Shivanshi's original clips and starter crew opportunities.
 
 ### 6. Catalog Cleanups & Cache-Busting Storage Invalidation (`src/lib/mockData.ts` & `src/lib/supabaseStore.ts`)
-- **Removed Media Items**: Removed "Neon Monsoon" (`media-3`), "Chasing Shadows" (`media-4`), "The Sound of Stone" (`media-6`), "SILENCE GLANCES, GOLDEN MOMENTS" (`media-coming-5`), "THE LIGHT FROM NOWHERE" (`media-coming-1`), and "NISHAAN" (`media-coming-2`) from the mock database, homepage tracks, and footer links.
+- **Removed Media Items**: Removed "Neon Monsoon" (`media-3`), "Chasing Shadows" (`media-4`), "The Sound of Stone" (`media-6`), and "SILENCE GLANCES, GOLDEN MOMENTS" (`media-coming-5`) from the mock database, homepage tracks, and footer links.
 - **Watch History Defaults**: Replaced deleted mock media items in default user history and offline downloads with active ones.
 - **Cache-Busting Storage Invalidation**: Bumped local storage schemas in `supabaseStore.ts` to `oldverse_media_v12`, `oldverse_history_logs_v3`, and `oldverse_offline_downloads_v3` to invalidate obsolete media records and load the updated catalog cleanly.
 
