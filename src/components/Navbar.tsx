@@ -38,7 +38,7 @@ export default function Navbar() {
       className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 ${
         scrolled 
           ? "bg-black/95 border-b border-white/5 py-3 shadow-2xl" 
-          : "bg-black/90 md:bg-gradient-to-b md:from-black/80 md:to-transparent py-3 md:py-4.5 border-b border-white/5 md:border-b-0 shadow-lg md:shadow-none"
+          : "bg-gradient-to-b from-black/80 to-transparent py-3 md:py-4.5"
       }`}
     >
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
