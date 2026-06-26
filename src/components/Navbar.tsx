@@ -27,7 +27,6 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Shows", href: "/browse" },
-    { name: "About Us", href: "/about" },
     { name: "Our Team", href: "/team" },
     { name: "Contact", href: "/contact" }
   ];
@@ -160,15 +159,6 @@ export default function Navbar() {
                 <span>Shows / Browse</span>
               </Link>
               
-              <Link
-                href="/about"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-              >
-                <Info className="h-4 w-4" />
-                <span>About Us</span>
-              </Link>
-
               <Link
                 href="/team"
                 onClick={() => setDesktopDrawerOpen(false)}
