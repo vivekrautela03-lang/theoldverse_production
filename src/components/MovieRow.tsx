@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Play, Star, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Star, Clock, Info } from "lucide-react";
 import { MediaItem } from "@/lib/mockData";
 
 interface MovieRowProps {
@@ -85,26 +85,30 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
           className="flex gap-4 overflow-x-auto overflow-y-hidden no-scrollbar py-4 px-1 scroll-smooth"
         >
           {items.map((item) => (
-            <Link
+            <div
               key={item.id}
-              href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-              target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-              rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-              className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl block"
+              className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl"
             >
-              {/* Media Poster */}
-              <img
-                src={item.posterUrl}
-                alt={item.title}
-                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                loading="lazy"
-              />
+              {/* Media Poster (Play Link) */}
+              <Link
+                href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+                target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+                rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+                className="absolute inset-0 block h-full w-full z-0"
+              >
+                <img
+                  src={item.posterUrl}
+                  alt={item.title}
+                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+              </Link>
 
               {/* Black overlay at the bottom for readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10" />
 
               {/* Hover overlay details */}
-              <div className="absolute inset-0 flex flex-col justify-end p-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+              <div className="absolute inset-0 flex flex-col justify-end p-4 md:translate-y-4 md:group-hover:translate-y-0 translate-y-0 transition-transform duration-500 ease-out z-20">
                 {/* Watch Button / Category */}
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] uppercase font-grotesk font-semibold bg-oldverse-accent/15 text-oldverse-accent border border-oldverse-accent/25 px-2 py-0.5 rounded-full">
@@ -133,14 +137,24 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
                   </div>
                 </div>
 
-                {/* Quick actions (Play Now, View Profile) */}
-                <div className="flex items-center gap-2 pt-2 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-75">
-                  <div
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
+                {/* Quick actions (Play, Info) */}
+                <div className="flex items-center gap-2 pt-2 border-t border-white/5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-75 z-30">
+                  <Link
+                    href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+                    target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+                    rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
                   >
-                    <Play className="h-3.5 w-3.5 fill-oldverse-bg" />
-                    Play Now
-                  </div>
+                    <Play className="h-3 w-3 fill-oldverse-bg" />
+                    Play
+                  </Link>
+                  <Link
+                    href={`/watch/${item.id}#description`}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text text-xs font-bold transition-all duration-300"
+                  >
+                    <Info className="h-3 w-3" />
+                    Info
+                  </Link>
                 </div>
               </div>
 
@@ -153,7 +167,7 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
                   />
                 </div>
               )}
-            </Link>
+            </div>
           ))}
         </div>
 
