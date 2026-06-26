@@ -38,30 +38,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-4 pb-8">
           {/* Col 1: Brand details */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-oldverse-accent"
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" />
-                <path d="M7 3v18" />
-                <path d="M17 3v18" />
-                <path d="M3 7h4" />
-                <path d="M3 12h4" />
-                <path d="M3 17h4" />
-                <path d="M17 7h4" />
-                <path d="M17 12h4" />
-                <path d="M17 17h4" />
-              </svg>
-              <span className="font-bebas text-2xl tracking-wider text-white select-none">
-                THE <span className="text-oldverse-accent">OLDVERSE</span>
-              </span>
+            <div className="flex items-center select-none">
+              <img
+                src="/logo.png"
+                alt="THE OLDVERSE Logo"
+                className="h-7 w-auto object-contain"
+              />
             </div>
             <p className="text-xs leading-relaxed font-light text-oldverse-secondary max-w-sm">
               The OldVerse is a platform where creators can share their vision with the world. We provide the tools, the community, and the audience to help stories grow beyond boundaries.
