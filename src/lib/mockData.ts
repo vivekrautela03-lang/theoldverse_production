@@ -382,8 +382,8 @@ export const mockMediaItems: MediaItem[] = [
     description: "A music clip based on the song 'Dooron Dooron', capturing a serene story by the tower.",
     duration: "Coming Soon",
     rating: "0.0",
-    posterUrl: "/naadaniya.jpg",
-    bannerUrl: "/naadaniya.jpg",
+    posterUrl: "/naadaniya.png",
+    bannerUrl: "/naadaniya.png",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
@@ -399,7 +399,7 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Assistant Director", name: "Priya Karanwal" },
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince, Soundarya" }
     ],
-    gallery: ["/naadaniya.jpg"]
+    gallery: ["/naadaniya.png"]
   },
   {
     id: "media-music-3",
@@ -409,8 +409,8 @@ export const mockMediaItems: MediaItem[] = [
     description: "A music clip based on the song 'Bade ache lagte hai'. Revolves around how we randomly met that one person with a cup of tea.",
     duration: "Coming Soon",
     rating: "0.0",
-    posterUrl: "/chai_or_tum.png",
-    bannerUrl: "/chai_or_tum.png",
+    posterUrl: "/chai_or_tum.jpg",
+    bannerUrl: "/chai_or_tum.jpg",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
@@ -426,7 +426,7 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Assistant Director", name: "Rishika" },
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince, Soundarya" }
     ],
-    gallery: ["/chai_or_tum.png"]
+    gallery: ["/chai_or_tum.jpg"]
   },
   {
     id: "media-music-4",
