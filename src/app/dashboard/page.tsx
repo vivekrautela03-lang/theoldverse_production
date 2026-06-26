@@ -7,7 +7,7 @@ import { getStoreData, mutateStore } from "@/lib/supabaseStore";
 import { MediaItem, Creator, CastingCall, JobApplication } from "@/lib/mockData";
 
 export default function CreatorDashboard() {
-  const [activeTab, setActiveTab] = useState<"analytics" | "upload" | "jobs" | "community" | "settings">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "upload" | "jobs" | "settings">("analytics");
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -34,10 +34,7 @@ export default function CreatorDashboard() {
   const [jobDescription, setJobDescription] = useState("");
   const [jobRequirements, setJobRequirements] = useState("");
 
-  // Form states for Community Post
-  const [postContent, setPostContent] = useState("");
-  const [postCategory, setPostCategory] = useState<"behind-the-scenes" | "discussion" | "announcement">("behind-the-scenes");
-  const [postImageUrl, setPostImageUrl] = useState("");
+
 
   const loadDashboardData = () => {
     setMediaItems(getStoreData.media());
@@ -125,22 +122,6 @@ export default function CreatorDashboard() {
     alert("Job listing posted successfully to the community opportunities board!");
   };
 
-  const handlePostSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!postContent.trim()) return;
-
-    mutateStore.addCommunityPost(postContent, postCategory, postImageUrl || undefined);
-
-    confetti({
-      particleCount: 50,
-      spread: 45,
-      colors: ["#34D399", "#F5A623"]
-    });
-
-    setPostContent("");
-    setPostImageUrl("");
-    alert("Community post published successfully!");
-  };
 
   const handleAppStatus = (appId: string, status: "approved" | "declined") => {
     mutateStore.updateApplicationStatus(appId, status);
@@ -222,17 +203,7 @@ export default function CreatorDashboard() {
               <Briefcase className="h-4 w-4" />
               Casting & Crews ({applications.length})
             </button>
-            <button
-              onClick={() => setActiveTab("community")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
-                activeTab === "community"
-                  ? "bg-oldverse-accent text-oldverse-bg shadow-lg shadow-oldverse-accent/15"
-                  : "text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
-              }`}
-            >
-              <MessageSquare className="h-4 w-4" />
-              Backstage Feed
-            </button>
+
             <button
               onClick={() => setActiveTab("settings")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-grotesk font-semibold tracking-wide transition-all cursor-pointer ${
@@ -709,64 +680,6 @@ export default function CreatorDashboard() {
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* COMMUNITY FEED TAB */}
-            {activeTab === "community" && (
-              <form onSubmit={handlePostSubmit} className="bg-oldverse-card border border-white/5 rounded-xl p-6 space-y-5">
-                <div className="flex items-center gap-2 pb-3 border-b border-white/5">
-                  <MessageSquare className="h-4.5 w-4.5 text-oldverse-accent" />
-                  <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text">
-                    Post to Creator Backstage
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-grotesk font-semibold text-oldverse-secondary uppercase">Category</label>
-                    <select
-                      value={postCategory}
-                      onChange={(e) => setPostCategory(e.target.value as any)}
-                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text cursor-pointer outline-none"
-                    >
-                      <option value="behind-the-scenes">Behind the Scenes</option>
-                      <option value="discussion">Discussion / Question</option>
-                      <option value="announcement">Announcement / Screening</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-xs font-grotesk font-semibold text-oldverse-secondary uppercase">Attachment Image (Optional Unsplash URL)</label>
-                    <input
-                      type="text"
-                      value={postImageUrl}
-                      onChange={(e) => setPostImageUrl(e.target.value)}
-                      placeholder="e.g. https://images.unsplash.com/photo-..."
-                      className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-grotesk font-semibold text-oldverse-secondary uppercase">Content</label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={postContent}
-                    onChange={(e) => setPostContent(e.target.value)}
-                    placeholder="Share what is happening behind the scenes, casting updates, or questions with your audience..."
-                    className="w-full text-xs pl-3 pr-3 py-2.5 bg-oldverse-surface border border-white/10 rounded-lg text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors resize-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold uppercase text-xs tracking-wider transition-all duration-300 cursor-pointer"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Publish Post
-                </button>
-              </form>
             )}
 
             {/* SETTINGS TAB */}

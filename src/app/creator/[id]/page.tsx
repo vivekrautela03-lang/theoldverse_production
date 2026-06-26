@@ -225,7 +225,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
             }`}
           >
             <MessageSquare className="h-4 w-4" />
-            Community Posts ({creatorPosts.length})
+            Backstage Feed ({creatorPosts.length})
           </button>
           <button
             onClick={() => setActiveTab("about")}

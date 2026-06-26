@@ -23,7 +23,7 @@ export default function Footer() {
               We are always looking for actors, writers, editors and creative minds.
             </p>
             <Link
-              href="/community"
+              href="/contact"
               className="px-6 py-2.5 bg-white text-black font-semibold text-xs rounded-full uppercase tracking-wider hover:bg-white/90 transition text-center whitespace-nowrap"
             >
               Join The OldVerse
@@ -73,11 +73,10 @@ export default function Footer() {
             <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Navigation</h4>
             <ul className="space-y-2 text-xs font-light">
               <li><Link href="/" className="hover:text-oldverse-accent">Home</Link></li>
-              <li><Link href="/community" className="hover:text-oldverse-accent">Creators</Link></li>
               <li><Link href="/projects" className="hover:text-oldverse-accent">Projects</Link></li>
-              <li><Link href="/community" className="hover:text-oldverse-accent">Community</Link></li>
+              <li><Link href="/team" className="hover:text-oldverse-accent">Our Team</Link></li>
               <li><Link href="/dashboard" className="hover:text-oldverse-accent">Studio</Link></li>
-              <li><Link href="/community" className="hover:text-oldverse-accent">Casting Calls</Link></li>
+              <li><Link href="/contact" className="hover:text-oldverse-accent">Contact</Link></li>
               <li><Link href="/search" className="hover:text-oldverse-accent">Search</Link></li>
             </ul>
           </div>

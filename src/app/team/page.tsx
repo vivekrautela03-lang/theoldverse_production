@@ -30,9 +30,9 @@ const teamMembers: TeamMember[] = [
   },
   {
     name: "Rishika",
-    role: "Head of Casting & Community",
+    role: "Head of Casting & Talent Relations",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&h=200&fit=crop",
-    bio: "Producer and community manager. Rishika guides the Casting Call boards, manages actor auditions, and fosters writer collaborations in the Writing Room.",
+    bio: "Producer and talent coordinator. Rishika guides casting sessions, manages actor relations, and fosters collaborations for upcoming projects.",
     email: "rishika@theoldverse.com"
   },
   {

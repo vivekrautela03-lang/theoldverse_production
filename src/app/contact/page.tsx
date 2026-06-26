@@ -102,7 +102,7 @@ export default function ContactPage() {
                 Screenplay Submissions
               </h4>
               <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                Writers interested in listing screenplay pitch decks can do so directly via the Writing Room under our Community portal. For co-production requests, please utilize the submission form.
+                Writers interested in sharing screenplay pitch decks or co-production requests can submit them directly using the form below.
               </p>
             </div>
 
