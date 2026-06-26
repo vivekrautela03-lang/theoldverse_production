@@ -306,11 +306,6 @@ export default function HomePage() {
         {comingSoon.length > 0 && (
           <MovieRow title="MUSIC VIDEOS" items={comingSoon} />
         )}
-
-
-
-        {/* Row 4: Featured Originals */}
-        <MovieRow title="Originals & Series" items={originals} />
       </section>
     </div>
   );
