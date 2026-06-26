@@ -189,60 +189,6 @@ export const mockCreators: Creator[] = [
 // 2. Initial Media Items
 export const mockMediaItems: MediaItem[] = [
   {
-    id: "media-coming-1",
-    title: "THE LIGHT FROM NOWHERE",
-    type: "original",
-    category: "Originals",
-    description: "Revolves around an unknown message that haunts the guy because of something from his past. A thriller / horror video.",
-    duration: "Coming Soon",
-    rating: "0.0",
-    posterUrl: "/the_light_from_nowhere.jpg",
-    bannerUrl: "/the_light_from_nowhere.jpg",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    creatorId: "creator-love",
-    creatorName: "Shivanshi",
-    isTrending: true,
-    isOriginal: true,
-    isHeroSlide: false,
-    releaseDate: "Coming Soon",
-    cast: ["Amarjeet"],
-    crew: [
-      { role: "Director", name: "Vivek Rautela" },
-      { role: "Direct & Producer", name: "Shivanshi and Vivek Rautela" },
-      { role: "Editor", name: "Shivansh Mourya" },
-      { role: "Cameraman", name: "Prince and Ujjwal Gurung" },
-      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal and Prince" }
-    ],
-    gallery: ["/the_light_from_nowhere.jpg"]
-  },
-  {
-    id: "media-coming-2",
-    title: "NISHAAN",
-    type: "original",
-    category: "Originals",
-    description: "A murder mystery thriller series. Some marks don't fade.",
-    duration: "Coming Soon",
-    rating: "0.0",
-    posterUrl: "/chest_pain.jpg",
-    bannerUrl: "/chest_pain.jpg",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    creatorId: "creator-love",
-    creatorName: "Shivanshi",
-    isTrending: true,
-    isOriginal: true,
-    isHeroSlide: false,
-    releaseDate: "Coming Soon",
-    cast: ["Amarjeet"],
-    crew: [
-      { role: "Director & Producer", name: "Vivek Rautela" },
-      { role: "Assistant Director", name: "Priya Karanwal" },
-      { role: "Editors", name: "Shivanshi, Shivansh Mourya" },
-      { role: "Cinematography", name: "Prince, Ujjwal Gurung" },
-      { role: "Production Team", name: "Shivanshi (DOP), Ujjwal Gurung, Ujjwal Sangal" }
-    ],
-    gallery: ["/chest_pain.jpg"]
-  },
-  {
     id: "media-coming-3",
     title: "DESTINY",
     type: "original",
