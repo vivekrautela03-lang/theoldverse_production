@@ -114,10 +114,11 @@ export default function HomePage() {
   const continueWatching = mediaItems.filter(item => item.continueWatchingProgress !== undefined);
   const trending = mediaItems.filter(item => item.isTrending);
   
-  // Originals & Series row items (The Light From Nowhere, Nishaan)
+  // Originals & Series row items (The Light From Nowhere, Nishaan, Kirdar Aur Khat)
   const originals = mediaItems.filter(item => 
     item.id === "media-coming-1" || 
-    item.id === "media-coming-2"
+    item.id === "media-coming-2" ||
+    item.id === "media-series-1"
   );
   
   // MUSIC VIDEOS row items (Destiny, Love 1, Love 2, and new clips)

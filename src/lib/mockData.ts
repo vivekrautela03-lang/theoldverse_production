@@ -452,6 +452,33 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince, Soundarya, Rishika" }
     ],
     gallery: ["/othaiyadi_pathayila.jpg"]
+  },
+  {
+    id: "media-series-1",
+    title: "KIRDAR AUR KHAT",
+    type: "series",
+    category: "Originals",
+    description: "A series revolving around how we are destined to someone and the new journey of life.",
+    duration: "Coming Soon",
+    rating: "0.0",
+    posterUrl: "/kirdar_aur_khat.jpg",
+    bannerUrl: "/kirdar_aur_khat.jpg",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    creatorId: "creator-love",
+    creatorName: "Shivanshi",
+    isTrending: true,
+    isOriginal: true,
+    isHeroSlide: false,
+    releaseDate: "Coming Soon",
+    cast: ["Shivansh Mourya", "Sumit Chauhan", "That Girl (Secret)"],
+    crew: [
+      { role: "Directed & Produced by", name: "Shivanshi & Vivek Rautela" },
+      { role: "Editor", name: "Shivansh Mourya" },
+      { role: "Cameraman", name: "Prince & Ujjwal Gurung" },
+      { role: "Assistant Director", name: "Rishika" },
+      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince, Soundarya" }
+    ],
+    gallery: ["/kirdar_aur_khat.jpg"]
   }
 ];
 
