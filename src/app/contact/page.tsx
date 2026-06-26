@@ -1,211 +1,288 @@
 "use client";
 
 import React, { useState } from "react";
-import { Mail, MapPin, Send, CheckCircle2, PhoneCall } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import confetti from "canvas-confetti";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "Filmmaker",
+    subject: "General Inquiry",
     message: ""
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [deliveryMode, setDeliveryMode] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       alert("Please fill in all required fields.");
       return;
     }
-    // Simulate API request success
-    setIsSubmitted(true);
+    
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setIsSubmitted(true);
+        setDeliveryMode(result.mode || "standard");
+        
+        // Trigger confetti celebrating connection request
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          colors: ["#F5A623", "#FFFFFF"]
+        });
+      } else {
+        setSubmitError(result.error || "Failed to send message. Please try again.");
+      }
+    } catch (err: any) {
+      setSubmitError(err.message || "A network error occurred. Please check your connection.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setFormData({
       name: "",
       email: "",
-      role: "Filmmaker",
+      subject: "General Inquiry",
       message: ""
     });
     setIsSubmitted(false);
+    setSubmitError(null);
+    setDeliveryMode(null);
   };
 
   return (
     <div className="bg-oldverse-bg min-h-screen pt-28 pb-16 font-sans">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 animate-fade-in">
         
-        {/* Header Block */}
-        <div className="text-center space-y-4">
-          <h1 className="font-bebas text-5xl sm:text-7xl text-oldverse-text tracking-wider uppercase leading-none">
-            Get In Touch
+        {/* Header Block with ASCII border representation */}
+        <div className="text-center font-mono py-4 max-w-4xl mx-auto space-y-3 select-none">
+          <div className="text-white/10 text-xs tracking-widest overflow-hidden whitespace-nowrap leading-none select-none">
+            ----------------------------------------------------------------------------------------------------
+          </div>
+          <h1 className="font-grotesk text-3xl sm:text-4xl md:text-5xl font-bold tracking-widest text-oldverse-text uppercase cinematic-glow">
+            GET IN TOUCH
           </h1>
-          <p className="text-oldverse-accent font-grotesk text-xs sm:text-sm uppercase tracking-widest font-semibold">
-            Let's Collaborate On Future Stages
+          <p className="font-grotesk text-xs sm:text-sm text-oldverse-secondary tracking-widest uppercase">
+            Let's create stories together.
           </p>
-          <div className="h-1 w-20 bg-oldverse-accent mx-auto rounded-full mt-4" />
+          <div className="text-white/10 text-xs tracking-widest overflow-hidden whitespace-nowrap leading-none select-none">
+            ----------------------------------------------------------------------------------------------------
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start pt-4">
+        {/* Two-Column Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-stretch pt-4 max-w-4xl mx-auto">
           
-          {/* Contact Details Panel */}
-          <div className="md:col-span-2 space-y-6">
-            
-            <div className="glassmorphism p-6 rounded-2xl border border-white/5 space-y-6">
-              <h3 className="font-grotesk text-lg font-bold text-oldverse-text uppercase tracking-wide border-b border-white/5 pb-2">
-                Connect Directly
+          {/* Left Column: CONTACT details (ASCII box styling) */}
+          <div className="md:col-span-2 flex">
+            <div className="relative w-full border border-white/15 bg-[#111]/30 p-6 flex flex-col space-y-6 rounded-none shadow-lg">
+              {/* Retro Corners */}
+              <div className="absolute -top-[1px] -left-[1px] w-2.5 h-2.5 border-t-2 border-l-2 border-oldverse-accent"></div>
+              <div className="absolute -top-[1px] -right-[1px] w-2.5 h-2.5 border-t-2 border-r-2 border-oldverse-accent"></div>
+              <div className="absolute -bottom-[1px] -left-[1px] w-2.5 h-2.5 border-b-2 border-l-2 border-oldverse-accent"></div>
+              <div className="absolute -bottom-[1px] -right-[1px] w-2.5 h-2.5 border-b-2 border-r-2 border-oldverse-accent"></div>
+
+              {/* Title Bar simulating ASCII layout */}
+              <h3 className="font-mono text-xs font-bold text-oldverse-accent uppercase tracking-widest border-b border-white/10 pb-3 flex items-center gap-2 select-none">
+                <span>┌</span>
+                <span>CONTACT</span>
+                <span className="flex-1 border-b border-dashed border-white/10 ml-2"></span>
+                <span>┐</span>
               </h3>
               
-              <div className="space-y-4 text-xs font-grotesk">
-                
-                <div className="flex gap-3">
-                  <Mail className="h-5 w-5 text-oldverse-accent flex-shrink-0" />
-                  <div>
-                    <h4 className="font-bold text-oldverse-text uppercase text-[10px] text-white/50">General Support</h4>
-                    <p className="text-oldverse-secondary mt-0.5">theoldverse@gmail.com</p>
+              <ul className="space-y-6 text-xs font-mono flex-1 flex flex-col justify-around py-4">
+                <li className="flex items-center gap-4 group">
+                  <div className="h-9 w-9 flex items-center justify-center border border-white/10 bg-white/5 group-hover:border-oldverse-accent transition-colors">
+                    <span className="text-base select-none">📧</span>
                   </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Mail className="h-5 w-5 text-oldverse-accent flex-shrink-0" />
                   <div>
-                    <h4 className="font-bold text-oldverse-text uppercase text-[10px] text-white/50">Casting & Crew Operations</h4>
-                    <p className="text-oldverse-secondary mt-0.5">casting@theoldverse.com</p>
+                    <span className="text-white/40 block uppercase text-[9px] font-bold tracking-wider mb-0.5">Email</span>
+                    <a href="mailto:theoldverse@gmail.com" className="text-oldverse-text hover:text-oldverse-accent transition-colors break-all">theoldverse@gmail.com</a>
                   </div>
-                </div>
+                </li>
 
-                <div className="flex gap-3">
-                  <PhoneCall className="h-5 w-5 text-oldverse-accent flex-shrink-0" />
+                <li className="flex items-center gap-4 group">
+                  <div className="h-9 w-9 flex items-center justify-center border border-white/10 bg-white/5 group-hover:border-oldverse-accent transition-colors">
+                    <span className="text-base select-none">📞</span>
+                  </div>
                   <div>
-                    <h4 className="font-bold text-oldverse-text uppercase text-[10px] text-white/50">Direct Hotline</h4>
-                    <p className="text-oldverse-secondary mt-0.5">+91 99999-88888</p>
+                    <span className="text-white/40 block uppercase text-[9px] font-bold tracking-wider mb-0.5">Phone</span>
+                    <a href="tel:+919999988888" className="text-oldverse-text hover:text-oldverse-accent transition-colors">+91 99999-88888</a>
                   </div>
-                </div>
+                </li>
 
-                <div className="flex gap-3">
-                  <MapPin className="h-5 w-5 text-oldverse-accent flex-shrink-0" />
+                <li className="flex items-center gap-4 group">
+                  <div className="h-9 w-9 flex items-center justify-center border border-white/10 bg-white/5 group-hover:border-oldverse-accent transition-colors">
+                    <span className="text-base select-none">📷</span>
+                  </div>
                   <div>
-                    <h4 className="font-bold text-oldverse-text uppercase text-[10px] text-white/50">Creator Hub Hub office</h4>
-                    <p className="text-oldverse-secondary mt-0.5 leading-relaxed">
-                      Sector 62, Film City Complex,<br />
-                      Noida, Uttar Pradesh 201301, India
-                    </p>
+                    <span className="text-white/40 block uppercase text-[9px] font-bold tracking-wider mb-0.5">Instagram</span>
+                    <a href="https://instagram.com/theoldverse_" target="_blank" rel="noreferrer" className="text-oldverse-text hover:text-oldverse-accent transition-colors">@theoldverse_</a>
                   </div>
-                </div>
+                </li>
 
+                <li className="flex items-center gap-4 group">
+                  <div className="h-9 w-9 flex items-center justify-center border border-white/10 bg-white/5 group-hover:border-oldverse-accent transition-colors">
+                    <span className="text-base select-none">▶</span>
+                  </div>
+                  <div>
+                    <span className="text-white/40 block uppercase text-[9px] font-bold tracking-wider mb-0.5">YouTube</span>
+                    <a href="https://youtube.com/@theoldverse_07" target="_blank" rel="noreferrer" className="text-oldverse-text hover:text-oldverse-accent transition-colors">@theoldverse_07</a>
+                  </div>
+                </li>
+              </ul>
+              
+              <div className="font-mono text-[9px] text-white/20 select-none text-center">
+                └──────────────────────────────┘
               </div>
             </div>
-
-            <div className="glassmorphism p-6 rounded-2xl border border-white/5">
-              <h4 className="font-grotesk text-sm font-bold text-oldverse-text uppercase tracking-wide mb-2">
-                Screenplay Submissions
-              </h4>
-              <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                Writers interested in sharing screenplay pitch decks or co-production requests can submit them directly using the form below.
-              </p>
-            </div>
-
           </div>
 
-          {/* Interactive Form Panel */}
-          <div className="md:col-span-3">
-            <div className="glassmorphism p-6 sm:p-8 rounded-2xl border border-white/5 min-h-[400px] flex flex-col justify-center">
-              
+          {/* Right Column: Form Panel (ASCII box styling) */}
+          <div className="md:col-span-3 flex">
+            <div className="relative w-full border border-white/15 bg-[#111]/30 p-6 sm:p-8 flex flex-col justify-center rounded-none shadow-lg">
+              {/* Retro Corners */}
+              <div className="absolute -top-[1px] -left-[1px] w-2.5 h-2.5 border-t-2 border-l-2 border-oldverse-accent"></div>
+              <div className="absolute -top-[1px] -right-[1px] w-2.5 h-2.5 border-t-2 border-r-2 border-oldverse-accent"></div>
+              <div className="absolute -bottom-[1px] -left-[1px] w-2.5 h-2.5 border-b-2 border-l-2 border-oldverse-accent"></div>
+              <div className="absolute -bottom-[1px] -right-[1px] w-2.5 h-2.5 border-b-2 border-r-2 border-oldverse-accent"></div>
+
               {!isSubmitted ? (
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-6 flex flex-col justify-between h-full">
+                  
+                  {/* Name and Email Row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-grotesk">
-                        Your Name *
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-mono flex justify-between">
+                        <span>Name</span>
+                        <span className="text-oldverse-accent/60">*</span>
                       </label>
                       <input
                         type="text"
                         required
+                        disabled={isSubmitting}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g. Amarjeet Singh"
-                        className="w-full px-4 py-2.5 rounded-lg bg-oldverse-card border border-white/10 text-xs font-light text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors placeholder-white/20 font-grotesk"
+                        placeholder="Name"
+                        className="w-full px-4 py-3 rounded-none bg-oldverse-bg/50 border border-white/10 text-xs font-light text-oldverse-text focus:outline-none focus:border-oldverse-accent focus:bg-oldverse-bg transition-colors placeholder-white/20 font-mono"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-grotesk">
-                        Email Address *
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-mono flex justify-between">
+                        <span>Email</span>
+                        <span className="text-oldverse-accent/60">*</span>
                       </label>
                       <input
                         type="email"
                         required
+                        disabled={isSubmitting}
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="e.g. amar@gmail.com"
-                        className="w-full px-4 py-2.5 rounded-lg bg-oldverse-card border border-white/10 text-xs font-light text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors placeholder-white/20 font-grotesk"
+                        placeholder="Email"
+                        className="w-full px-4 py-3 rounded-none bg-oldverse-bg/50 border border-white/10 text-xs font-light text-oldverse-text focus:outline-none focus:border-oldverse-accent focus:bg-oldverse-bg transition-colors placeholder-white/20 font-mono"
                       />
                     </div>
-
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-grotesk">
-                      Role / Discipline
+                  {/* Subject Dropdown */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-mono">
+                      Subject Dropdown
                     </label>
                     <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-lg bg-oldverse-card border border-white/10 text-xs text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors font-grotesk cursor-pointer"
+                      disabled={isSubmitting}
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-4 py-3 rounded-none bg-oldverse-bg/50 border border-white/10 text-xs text-oldverse-text focus:outline-none focus:border-oldverse-accent focus:bg-oldverse-bg transition-colors font-mono cursor-pointer appearance-none"
+                      style={{ backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A5A5A5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>")`, backgroundPosition: 'right 16px center', backgroundSize: '16px', backgroundRepeat: 'no-repeat' }}
                     >
-                      <option value="Filmmaker">Independent Filmmaker</option>
-                      <option value="Actor">Screen Actor / Performer</option>
-                      <option value="Writer">Creative Writer / Screenwriter</option>
-                      <option value="Viewer">Cinema Enthusiast / Viewer</option>
-                      <option value="Other">Collaborative Partner</option>
+                      <option value="General Inquiry">General Inquiry</option>
+                      <option value="Collaboration Proposal">Collaboration / Film Project</option>
+                      <option value="Casting Application">Casting / Acting Application</option>
+                      <option value="Crew / Technical Application">Crew Finder / Technical Role</option>
+                      <option value="Press / Media Inquiry">Press & Media Inquiry</option>
                     </select>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-grotesk">
-                      Your Message *
+                  {/* Message Box */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-oldverse-secondary font-mono flex justify-between">
+                      <span>Message</span>
+                      <span className="text-oldverse-accent/60">*</span>
                     </label>
                     <textarea
                       required
-                      rows={5}
+                      rows={4}
+                      disabled={isSubmitting}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Detail your inquiry, project proposal, or feedback..."
-                      className="w-full px-4 py-2.5 rounded-lg bg-oldverse-card border border-white/10 text-xs font-light text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors placeholder-white/20 font-grotesk resize-none"
+                      placeholder="Message"
+                      className="w-full px-4 py-3 rounded-none bg-oldverse-bg/50 border border-white/10 text-xs font-light text-oldverse-text focus:outline-none focus:border-oldverse-accent focus:bg-oldverse-bg transition-colors placeholder-white/20 font-mono resize-none"
                     />
                   </div>
 
+                  {submitError && (
+                    <div className="text-[11px] font-mono text-oldverse-error bg-oldverse-error/10 border border-oldverse-error/20 p-3 text-center">
+                      ERROR: {submitError}
+                    </div>
+                  )}
+
+                  {/* Bracketed Submit Button */}
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full py-4 border border-oldverse-accent/30 hover:border-oldverse-accent bg-transparent hover:bg-oldverse-accent/5 text-oldverse-accent font-mono font-bold text-xs uppercase tracking-widest transition-all duration-300 rounded-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    <Send className="h-4 w-4" />
-                    <span>Send Message</span>
+                    {isSubmitting ? "[ SENDING MESSAGE... ]" : "[ SEND MESSAGE ]"}
                   </button>
 
                 </form>
               ) : (
-                <div className="text-center space-y-6 animate-fade-in">
-                  <div className="h-16 w-16 bg-oldverse-success/15 rounded-full flex items-center justify-center text-oldverse-success mx-auto shadow-inner">
+                <div className="text-center space-y-6 py-6 animate-fade-in font-mono">
+                  <div className="h-16 w-16 bg-oldverse-success/15 border border-oldverse-success/30 rounded-none flex items-center justify-center text-oldverse-success mx-auto">
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
                   
-                  <div className="space-y-2">
-                    <h3 className="font-grotesk text-lg font-bold text-oldverse-text uppercase tracking-wide">
-                      Message Dispatched
+                  <div className="space-y-3">
+                    <h3 className="text-base font-bold text-oldverse-text uppercase tracking-widest">
+                      [ MESSAGE DISPATCHED ]
                     </h3>
                     <p className="text-xs text-oldverse-secondary font-light max-w-sm mx-auto leading-relaxed">
-                      Thank you, <span className="font-semibold text-oldverse-text">{formData.name}</span>. Our team will inspect your message regarding <span className="font-semibold text-oldverse-text">{formData.role}</span> disciplines and follow up within 24 hours.
+                      Thank you, <span className="text-oldverse-text font-semibold">{formData.name}</span>. Your inquiry regarding <span className="text-oldverse-text font-semibold">{formData.subject}</span> has been processed.
                     </p>
+                    {deliveryMode === "simulated" && (
+                      <div className="text-[10px] text-oldverse-accent/60 bg-oldverse-accent/5 border border-oldverse-accent/10 py-2 px-3 inline-block max-w-xs mx-auto">
+                        Dev mode: Check server log terminal.
+                      </div>
+                    )}
                   </div>
 
                   <button
                     onClick={handleReset}
-                    className="inline-block px-6 py-2 rounded-full border border-white/10 hover:border-oldverse-accent bg-white/3 hover:bg-oldverse-accent/15 text-oldverse-secondary hover:text-oldverse-accent font-grotesk font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer"
+                    className="inline-block px-6 py-3 border border-white/10 hover:border-oldverse-accent bg-white/5 hover:bg-oldverse-accent/10 text-oldverse-secondary hover:text-oldverse-accent font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer rounded-none"
                   >
-                    Send Another Message
+                    [ Send Another Message ]
                   </button>
                 </div>
               )}
