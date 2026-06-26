@@ -22,12 +22,14 @@ export default function Footer() {
             <p className="text-sm font-light text-oldverse-secondary max-w-xl">
               We are always looking for actors, writers, editors and creative minds.
             </p>
-            <Link
-              href="/contact"
+            <a
+              href="https://wa.me/919068850966"
+              target="_blank"
+              rel="noreferrer"
               className="px-6 py-2.5 bg-white text-black font-semibold text-xs rounded-full uppercase tracking-wider hover:bg-white/90 transition text-center whitespace-nowrap"
             >
               Join The OldVerse
-            </Link>
+            </a>
           </div>
         </div>
 
