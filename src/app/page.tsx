@@ -281,7 +281,7 @@ export default function HomePage() {
       </section>
 
       {/* 2. Media Rows Container */}
-      <section className="relative z-20 space-y-4 md:space-y-8 -mt-20 sm:-mt-24 md:-mt-28">
+      <section className="relative z-20 space-y-4 md:space-y-8 -mt-4 sm:-mt-6 md:-mt-8">
         {/* Row 2: Trending This Week */}
         <MovieRow title="Trending This Week" items={trending} />
 
