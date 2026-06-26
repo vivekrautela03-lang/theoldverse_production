@@ -3,15 +3,15 @@ import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Cre
 
 const STORAGE_KEYS = {
   CREATORS: "oldverse_creators_v2",
-  MEDIA: "oldverse_media_v14",
+  MEDIA: "oldverse_media_v15",
   COMMUNITY: "oldverse_community",
   CASTING: "oldverse_casting",
   FOLLOWED: "oldverse_followed_ids", // set of creator-ids user follows
   APPLICATIONS: "oldverse_casting_applications", // casting-id -> applied status
   WATCHLIST: "oldverse_watchlist_ids_v2", // set of media-ids user saved
   LIKES: "oldverse_liked_ids_v2", // set of media-ids user liked
-  HISTORY: "oldverse_history_logs_v3", // array of watch history entries
-  DOWNLOADS: "oldverse_offline_downloads_v3", // list of offline download items
+  HISTORY: "oldverse_history_logs_v4", // array of watch history entries
+  DOWNLOADS: "oldverse_offline_downloads_v4", // list of offline download items
   REVIEWS: "oldverse_media_reviews_v1",
   JOBS: "oldverse_jobs_v1",
   JOB_APPLICATIONS: "oldverse_job_applications_v1"
@@ -92,8 +92,8 @@ export const getStoreData = {
     const stored = localStorage.getItem(STORAGE_KEYS.HISTORY);
     if (!stored) {
       const defaultHistory = [
-        { id: "hist-1", mediaId: "media-love-1", title: "I Think they call this love....", posterUrl: "/media_1.jpg", date: "Just now" },
-        { id: "hist-2", mediaId: "media-love-2", title: "And I Couldn't Help But Fall In Love Again", posterUrl: "/media_2.jpg", date: "Yesterday" }
+        { id: "hist-1", mediaId: "media-love-1", title: "SILENCE GLANCES, GOLDEN MOMENTS", posterUrl: "/silence_glances_golden_moments.jpg", date: "Just now" },
+        { id: "hist-2", mediaId: "media-love-2", title: "DESTINED", posterUrl: "/destined.jpg", date: "Yesterday" }
       ];
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(defaultHistory));
       return defaultHistory;
@@ -106,8 +106,8 @@ export const getStoreData = {
     const stored = localStorage.getItem(STORAGE_KEYS.DOWNLOADS);
     if (!stored) {
       const defaultDownloads = [
-        { mediaId: "media-love-1", title: "I Think they call this love....", size: "432 MB", progress: 100 },
-        { mediaId: "media-love-2", title: "And I Couldn't Help But Fall In Love Again", size: "320 MB", progress: 100 }
+        { mediaId: "media-love-1", title: "SILENCE GLANCES, GOLDEN MOMENTS", size: "432 MB", progress: 100 },
+        { mediaId: "media-love-2", title: "DESTINED", size: "320 MB", progress: 100 }
       ];
       localStorage.setItem(STORAGE_KEYS.DOWNLOADS, JSON.stringify(defaultDownloads));
       return defaultDownloads;

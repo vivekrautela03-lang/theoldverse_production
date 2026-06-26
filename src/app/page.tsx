@@ -129,7 +129,8 @@ export default function HomePage() {
     item.id === "media-music-1" ||
     item.id === "media-music-2" ||
     item.id === "media-music-3" ||
-    item.id === "media-music-4"
+    item.id === "media-music-4" ||
+    item.id === "media-music-5"
   );
 
   return (

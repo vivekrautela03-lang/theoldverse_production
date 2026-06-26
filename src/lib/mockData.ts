@@ -270,14 +270,14 @@ export const mockMediaItems: MediaItem[] = [
   },
   {
     id: "media-love-1",
-    title: "I Think they call this love....",
+    title: "SILENCE GLANCES, GOLDEN MOMENTS",
     type: "original",
-    category: "Originals",
-    description: "Deep, raw, and monochromatic. A music clip capturing the silent, electric glances and unspoken bonds between two souls over a warm drink in a cold city.",
+    category: "Music",
+    description: "Where Hearts Meet and Time Stands Still. Destined to meet. The world felt the same, but everything changed in that one glance. Vibes shifted. Hearts knew. Time stood still. Love was all around. Song: Golden Brown by The Stranglers.",
     duration: "4m 15s",
     rating: "9.8",
-    posterUrl: "/media_1.jpg",
-    bannerUrl: "/media_1_landscape.jpg",
+    posterUrl: "/silence_glances_golden_moments.jpg",
+    bannerUrl: "/silence_glances_golden_moments.jpg",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
@@ -287,12 +287,13 @@ export const mockMediaItems: MediaItem[] = [
     releaseDate: "Coming Soon",
     cast: ["Amarjeet", "Soundarya"],
     crew: [
-      { role: "Director & Producer", name: "Shivanshi" },
-      { role: "Editor", name: "Shivansh Mourya" },
-      { role: "Cameraman", name: "Prince" },
-      { role: "Assistant Director", name: "Rishika" }
+      { role: "Director & Producer", name: "Shivanshi & Vivek Rautela" },
+      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
+      { role: "Cameramen", name: "Prince & Ujjwal Gurung" },
+      { role: "Assistant Director", name: "Rishika" },
+      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince" }
     ],
-    gallery: ["/media_1.jpg"],
+    gallery: ["/silence_glances_golden_moments.jpg"],
     screenplay: [
       { id: "s1-1", time: 0, text: "[SCENE START] The steam rises slowly from a single cup of black coffee. The neon street light flickers through the rain-streaked window." },
       { id: "s1-2", time: 5, character: "AMARJEET (V.O.)", text: "They always tell you that love is a fire. A sudden blaze that consumes everything." },
@@ -310,14 +311,14 @@ export const mockMediaItems: MediaItem[] = [
   },
   {
     id: "media-love-2",
-    title: "And I Couldn't Help But Fall In Love Again",
+    title: "DESTINED",
     type: "original",
-    category: "Originals",
-    description: "Based on the song 'I thought I saw your face today'. An evocative music clip documenting a nostalgic road reconnecting two estranged paths.",
+    category: "Music",
+    description: "Based on the song 'I thought I saw your face today', revolving around how we are destined to someone and I couldn't help but fall in love again.",
     duration: "3m 50s",
     rating: "9.7",
-    posterUrl: "/media_2.jpg",
-    bannerUrl: "/media_2_landscape.jpg",
+    posterUrl: "/destined.jpg",
+    bannerUrl: "/destined.jpg",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
@@ -325,14 +326,15 @@ export const mockMediaItems: MediaItem[] = [
     isOriginal: true,
     isHeroSlide: true,
     releaseDate: "Coming Soon",
-    cast: ["Anjali Negi", "Akshit Semwal"],
+    cast: ["Akshit Semwal", "Anjali Negi"],
     crew: [
-      { role: "Director & Producer", name: "Shivanshi" },
+      { role: "Directed & Produced by", name: "Shivanshi & Vivek Rautela" },
+      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
+      { role: "Cameraman", name: "Prince & Ujjwal Gurung" },
       { role: "Assistant Director", name: "Priya Karanwal" },
-      { role: "Cameraman", name: "Prince" },
-      { role: "Editor", name: "Shivansh Mourya" }
+      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince, Soundarya" }
     ],
-    gallery: ["/media_2.jpg"],
+    gallery: ["/destined.jpg"],
     screenplay: [
       { id: "s2-1", time: 0, text: "[SCENE START] An open road stretches under a golden, late-afternoon sky. Dry leaves blow across the tarmac." },
       { id: "s2-2", time: 6, character: "ANJALI (V.O.)", text: "I thought I saw your face today, in a crowd on the street. It was just a stranger with your jacket." },
@@ -479,6 +481,33 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince, Soundarya" }
     ],
     gallery: ["/kirdar_aur_khat.jpg"]
+  },
+  {
+    id: "media-music-5",
+    title: "HERSELF",
+    type: "original",
+    category: "Music",
+    description: "A music clip based on the song 'Until I found her' featuring Apeksha.",
+    duration: "Coming Soon",
+    rating: "0.0",
+    posterUrl: "/herself.jpg",
+    bannerUrl: "/herself.jpg",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    creatorId: "creator-love",
+    creatorName: "Shivanshi",
+    isTrending: true,
+    isOriginal: true,
+    isHeroSlide: false,
+    releaseDate: "Coming Soon",
+    cast: ["Apeksha"],
+    crew: [
+      { role: "Directed & Produced by", name: "Shivanshi & Vivek Rautela" },
+      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
+      { role: "Cameraman", name: "Shivanshi, Ujjwal Gurung & Prince" },
+      { role: "Assistant Director", name: "Soundarya" },
+      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal & Prince, Soundarya, Priya Karanwal" }
+    ],
+    gallery: ["/herself.jpg"]
   }
 ];
 

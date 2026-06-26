@@ -348,7 +348,7 @@ export default function UserProfile() {
                         <h5 className="text-xs font-bold text-oldverse-text">Director & Co-Editor</h5>
                         <span className="text-[9px] font-mono text-oldverse-secondary">Current Production</span>
                       </div>
-                      <p className="text-[10px] text-oldverse-accent">"I Think they call this love...." — Original Short Film</p>
+                      <p className="text-[10px] text-oldverse-accent">"SILENCE GLANCES, GOLDEN MOMENTS" — Original Short Film</p>
                       <p className="text-[10px] text-oldverse-secondary font-light">Collaborated with Prince and Amarjeet to direct a monochromatic study on unspoken urban relationships.</p>
                     </div>
 
