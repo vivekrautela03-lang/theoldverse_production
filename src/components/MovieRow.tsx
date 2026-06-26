@@ -15,19 +15,33 @@ function MovieCard({ item }: MovieCardProps) {
   return (
     <div className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl">
       {/* Media Poster (Play Link) */}
-      <Link
-        href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-        target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-        rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-        className="absolute inset-0 block h-full w-full z-0"
-      >
-        <img
-          src={item.posterUrl}
-          alt={item.title}
-          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          loading="lazy"
-        />
-      </Link>
+      {item.videoUrl?.includes("instagram.com") ? (
+        <a
+          href={item.videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute inset-0 block h-full w-full z-0"
+        >
+          <img
+            src={item.posterUrl}
+            alt={item.title}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
+        </a>
+      ) : (
+        <Link
+          href={`/watch/${item.id}`}
+          className="absolute inset-0 block h-full w-full z-0"
+        >
+          <img
+            src={item.posterUrl}
+            alt={item.title}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
+        </Link>
+      )}
 
       {/* Black overlay at the bottom for readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10" />
@@ -64,15 +78,25 @@ function MovieCard({ item }: MovieCardProps) {
 
         {/* Quick actions (Play Now (stacked/bigger), More Info) */}
         <div className="flex flex-col gap-2 pt-2 border-t border-white/5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-75 z-30">
-          <Link
-            href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-            target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-            rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs sm:text-sm font-bold transition-all duration-300 shadow-md"
-          >
-            <Play className="h-3.5 w-3.5 fill-oldverse-bg animate-pulse" />
-            Play Now
-          </Link>
+          {item.videoUrl?.includes("instagram.com") ? (
+            <a
+              href={item.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs sm:text-sm font-bold transition-all duration-300 shadow-md"
+            >
+              <Play className="h-3.5 w-3.5 fill-oldverse-bg animate-pulse" />
+              Play Now
+            </a>
+          ) : (
+            <Link
+              href={`/watch/${item.id}`}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs sm:text-sm font-bold transition-all duration-300 shadow-md"
+            >
+              <Play className="h-3.5 w-3.5 fill-oldverse-bg animate-pulse" />
+              Play Now
+            </Link>
+          )}
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -118,15 +142,25 @@ function MovieCard({ item }: MovieCardProps) {
           </div>
 
           <div className="pt-2 border-t border-white/5">
-            <Link
-              href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-              target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-              rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-              className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
-            >
-              <Play className="h-3 w-3 fill-oldverse-bg" />
-              Play Video
-            </Link>
+            {item.videoUrl?.includes("instagram.com") ? (
+              <a
+                href={item.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
+              >
+                <Play className="h-3 w-3 fill-oldverse-bg" />
+                Play Video
+              </a>
+            ) : (
+              <Link
+                href={`/watch/${item.id}`}
+                className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
+              >
+                <Play className="h-3 w-3 fill-oldverse-bg" />
+                Play Video
+              </Link>
+            )}
           </div>
         </div>
       )}

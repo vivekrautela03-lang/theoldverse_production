@@ -63,7 +63,7 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-oldverse-accent flex-shrink-0" />
                   <div>
                     <h4 className="font-bold text-oldverse-text uppercase text-[10px] text-white/50">General Support</h4>
-                    <p className="text-oldverse-secondary mt-0.5">hello@theoldverse.com</p>
+                    <p className="text-oldverse-secondary mt-0.5">theoldverse@gmail.com</p>
                   </div>
                 </div>
 

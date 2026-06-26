@@ -196,37 +196,56 @@ export default function UserProfile() {
             <div className="animate-fade-in">
               {watchlist.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {watchlist.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/watch/${item.id}`}
-                      className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300 relative"
-                    >
-                      <div className="aspect-[2/3] overflow-hidden relative">
-                        <img
-                          src={item.posterUrl}
-                          alt={item.title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <button
-                          onClick={(e) => handleToggleWatchlist(e, item.id)}
-                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 border border-white/10 text-oldverse-error hover:scale-110 transition-transform cursor-pointer"
-                          title="Remove from Watchlist"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                      <div className="p-3 space-y-1">
-                        <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent block">
-                          {item.category}
-                        </span>
-                        <h3 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors truncate">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-oldverse-secondary">{item.duration}</p>
-                      </div>
-                    </Link>
-                  ))}
+                  {watchlist.map((item) => {
+                    const isInsta = item.videoUrl?.includes("instagram.com");
+                    const cardContent = (
+                      <>
+                        <div className="aspect-[2/3] overflow-hidden relative">
+                          <img
+                            src={item.posterUrl}
+                            alt={item.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <button
+                            onClick={(e) => handleToggleWatchlist(e, item.id)}
+                            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 border border-white/10 text-oldverse-error hover:scale-110 transition-transform cursor-pointer z-10"
+                            title="Remove from Watchlist"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                        <div className="p-3 space-y-1">
+                          <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent block">
+                            {item.category}
+                          </span>
+                          <h3 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors truncate">
+                            {item.title}
+                          </h3>
+                          <p className="text-xs text-oldverse-secondary">{item.duration}</p>
+                        </div>
+                      </>
+                    );
+
+                    return isInsta ? (
+                      <a
+                        key={item.id}
+                        href={item.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300 relative"
+                      >
+                        {cardContent}
+                      </a>
+                    ) : (
+                      <Link
+                        key={item.id}
+                        href={`/watch/${item.id}`}
+                        className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300 relative"
+                      >
+                        {cardContent}
+                      </Link>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-20 text-oldverse-secondary/40 font-light text-sm">
@@ -253,13 +272,29 @@ export default function UserProfile() {
                     <h4 className="font-grotesk text-sm font-bold text-oldverse-text truncate">{hist.title}</h4>
                     <span className="text-[10px] text-oldverse-secondary">Last watched: {hist.date}</span>
                   </div>
-                  <Link
-                    href={`/watch/${hist.mediaId}`}
-                    className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-grotesk font-bold text-oldverse-text hover:bg-oldverse-accent hover:border-oldverse-accent hover:text-oldverse-bg transition-colors"
-                  >
-                    <Play className="h-3 w-3 fill-current" />
-                    Resume
-                  </Link>
+                  {(() => {
+                    const mediaItem = getStoreData.media().find(m => m.id === hist.mediaId);
+                    const isInsta = mediaItem?.videoUrl?.includes("instagram.com");
+                    return isInsta ? (
+                      <a
+                        href={mediaItem?.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-grotesk font-bold text-oldverse-text hover:bg-oldverse-accent hover:border-oldverse-accent hover:text-oldverse-bg transition-colors"
+                      >
+                        <Play className="h-3 w-3 fill-current" />
+                        Resume
+                      </a>
+                    ) : (
+                      <Link
+                        href={`/watch/${hist.mediaId}`}
+                        className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-grotesk font-bold text-oldverse-text hover:bg-oldverse-accent hover:border-oldverse-accent hover:text-oldverse-bg transition-colors"
+                      >
+                        <Play className="h-3 w-3 fill-current" />
+                        Resume
+                      </Link>
+                    );
+                  })()}
                 </div>
               ))}
               {history.length === 0 && (
@@ -453,12 +488,27 @@ export default function UserProfile() {
                       <Check className="h-4 w-4 stroke-[3]" />
                       Offline Ready
                     </span>
-                    <Link
-                      href={`/watch/${dl.mediaId}`}
-                      className="p-2 rounded-full bg-white/5 border border-white/10 text-oldverse-secondary hover:text-oldverse-accent hover:border-oldverse-accent"
-                    >
-                      <Play className="h-4 w-4 fill-current ml-0.5" />
-                    </Link>
+                    {(() => {
+                      const mediaItem = getStoreData.media().find(m => m.id === dl.mediaId);
+                      const isInsta = mediaItem?.videoUrl?.includes("instagram.com");
+                      return isInsta ? (
+                        <a
+                          href={mediaItem?.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-full bg-white/5 border border-white/10 text-oldverse-secondary hover:text-oldverse-accent hover:border-oldverse-accent"
+                        >
+                          <Play className="h-4 w-4 fill-current ml-0.5" />
+                        </a>
+                      ) : (
+                        <Link
+                          href={`/watch/${dl.mediaId}`}
+                          className="p-2 rounded-full bg-white/5 border border-white/10 text-oldverse-secondary hover:text-oldverse-accent hover:border-oldverse-accent"
+                        >
+                          <Play className="h-4 w-4 fill-current ml-0.5" />
+                        </Link>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

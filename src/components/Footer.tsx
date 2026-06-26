@@ -34,10 +34,10 @@ export default function Footer() {
         {/* Divider */}
         <div className="border-t border-white/5 pt-8" />
 
-        {/* Section 3: Footer Links (3-column layout) */}
+        {/* Section 3: Redesigned Footer Links (Asymmetrical layout) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-4 pb-8">
-          {/* Col 1: Brand details */}
-          <div className="space-y-4">
+          {/* Col 1 & 2 combined: Brand details & studio mission */}
+          <div className="md:col-span-2 space-y-5">
             <div className="flex items-center select-none">
               <img
                 src="/logo.png"
@@ -45,47 +45,41 @@ export default function Footer() {
                 className="h-7 w-auto object-contain"
               />
             </div>
-            <p className="text-xs leading-relaxed font-light text-oldverse-secondary max-w-sm">
-              The OldVerse is a platform where creators can share their vision with the world. We provide the tools, the community, and the audience to help stories grow beyond boundaries.
+            <p className="text-xs leading-relaxed font-light text-oldverse-secondary max-w-2xl">
+              The OldVerse is an independent film production studio driven by creativity, passion, and the belief that every story deserves to be told. We create films, commercials, digital content, and cinematic experiences that inspire, connect, and leave a lasting impression. Every project is approached with dedication, originality, and a commitment to storytelling that goes beyond the screen.
             </p>
           </div>
 
-          {/* Col 2: Navigation */}
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Navigation</h4>
-            <ul className="space-y-2 text-xs font-light">
-              <li><Link href="/" className="hover:text-oldverse-accent">Home</Link></li>
-              <li><Link href="/projects" className="hover:text-oldverse-accent">Projects</Link></li>
-              <li><Link href="/about" className="hover:text-oldverse-accent">About Us</Link></li>
-              <li><Link href="/dashboard" className="hover:text-oldverse-accent">Studio</Link></li>
-              <li><Link href="/contact" className="hover:text-oldverse-accent">Contact</Link></li>
-              <li><Link href="/search" className="hover:text-oldverse-accent">Search</Link></li>
-            </ul>
-          </div>
-
-          {/* Col 3: Connect */}
+          {/* Col 3: Connect details */}
           <div className="space-y-4">
             <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Connect</h4>
-            <ul className="space-y-2 text-xs font-light">
+            <ul className="space-y-2.5 text-xs font-light">
               <li>
                 <span className="text-oldverse-secondary">Instagram: </span>
-                <a href="https://instagram.com/theoldverse_" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent">@theoldverse_</a>
+                <a href="https://instagram.com/theoldverse_" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">@theoldverse_</a>
               </li>
               <li>
                 <span className="text-oldverse-secondary">YouTube: </span>
-                <a href="https://youtube.com/@theoldverse_07" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent">@theoldverse_07</a>
+                <a href="https://youtube.com/@theoldverse_07" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">@theoldverse_07</a>
               </li>
               <li>
                 <span className="text-oldverse-secondary">Email: </span>
-                <a href="mailto:hello@theoldverse.com" className="hover:text-oldverse-accent">hello@theoldverse.com</a>
+                <a href="mailto:theoldverse@gmail.com" className="hover:text-oldverse-accent transition-colors">theoldverse@gmail.com</a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="pt-8 border-t border-white/5 text-center sm:text-left text-[10px] font-light">
+        {/* Copyright & Legal Compliance Links */}
+        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-light">
           <p>&copy; {currentYear} The OldVerse. All Rights Reserved.</p>
+          <div className="flex gap-4 text-oldverse-secondary">
+            <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Legal Notice</Link>
+            <span>&bull;</span>
+            <Link href="/about" className="hover:text-oldverse-accent transition-colors">Privacy Policy</Link>
+            <span>&bull;</span>
+            <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Terms of Use</Link>
+          </div>
         </div>
 
       </div>

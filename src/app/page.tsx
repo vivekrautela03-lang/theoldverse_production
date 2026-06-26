@@ -241,15 +241,25 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                href={featuredItem.videoUrl.includes("instagram.com") ? featuredItem.videoUrl : `/watch/${featuredItem.id}`}
-                target={featuredItem.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-                rel={featuredItem.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
-              >
-                <Play className="h-4 w-4 fill-oldverse-bg" />
-                Play Show
-              </Link>
+              {featuredItem.videoUrl?.includes("instagram.com") ? (
+                <a
+                  href={featuredItem.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
+                >
+                  <Play className="h-4 w-4 fill-oldverse-bg" />
+                  Play Show
+                </a>
+              ) : (
+                <Link
+                  href={`/watch/${featuredItem.id}`}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
+                >
+                  <Play className="h-4 w-4 fill-oldverse-bg" />
+                  Play Show
+                </Link>
+              )}
 
               <a
                 href="https://instagram.com/theoldverse_"
@@ -261,13 +271,25 @@ export default function HomePage() {
                 Follow
               </a>
 
-              <Link
-                href={`/watch/${featuredItem.id}#description`}
-                className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
-                title="Details"
-              >
-                <Info className="h-4 w-4" />
-              </Link>
+              {featuredItem.videoUrl?.includes("instagram.com") ? (
+                <a
+                  href={featuredItem.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
+                  title="Details"
+                >
+                  <Info className="h-4 w-4" />
+                </a>
+              ) : (
+                <Link
+                  href={`/watch/${featuredItem.id}#description`}
+                  className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
+                  title="Details"
+                >
+                  <Info className="h-4 w-4" />
+                </Link>
+              )}
 
               {/* Mute toggle button (only for videos) */}
               {!featuredItem.id.startsWith("media-love") && (

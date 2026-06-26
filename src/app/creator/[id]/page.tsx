@@ -237,36 +237,55 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
             <div>
               {creatorMedia.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {creatorMedia.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/watch/${item.id}`}
-                      className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300"
-                    >
-                      <div className="aspect-[2/3] overflow-hidden relative">
-                        <img
-                          src={item.posterUrl}
-                          alt={item.title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded text-[10px] font-bold text-oldverse-accent">
-                          <Star className="h-3 w-3 fill-oldverse-accent" />
-                          {item.rating}
+                  {creatorMedia.map((item) => {
+                    const isInsta = item.videoUrl?.includes("instagram.com");
+                    const cardContent = (
+                      <>
+                        <div className="aspect-[2/3] overflow-hidden relative">
+                          <img
+                            src={item.posterUrl}
+                            alt={item.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded text-[10px] font-bold text-oldverse-accent">
+                            <Star className="h-3 w-3 fill-oldverse-accent" />
+                            {item.rating}
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-3 space-y-1">
-                        <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent tracking-wider block">
-                          {item.category}
-                        </span>
-                        <h3 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors line-clamp-1">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-oldverse-secondary font-light">
-                          {item.duration}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="p-3 space-y-1">
+                          <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent tracking-wider block">
+                            {item.category}
+                          </span>
+                          <h3 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors line-clamp-1">
+                            {item.title}
+                          </h3>
+                          <p className="text-xs text-oldverse-secondary font-light">
+                            {item.duration}
+                          </p>
+                        </div>
+                      </>
+                    );
+
+                    return isInsta ? (
+                      <a
+                        key={item.id}
+                        href={item.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300"
+                      >
+                        {cardContent}
+                      </a>
+                    ) : (
+                      <Link
+                        key={item.id}
+                        href={`/watch/${item.id}`}
+                        className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300"
+                      >
+                        {cardContent}
+                      </Link>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-16 text-oldverse-secondary font-light text-sm">

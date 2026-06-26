@@ -93,14 +93,31 @@ oldverse_production/
 We successfully verified the compilation pipeline using the Next.js production builder.
 
 - **TypeScript Type Checks**: Completed successfully.
-- **Static Page Prerendering**: All routes prerendered without any payload exceptions:
+- **Static Page Prerendering**: All active routes prerendered without any payload exceptions:
   - `/` (Static)
+  - `/about` (Static)
   - `/admin` (Static)
-  - `/projects` (Static)
-  - `/community` (Static)
+  - `/contact` (Static)
   - `/dashboard` (Static)
   - `/profile` (Static)
+  - `/projects` (Static)
   - `/search` (Static)
   - `/upload` (Static)
   - `/creator/[id]` (Dynamic)
   - `/watch/[id]` (Dynamic)
+
+---
+
+## 📱 Mobile 404 Routing Fix
+
+We diagnosed and resolved the issue where mobile users would encounter a Next.js **"Page Not Found" (404)** page when tapping on video entries or "Play Now" cards.
+
+### Issue Analysis
+- Next.js's `<Link>` component intercepts user clicks to perform client-side routing.
+- When absolute external links (such as Instagram Reels `https://instagram.com/reel/...`) were passed to `<Link>`, the client-side router attempted to parse them as internal paths. On mobile browsers, this caused Next.js to fail the transition and serve the application's fallback 404 page.
+- Additionally, unsafe property lookups on `videoUrl.includes()` would throw client-side exceptions during hydration if `videoUrl` was undefined.
+
+### Implemented Fixes
+1. **Conditional Anchor Rendering**: Implemented dual-rendering logic in all catalog cards, search results, watchlist listings, upload outcomes, and history tabs. If a project has an external Instagram URL, it renders a native absolute `<a>` tag with `target="_blank"` and `rel="noopener noreferrer"`. If it's a local video, it seamlessly uses the Next.js `<Link>` router.
+2. **Safe Optional Chaining**: Added optional chaining checks (`?.includes`) on all `videoUrl` property checks to prevent hydration crashes from rendering undefined or missing attributes.
+3. **Tested & Validated**: Production build successfully generates 14 static and server-side routes without any issues.

@@ -105,37 +105,56 @@ function BrowseContent() {
       <div>
         {filteredItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {filteredItems.map((show) => (
-              <Link
-                key={show.id}
-                href={`/watch/${show.id}`}
-                className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300"
-              >
-                <div className="aspect-[2/3] overflow-hidden relative">
-                  <img
-                    src={show.posterUrl}
-                    alt={show.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded text-[10px] font-bold text-oldverse-accent">
-                    <Star className="h-3 w-3 fill-oldverse-accent" />
-                    {show.rating}
+            {filteredItems.map((show) => {
+              const isInsta = show.videoUrl?.includes("instagram.com");
+              const cardContent = (
+                <>
+                  <div className="aspect-[2/3] overflow-hidden relative">
+                    <img
+                      src={show.posterUrl}
+                      alt={show.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded text-[10px] font-bold text-oldverse-accent">
+                      <Star className="h-3 w-3 fill-oldverse-accent" />
+                      {show.rating}
+                    </div>
                   </div>
-                </div>
-                <div className="p-3 space-y-1">
-                  <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent tracking-wider block">
-                    {show.category}
-                  </span>
-                  <h3 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors line-clamp-1">
-                    {show.title}
-                  </h3>
-                  <div className="flex items-center justify-between text-[10px] text-oldverse-secondary">
-                    <span>{show.duration}</span>
-                    <span className="font-semibold text-oldverse-text/70">{show.creatorName}</span>
+                  <div className="p-3 space-y-1">
+                    <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent tracking-wider block">
+                      {show.category}
+                    </span>
+                    <h3 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors line-clamp-1">
+                      {show.title}
+                    </h3>
+                    <div className="flex items-center justify-between text-[10px] text-oldverse-secondary">
+                      <span>{show.duration}</span>
+                      <span className="font-semibold text-oldverse-text/70">{show.creatorName}</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </>
+              );
+
+              return isInsta ? (
+                <a
+                  key={show.id}
+                  href={show.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300"
+                >
+                  {cardContent}
+                </a>
+              ) : (
+                <Link
+                  key={show.id}
+                  href={`/watch/${show.id}`}
+                  className="group flex flex-col rounded-lg overflow-hidden border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/30 transition-all duration-300"
+                >
+                  {cardContent}
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-24 space-y-3">

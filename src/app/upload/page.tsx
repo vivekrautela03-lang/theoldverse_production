@@ -338,13 +338,25 @@ export default function CreatorUploadPortal() {
             </div>
 
             <div className="flex gap-4 w-full max-w-sm pt-2">
-              <Link
-                href={`/watch/${publishedItem.id}`}
-                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase transition-colors"
-              >
-                <Play className="h-3.5 w-3.5 fill-oldverse-bg" />
-                Watch Now
-              </Link>
+              {publishedItem.videoUrl?.includes("instagram.com") ? (
+                <a
+                  href={publishedItem.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase transition-colors text-center"
+                >
+                  <Play className="h-3.5 w-3.5 fill-oldverse-bg" />
+                  Watch Now
+                </a>
+              ) : (
+                <Link
+                  href={`/watch/${publishedItem.id}`}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs uppercase transition-colors"
+                >
+                  <Play className="h-3.5 w-3.5 fill-oldverse-bg" />
+                  Watch Now
+                </Link>
+              )}
               <button
                 onClick={() => {
                   setTitle("");

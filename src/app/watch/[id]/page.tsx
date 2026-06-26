@@ -67,7 +67,7 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     const allMedia = getStoreData.media();
     const found = allMedia.find(item => item.id === id);
-    if (found && found.videoUrl.includes("instagram.com")) {
+    if (found && found.videoUrl?.includes("instagram.com")) {
       window.location.href = found.videoUrl;
       return;
     }
