@@ -26,7 +26,6 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: "Shows", href: "/browse" },
     { name: "Our Team", href: "/team" },
     { name: "Contact", href: "/contact" }
   ];
@@ -150,15 +149,6 @@ export default function Navbar() {
                 <span>Home Page</span>
               </Link>
 
-              <Link
-                href="/browse"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4 text-oldverse-accent" />
-                <span>Shows / Browse</span>
-              </Link>
-              
               <Link
                 href="/team"
                 onClick={() => setDesktopDrawerOpen(false)}
