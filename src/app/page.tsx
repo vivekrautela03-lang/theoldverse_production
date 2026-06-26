@@ -304,7 +304,7 @@ export default function HomePage() {
 
         {/* Row 3: Coming Soon */}
         {comingSoon.length > 0 && (
-          <MovieRow title="Coming Soon / Upcoming Originals" items={comingSoon} />
+          <MovieRow title="MUSIC VIDEOS" items={comingSoon} />
         )}
 
 
