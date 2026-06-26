@@ -80,9 +80,7 @@ export default function HomePage() {
     setCurrentSlideIndex(index);
   };
 
-  const handleFollowToggle = () => {
-    window.open("https://instagram.com/theoldverse_", "_blank", "noopener,noreferrer");
-  };
+
 
   if (!isClient) {
     return (
@@ -253,13 +251,15 @@ export default function HomePage() {
                 Play Show
               </Link>
 
-              <button
-                onClick={handleFollowToggle}
+              <a
+                href="https://instagram.com/theoldverse_"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text font-grotesk font-bold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-105"
               >
                 <Plus className="h-4 w-4" />
                 Follow
-              </button>
+              </a>
 
               <Link
                 href={`/watch/${featuredItem.id}#description`}

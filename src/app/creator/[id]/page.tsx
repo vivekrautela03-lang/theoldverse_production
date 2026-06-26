@@ -54,9 +54,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
     return () => window.removeEventListener("oldverse_store_update", loadCreatorDetails);
   }, [id]);
 
-  const handleFollowToggle = () => {
-    window.open("https://instagram.com/theoldverse_", "_blank", "noopener,noreferrer");
-  };
+
 
   if (!isClient) {
     return (
@@ -179,12 +177,14 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
               </div>
             </div>
 
-            <button
-              onClick={handleFollowToggle}
-              className="px-6 py-2.5 rounded-full font-grotesk font-bold text-xs uppercase tracking-wider transition-all duration-300 bg-oldverse-accent text-oldverse-bg hover:bg-oldverse-accent-secondary"
+            <a
+              href="https://instagram.com/theoldverse_"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2.5 rounded-full font-grotesk font-bold text-xs uppercase tracking-wider transition-all duration-300 bg-oldverse-accent text-oldverse-bg hover:bg-oldverse-accent-secondary inline-block text-center"
             >
               Follow Creator
-            </button>
+            </a>
           </div>
         </div>
       </section>
