@@ -120,11 +120,15 @@ export default function HomePage() {
     item.id === "media-coming-2"
   );
   
-  // MUSIC VIDEOS row items (Destiny, Love 1, Love 2)
+  // MUSIC VIDEOS row items (Destiny, Love 1, Love 2, and new clips)
   const comingSoon = mediaItems.filter(item => 
     item.id === "media-coming-3" || 
     item.id === "media-love-1" || 
-    item.id === "media-love-2"
+    item.id === "media-love-2" ||
+    item.id === "media-music-1" ||
+    item.id === "media-music-2" ||
+    item.id === "media-music-3" ||
+    item.id === "media-music-4"
   );
 
   return (
