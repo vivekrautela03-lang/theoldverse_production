@@ -74,7 +74,7 @@ export default function AboutPage() {
         {/* CTA Footer */}
         <div className="text-center pt-8">
           <Link
-            href="/browse"
+            href="/projects"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
           >
             Explore the Archives

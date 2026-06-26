@@ -92,7 +92,7 @@ export default function Footer() {
             <ul className="space-y-2 text-xs font-light">
               <li><Link href="/" className="hover:text-oldverse-accent">Home</Link></li>
               <li><Link href="/community" className="hover:text-oldverse-accent">Creators</Link></li>
-              <li><Link href="/browse" className="hover:text-oldverse-accent">Categories</Link></li>
+              <li><Link href="/projects" className="hover:text-oldverse-accent">Projects</Link></li>
               <li><Link href="/community" className="hover:text-oldverse-accent">Community</Link></li>
               <li><Link href="/dashboard" className="hover:text-oldverse-accent">Studio</Link></li>
               <li><Link href="/community" className="hover:text-oldverse-accent">Casting Calls</Link></li>

@@ -57,8 +57,8 @@ oldverse_production/
 │   │   ├── page.tsx              # Autoplay Hero, Carousel slider, Movie rows, Creator spotlight
 │   │   ├── admin/
 │   │   │   └── page.tsx          # Admin control panel: video review queue, badge approvals, global announcements
-│   │   ├── browse/
-│   │   │   └── page.tsx          # URL query-synced category browser (wrapped in Suspense)
+│   │   ├── projects/
+│   │   │   └── page.tsx          # URL query-synced project browser (wrapped in Suspense)
 │   │   ├── community/
 │   │   │   └── page.tsx          # Unified jobs board, crew finder filters, application modal
 │   │   ├── creator/
