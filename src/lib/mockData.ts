@@ -362,7 +362,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: true,
     isOriginal: true,
-    isHeroSlide: false,
+    isHeroSlide: true,
     releaseDate: "Coming Soon",
     cast: ["Amarjeet", "Soni"],
     crew: [
@@ -389,7 +389,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: true,
     isOriginal: true,
-    isHeroSlide: false,
+    isHeroSlide: true,
     releaseDate: "Coming Soon",
     cast: ["Harendra", "Jiya"],
     crew: [
@@ -470,7 +470,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: true,
     isOriginal: true,
-    isHeroSlide: false,
+    isHeroSlide: true,
     releaseDate: "Coming Soon",
     cast: ["Shivansh Mourya", "Sumit Chauhan", "That Girl (Secret)"],
     crew: [
@@ -497,7 +497,7 @@ export const mockMediaItems: MediaItem[] = [
     creatorName: "Shivanshi",
     isTrending: true,
     isOriginal: true,
-    isHeroSlide: false,
+    isHeroSlide: true,
     releaseDate: "Coming Soon",
     cast: ["Apeksha"],
     crew: [
