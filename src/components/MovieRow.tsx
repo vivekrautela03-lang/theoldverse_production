@@ -2,8 +2,147 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Play, Star, Clock, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Star, Clock, Info, X } from "lucide-react";
 import { MediaItem } from "@/lib/mockData";
+
+interface MovieCardProps {
+  item: MediaItem;
+}
+
+function MovieCard({ item }: MovieCardProps) {
+  const [showInfo, setShowInfo] = useState(false);
+
+  return (
+    <div className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl">
+      {/* Media Poster (Play Link) */}
+      <Link
+        href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+        target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+        rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+        className="absolute inset-0 block h-full w-full z-0"
+      >
+        <img
+          src={item.posterUrl}
+          alt={item.title}
+          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          loading="lazy"
+        />
+      </Link>
+
+      {/* Black overlay at the bottom for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10" />
+
+      {/* Hover overlay details */}
+      <div className="absolute inset-0 flex flex-col justify-end p-4 md:translate-y-4 md:group-hover:translate-y-0 translate-y-0 transition-transform duration-500 ease-out z-20">
+        {/* Watch Button / Category */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] uppercase font-grotesk font-semibold bg-oldverse-accent/15 text-oldverse-accent border border-oldverse-accent/25 px-2 py-0.5 rounded-full">
+            {item.category}
+          </span>
+          {item.isOriginal && (
+            <span className="text-[9px] uppercase font-bebas tracking-wider text-oldverse-accent-secondary bg-white/5 px-2 py-0.5 rounded border border-white/5">
+              Original
+            </span>
+          )}
+        </div>
+
+        <h4 className="font-grotesk text-sm font-bold text-oldverse-text leading-snug line-clamp-2 mb-1 group-hover:text-oldverse-accent transition-colors duration-300">
+          {item.title}
+        </h4>
+
+        {/* Rating & Duration */}
+        <div className="flex items-center gap-3 text-xs text-oldverse-secondary mb-3">
+          <div className="flex items-center gap-0.5 text-oldverse-accent">
+            <Star className="h-3 w-3 fill-oldverse-accent" />
+            <span className="font-semibold">{item.rating}</span>
+          </div>
+          <div className="flex items-center gap-0.5">
+            <Clock className="h-3 w-3" />
+            <span>{item.duration}</span>
+          </div>
+        </div>
+
+        {/* Quick actions (Play Now (stacked/bigger), More Info) */}
+        <div className="flex flex-col gap-2 pt-2 border-t border-white/5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-75 z-30">
+          <Link
+            href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+            target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+            rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs sm:text-sm font-bold transition-all duration-300 shadow-md"
+          >
+            <Play className="h-3.5 w-3.5 fill-oldverse-bg animate-pulse" />
+            Play Now
+          </Link>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowInfo(true);
+            }}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text text-[10px] sm:text-xs font-bold transition-all duration-300 cursor-pointer"
+          >
+            <Info className="h-3.5 w-3.5" />
+            Info Details
+          </button>
+        </div>
+      </div>
+
+      {/* Info Details Overlay Panel */}
+      {showInfo && (
+        <div className="absolute inset-0 bg-black/95 z-40 p-4 flex flex-col justify-between animate-fade-in font-sans">
+          <div className="space-y-3 flex-grow overflow-y-auto no-scrollbar">
+            <div className="flex items-center justify-between border-b border-white/5 pb-1">
+              <span className="text-[10px] uppercase font-grotesk font-semibold text-oldverse-accent">
+                {item.category}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowInfo(false);
+                }}
+                className="p-1 rounded text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
+                title="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <h4 className="font-grotesk text-sm font-bold text-oldverse-text">
+              {item.title}
+            </h4>
+
+            <p className="text-[11px] font-light text-oldverse-secondary leading-relaxed">
+              {item.description}
+            </p>
+          </div>
+
+          <div className="pt-2 border-t border-white/5">
+            <Link
+              href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+              target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+              rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+              className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
+            >
+              <Play className="h-3 w-3 fill-oldverse-bg" />
+              Play Video
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Bar for continue watching */}
+      {item.continueWatchingProgress !== undefined && (
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-20">
+          <div
+            className="h-full bg-oldverse-accent"
+            style={{ width: `${item.continueWatchingProgress}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface MovieRowProps {
   title: string;
@@ -31,7 +170,7 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
       row.addEventListener("scroll", checkScrollLimits);
       // Run once initially
       checkScrollLimits();
-      
+
       // Also listen to window resize
       window.addEventListener("resize", checkScrollLimits);
     }
@@ -85,89 +224,7 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
           className="flex gap-4 overflow-x-auto overflow-y-hidden no-scrollbar py-4 px-1 scroll-smooth"
         >
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl"
-            >
-              {/* Media Poster (Play Link) */}
-              <Link
-                href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-                target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-                rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-                className="absolute inset-0 block h-full w-full z-0"
-              >
-                <img
-                  src={item.posterUrl}
-                  alt={item.title}
-                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  loading="lazy"
-                />
-              </Link>
-
-              {/* Black overlay at the bottom for readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10" />
-
-              {/* Hover overlay details */}
-              <div className="absolute inset-0 flex flex-col justify-end p-4 md:translate-y-4 md:group-hover:translate-y-0 translate-y-0 transition-transform duration-500 ease-out z-20">
-                {/* Watch Button / Category */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] uppercase font-grotesk font-semibold bg-oldverse-accent/15 text-oldverse-accent border border-oldverse-accent/25 px-2 py-0.5 rounded-full">
-                    {item.category}
-                  </span>
-                  {item.isOriginal && (
-                    <span className="text-[9px] uppercase font-bebas tracking-wider text-oldverse-accent-secondary bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                      Original
-                    </span>
-                  )}
-                </div>
-
-                <h4 className="font-grotesk text-sm font-bold text-oldverse-text leading-snug line-clamp-2 mb-1 group-hover:text-oldverse-accent transition-colors duration-300">
-                  {item.title}
-                </h4>
-
-                {/* Rating & Duration */}
-                <div className="flex items-center gap-3 text-xs text-oldverse-secondary mb-3">
-                  <div className="flex items-center gap-0.5 text-oldverse-accent">
-                    <Star className="h-3 w-3 fill-oldverse-accent" />
-                    <span className="font-semibold">{item.rating}</span>
-                  </div>
-                  <div className="flex items-center gap-0.5">
-                    <Clock className="h-3 w-3" />
-                    <span>{item.duration}</span>
-                  </div>
-                </div>
-
-                {/* Quick actions (Play, Info) */}
-                <div className="flex items-center gap-2 pt-2 border-t border-white/5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-75 z-30">
-                  <Link
-                    href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-                    target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-                    rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
-                  >
-                    <Play className="h-3 w-3 fill-oldverse-bg" />
-                    Play
-                  </Link>
-                  <Link
-                    href={`/watch/${item.id}#description`}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text text-xs font-bold transition-all duration-300"
-                  >
-                    <Info className="h-3 w-3" />
-                    Info
-                  </Link>
-                </div>
-              </div>
-
-              {/* Progress Bar for continue watching */}
-              {item.continueWatchingProgress !== undefined && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-20">
-                  <div
-                    className="h-full bg-oldverse-accent"
-                    style={{ width: `${item.continueWatchingProgress}%` }}
-                  />
-                </div>
-              )}
-            </div>
+            <MovieCard key={item.id} item={item} />
           ))}
         </div>
 
