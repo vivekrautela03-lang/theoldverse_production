@@ -85,9 +85,12 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
           className="flex gap-4 overflow-x-auto overflow-y-hidden no-scrollbar py-4 px-1 scroll-smooth"
         >
           {items.map((item) => (
-            <div
+            <Link
               key={item.id}
-              className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl"
+              href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
+              target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
+              rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+              className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl block"
             >
               {/* Media Poster */}
               <img
@@ -132,15 +135,12 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
 
                 {/* Quick actions (Play Now, View Profile) */}
                 <div className="flex items-center gap-2 pt-2 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-75">
-                  <Link
-                    href={item.videoUrl.includes("instagram.com") ? item.videoUrl : `/watch/${item.id}`}
-                    target={item.videoUrl.includes("instagram.com") ? "_blank" : undefined}
-                    rel={item.videoUrl.includes("instagram.com") ? "noopener noreferrer" : undefined}
+                  <div
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
                   >
                     <Play className="h-3.5 w-3.5 fill-oldverse-bg" />
                     Play Now
-                  </Link>
+                  </div>
                 </div>
               </div>
 
@@ -153,7 +153,7 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
                   />
                 </div>
               )}
-            </div>
+            </Link>
           ))}
         </div>
 
