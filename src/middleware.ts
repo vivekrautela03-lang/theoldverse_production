@@ -48,6 +48,19 @@ export function middleware(request: NextRequest) {
   }
 
   // Gating Logic
+  const isAdminConsole = pathname.startsWith("/admin-console") || pathname.startsWith("/api/admin");
+
+  if (isAdminConsole) {
+    if (!payload || !payload.isAdmin) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ success: false, error: "Access Denied: Admin authorization required." }, { status: 403 });
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth";
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (isPrivateKey) {
     if (!payload) {
       // User is unauthenticated - redirect to /auth

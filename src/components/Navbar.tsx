@@ -238,7 +238,17 @@ export default function Navbar() {
                         <Plus className="h-4 w-4 text-[#F5A623]" />
                         <span>Upload Video</span>
                       </Link>
-                    </>
+                     </>
+                  )}
+                  {user.isAdmin && (
+                    <Link
+                      href="/admin-console"
+                      onClick={() => setDesktopDrawerOpen(false)}
+                      className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors border-t border-white/5 pt-3 mt-1"
+                    >
+                      <Landmark className="h-4 w-4 text-[#F5A623]" />
+                      <span className="font-bold text-[#F5A623]">Admin Console</span>
+                    </Link>
                   )}
 
                 </>
