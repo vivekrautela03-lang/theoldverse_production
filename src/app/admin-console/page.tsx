@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Landmark, ShieldAlert, Users, Key, Database, RefreshCw, CheckCircle, Search } from "lucide-react";
+import { Landmark, ShieldAlert, Users, Key, Database, RefreshCw, CheckCircle, Search, Lock, Mail, ArrowRight } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface AuditLog {
@@ -29,48 +29,143 @@ export default function AdminConsolePage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [otpTarget, setOtpTarget] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Step-Up Security state variables
+  const [sudoRequired, setSudoRequired] = useState(true);
+  const [sudoEmail, setSudoEmail] = useState("theoldverse@gmail.com");
+  const [sudoPassword, setSudoPassword] = useState("");
+  const [sudoOtpInput, setSudoOtpInput] = useState("");
+  const [step, setStep] = useState<"credentials" | "otp">("credentials");
+  const [otpBypassCode, setOtpBypassCode] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const [loading, setLoading] = useState(false);
   const [userQuery, setUserQuery] = useState("");
   const [logQuery, setLogQuery] = useState("");
   const [actionMessage, setActionMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const fetchUsers = async () => {
-    try {
-      const response = await fetch("/api/admin/actions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "get-users" })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setUsers(data.users);
-      }
-    } catch (err) {
-      console.error(err);
+    const response = await fetch("/api/admin/actions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "get-users" })
+    });
+    if (response.status === 401) {
+      setSudoRequired(true);
+      return false;
     }
+    const data = await response.json();
+    if (data.success) {
+      setUsers(data.users);
+      return true;
+    }
+    return false;
   };
 
   const fetchLogs = async () => {
-    try {
-      const response = await fetch("/api/admin/logs");
-      const data = await response.json();
-      if (data.success) {
-        setLogs(data.logs);
-      }
-    } catch (err) {
-      console.error(err);
+    const response = await fetch("/api/admin/logs");
+    if (response.status === 401) {
+      setSudoRequired(true);
+      return false;
     }
+    const data = await response.json();
+    if (data.success) {
+      setLogs(data.logs);
+      return true;
+    }
+    return false;
   };
+
+  // Sync dashboard data safely
+  useEffect(() => {
+    let isMounted = true;
+    const initialize = async () => {
+      setLoading(true);
+      const successUsers = await fetchUsers();
+      const successLogs = await fetchLogs();
+      if (isMounted) {
+        if (successUsers && successLogs) {
+          setSudoRequired(false);
+        }
+        setLoading(false);
+      }
+    };
+    initialize();
+    return () => { isMounted = false; };
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([fetchUsers(), fetchLogs()]);
+    const successUsers = await fetchUsers();
+    const successLogs = await fetchLogs();
+    if (successUsers && successLogs) {
+      setSudoRequired(false);
+    }
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  // Step-Up Actions
+  const handleSendSudoOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
+
+    try {
+      const response = await fetch("/api/admin/stepup/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: sudoEmail, password: sudoPassword })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setStep("otp");
+        if (data.simulatedCode) {
+          setOtpBypassCode(data.simulatedCode);
+        }
+      } else {
+        setAuthError(data.error || "Failed to send step-up code.");
+      }
+    } catch {
+      setAuthError("Network error occurred.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifySudoOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
+
+    try {
+      const response = await fetch("/api/admin/stepup/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: sudoEmail, otpCode: sudoOtpInput })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSudoRequired(false);
+        setSudoPassword("");
+        setSudoOtpInput("");
+        setStep("credentials");
+        setOtpBypassCode(null);
+        confetti({
+          particleCount: 80,
+          spread: 60,
+          colors: ["#F5A623", "#FFFFFF"]
+        });
+        loadData();
+      } else {
+        setAuthError(data.error || "Invalid OTP code.");
+      }
+    } catch {
+      setAuthError("Network error occurred.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const handleUpdateRole = async (targetId: string, updates: { isAdmin?: boolean; isCreator?: boolean }) => {
     try {
@@ -79,6 +174,10 @@ export default function AdminConsolePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update-role", targetId, roleUpdates: updates })
       });
+      if (response.status === 401) {
+        setSudoRequired(true);
+        return;
+      }
       const data = await response.json();
       if (data.success) {
         setActionMessage({ type: "success", text: "User roles updated successfully." });
@@ -87,7 +186,7 @@ export default function AdminConsolePage() {
       } else {
         setActionMessage({ type: "error", text: data.error || "Failed to update roles." });
       }
-    } catch (err) {
+    } catch {
       setActionMessage({ type: "error", text: "Network error occurred." });
     }
   };
@@ -102,6 +201,10 @@ export default function AdminConsolePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "generate-otp", emailOrPhone: otpTarget })
       });
+      if (response.status === 401) {
+        setSudoRequired(true);
+        return;
+      }
       const data = await response.json();
       if (data.success) {
         setGeneratedOtp(data.code);
@@ -115,7 +218,7 @@ export default function AdminConsolePage() {
       } else {
         setActionMessage({ type: "error", text: data.error || "Failed to generate OTP." });
       }
-    } catch (err) {
+    } catch {
       setActionMessage({ type: "error", text: "Network error occurred." });
     }
   };
@@ -142,6 +245,123 @@ export default function AdminConsolePage() {
     );
   }
 
+  // --- Step-Up Authentication Locked Gatekeeper Screen ---
+  if (sudoRequired) {
+    return (
+      <div className="min-h-screen bg-oldverse-bg flex items-center justify-center pt-24 px-4">
+        <div className="max-w-md w-full bg-oldverse-card/40 border border-white/5 p-8 rounded-2xl backdrop-blur-md space-y-6 shadow-2xl">
+          <div className="text-center space-y-2">
+            <div className="h-14 w-14 bg-oldverse-accent/15 rounded-full flex items-center justify-center mx-auto border border-oldverse-accent/25">
+              <Lock className="h-6 w-6 text-oldverse-accent" />
+            </div>
+            <h2 className="font-bebas text-3xl tracking-wider text-oldverse-text uppercase">Step-Up Authentication</h2>
+            <p className="text-[10px] text-oldverse-secondary font-light uppercase tracking-widest">
+              Emergency Sudo Authorization Required
+            </p>
+          </div>
+
+          {authError && (
+            <div className="p-3 bg-oldverse-error/5 border border-oldverse-error/20 text-oldverse-error text-xs rounded-lg text-center font-grotesk font-medium">
+              {authError}
+            </div>
+          )}
+
+          {step === "credentials" ? (
+            <form onSubmit={handleSendSudoOtp} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5" /> Admin Email
+                </label>
+                <input
+                  type="email"
+                  value={sudoEmail}
+                  onChange={(e) => setSudoEmail(e.target.value)}
+                  className="w-full text-xs p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5" /> Admin Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={sudoPassword}
+                  onChange={(e) => setSudoPassword(e.target.value)}
+                  className="w-full text-xs p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full py-3.5 bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs text-black font-bebas font-black tracking-widest uppercase rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                {authLoading ? "Verifying..." : (
+                  <>
+                    Request Sudo OTP <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifySudoOtp} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Key className="h-3.5 w-3.5" /> Enter 6-Digit OTP Code
+                </label>
+                <p className="text-[10px] text-oldverse-secondary font-light">
+                  A verification code has been dispatched. Enter it below to unlock sudo privileges.
+                </p>
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={sudoOtpInput}
+                  onChange={(e) => setSudoOtpInput(e.target.value)}
+                  className="w-full text-center text-xl font-bold tracking-widest p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                  required
+                />
+              </div>
+
+              {otpBypassCode && (
+                <div className="bg-oldverse-accent/5 border border-oldverse-accent/25 rounded-lg p-3 text-center space-y-1.5">
+                  <span className="text-[9px] text-oldverse-accent font-bold uppercase tracking-widest block">[Local Sudo Debug Mode]</span>
+                  <span className="font-mono font-bold text-lg text-white">{otpBypassCode}</span>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("credentials");
+                    setOtpBypassCode(null);
+                    setAuthError(null);
+                  }}
+                  className="flex-1 py-3 border border-white/10 hover:border-white/20 bg-white/3 text-xs text-white uppercase font-grotesk font-semibold rounded-xl"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="flex-1 py-3 bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs text-black font-bebas font-black tracking-widest uppercase rounded-xl transition-all cursor-pointer"
+                >
+                  {authLoading ? "Unlocking..." : "Verify Code"}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Authorized Dashboard Panel View ---
   return (
     <div className="bg-oldverse-bg min-h-screen pt-28 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -379,7 +599,7 @@ export default function AdminConsolePage() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto border border-white/5 rounded-xl max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
+                <div className="overflow-x-auto border border-white/5 rounded-xl max-h-[500px] overflow-y-auto pr-1 no-scrollbar font-mono">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-white/5 text-oldverse-secondary uppercase font-grotesk tracking-widest text-[9px] sticky top-0 backdrop-blur-md">
@@ -389,7 +609,7 @@ export default function AdminConsolePage() {
                         <th className="p-4">Details</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 font-light font-mono text-[10px]">
+                    <tbody className="divide-y divide-white/5 font-light text-[10px]">
                       {filteredLogs.map((l) => {
                         const isAlert = l.event.includes("FAIL") || l.event.includes("BLOCKED") || l.event.includes("LOCKOUT") || l.event.includes("ERROR");
                         return (

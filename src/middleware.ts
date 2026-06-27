@@ -59,6 +59,21 @@ export function middleware(request: NextRequest) {
       url.pathname = "/auth";
       return NextResponse.redirect(url);
     }
+
+    // Step-up (sudo mode) validation for all admin operations (except step-up endpoints themselves)
+    const isStepUpApi = pathname.startsWith("/api/admin/stepup");
+    if (!isStepUpApi) {
+      const adminSession = request.cookies.get("admin_session")?.value;
+      let sudoPayload: any = null;
+      if (adminSession) {
+        sudoPayload = verifyJwt(adminSession);
+      }
+      if (!sudoPayload || !sudoPayload.sudo) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json({ success: false, error: "Step-up authentication required.", stepUpRequired: true }, { status: 401 });
+        }
+      }
+    }
   }
 
   if (isPrivateKey) {
