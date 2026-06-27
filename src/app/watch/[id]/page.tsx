@@ -7,6 +7,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import MovieRow from "@/components/MovieRow";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
 import { MediaItem, Episode, Review } from "@/lib/mockData";
+import confetti from "canvas-confetti";
 
 export default function WatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -26,8 +27,22 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userRating, setUserRating] = useState(4.5);
   const [reviewText, setReviewText] = useState("");
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [userQuickRating, setUserQuickRating] = useState<number | null>(null);
   
   const activeRef = useRef<HTMLDivElement>(null);
+
+  // Sync quick rating from reviews on mount
+  useEffect(() => {
+    if (mediaItem) {
+      const myReview = reviews.find(r => r.author === "Visual Pioneer");
+      if (myReview) {
+        setUserQuickRating(myReview.rating);
+      } else {
+        setUserQuickRating(null);
+      }
+    }
+  }, [reviews, mediaItem]);
 
   const loadMediaDetails = () => {
     const allMedia = getStoreData.media();
@@ -102,6 +117,18 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
     mutateStore.addReview(mediaItem.id, "Visual Pioneer", userRating, reviewText);
     setReviewText("");
     setUserRating(4.5);
+  };
+
+  const handleQuickRate = (rating: number) => {
+    if (!mediaItem) return;
+    setUserQuickRating(rating);
+    mutateStore.addReview(mediaItem.id, "Visual Pioneer", rating, "Quick rating left via interactive star selector.");
+    
+    confetti({
+      particleCount: 50,
+      spread: 40,
+      colors: ["#F5A623", "#FFFFFF"]
+    });
   };
 
   // Find active screenplay segment index
@@ -256,6 +283,41 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
                 <div className="flex items-center gap-1 text-oldverse-accent font-semibold ml-2">
                   <Star className="h-4 w-4 fill-oldverse-accent" />
                   <span>{mediaItem.rating}</span>
+                </div>
+
+                {/* Quick Rating Selector Section */}
+                <div className="flex items-center gap-1 text-oldverse-secondary border-l border-white/10 pl-3">
+                  <span className="text-[10px] uppercase font-bold tracking-wider mr-1 text-white/55">Rate:</span>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => {
+                      const isHovered = hoverRating !== null ? star <= hoverRating : false;
+                      const isRated = userQuickRating !== null ? star <= userQuickRating : false;
+                      return (
+                        <button
+                          key={star}
+                          type="button"
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(null)}
+                          onClick={() => handleQuickRate(star)}
+                          className="focus:outline-none transition-transform hover:scale-110 cursor-pointer"
+                          aria-label={`Rate ${star} stars`}
+                        >
+                          <Star
+                            className={`h-3.5 w-3.5 ${
+                              isHovered || isRated
+                                ? "fill-oldverse-accent text-oldverse-accent"
+                                : "text-white/20 hover:text-oldverse-accent"
+                            }`}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {userQuickRating && (
+                    <span className="text-[10px] text-oldverse-accent font-bold ml-1 font-mono">
+                      (You rated: {userQuickRating}/5)
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 text-oldverse-secondary">
                   <Clock className="h-3.5 w-3.5" />
