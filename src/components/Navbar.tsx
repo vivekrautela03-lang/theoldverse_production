@@ -1,13 +1,73 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Search, Home, Menu, X, Info, Phone, Mail, Clapperboard } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Search, Home, Menu, X, Info, Phone, Mail, Clapperboard, LogOut, User, Landmark, Plus, Settings } from "lucide-react";
 
 export default function Navbar() {
   const [desktopDrawerOpen, setDesktopDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  
+  // Auth state
+  const [user, setUser] = useState<any>(null);
+
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setUser(data.user);
+          // Sync with localStorage
+          localStorage.setItem("oldverse_user", JSON.stringify(data.user));
+          return;
+        }
+      }
+    } catch (err) {
+      // ignore
+    }
+    
+    // Check localStorage fallback in case cookies are still refreshing
+    const local = localStorage.getItem("oldverse_user");
+    if (local) {
+      try {
+        setUser(JSON.parse(local));
+      } catch {
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+    
+    // Listen for storage mutations to update login state immediately
+    window.addEventListener("oldverse_store_update", fetchUser);
+    return () => {
+      window.removeEventListener("oldverse_store_update", fetchUser);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      // ignore
+    }
+    
+    localStorage.removeItem("oldverse_user");
+    setUser(null);
+    window.dispatchEvent(new Event("oldverse_store_update"));
+    setDesktopDrawerOpen(false);
+    
+    router.push("/auth");
+  };
 
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
@@ -110,12 +170,16 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Desktop/Global Sliding Right Menu Drawer */}
+      {/* Sliding Drawer */}
       {desktopDrawerOpen && (
         <div className="fixed inset-y-0 right-0 w-80 bg-black/95 backdrop-blur-md z-[100] p-6 flex flex-col justify-between shadow-2xl border-l border-white/10 animate-slide-in font-sans">
           <div className="space-y-6 flex-grow overflow-y-auto no-scrollbar">
+            
+            {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
-              <span className="font-sans font-bold uppercase tracking-wider text-white text-xs">Menu & Features</span>
+              <span className="font-sans font-bold uppercase tracking-wider text-white text-xs">
+                {user ? `Hi, ${user.name}` : "Menu & Features"}
+              </span>
               <button
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="p-1.5 rounded text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
@@ -131,7 +195,7 @@ export default function Navbar() {
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
               >
-                <Home className="h-4 w-4 text-[#0070f3]" />
+                <Home className="h-4 w-4 text-white/70" />
                 <span>Home Page</span>
               </Link>
 
@@ -140,26 +204,87 @@ export default function Navbar() {
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
               >
-                <Clapperboard className="h-4 w-4 text-oldverse-accent" />
+                <Clapperboard className="h-4 w-4 text-white/70" />
                 <span>Projects</span>
               </Link>
+
+              {/* Private routes gating shown in navigation if logged in */}
+              {user && (
+                <>
+                  <Link
+                    href="/profile"
+                    onClick={() => setDesktopDrawerOpen(false)}
+                    className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+                  >
+                    <User className="h-4 w-4 text-[#F5A623]" />
+                    <span>My Profile & Resume</span>
+                  </Link>
+
+                  {user.isCreator && (
+                    <>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setDesktopDrawerOpen(false)}
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+                      >
+                        <Settings className="h-4 w-4 text-[#F5A623]" />
+                        <span>Creator Dashboard</span>
+                      </Link>
+                      <Link
+                        href="/upload"
+                        onClick={() => setDesktopDrawerOpen(false)}
+                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+                      >
+                        <Plus className="h-4 w-4 text-[#F5A623]" />
+                        <span>Upload Video</span>
+                      </Link>
+                    </>
+                  )}
+
+                </>
+              )}
+
               <Link
                 href="/about"
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
               >
-                <Info className="h-4 w-4 text-oldverse-accent" />
+                <Info className="h-4 w-4 text-white/70" />
                 <span>About Us</span>
               </Link>
+              
               <Link
                 href="/contact"
                 onClick={() => setDesktopDrawerOpen(false)}
                 className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
               >
-                <Phone className="h-4 w-4" />
+                <Phone className="h-4 w-4 text-white/70" />
                 <span>Contact Us</span>
               </Link>
             </div>
+
+            {/* Session Action */}
+            <div className="pt-2">
+              {user ? (
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-xs font-bold text-red-400 transition-all cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout Session
+                </button>
+              ) : (
+                <Link
+                  href="/auth"
+                  onClick={() => setDesktopDrawerOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs font-bold text-black transition-all cursor-pointer"
+                >
+                  <User className="h-4 w-4" />
+                  Login / Register
+                </Link>
+              )}
+            </div>
+
           </div>
           
           <div className="pt-4 border-t border-white/5 text-center text-[10px] text-white/40">

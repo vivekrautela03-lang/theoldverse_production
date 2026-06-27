@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { Monitor, Download, Sparkles, Phone, ArrowLeft, ShieldCheck, X, Mail } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Monitor, Download, Sparkles, Phone, ArrowLeft, ShieldCheck, X, Mail, Lock, UserCheck, RefreshCw, KeyRound } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface AuthPortalProps {
@@ -11,8 +13,19 @@ interface AuthPortalProps {
 export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
   // Modes: "credentials_input" | "otp" | "welcome"
   const [mode, setMode] = useState<"credentials_input" | "otp" | "welcome">("credentials_input");
+  const [authMethod, setAuthMethod] = useState<"otp" | "password">("otp");
+  const [isRegister, setIsRegister] = useState(false);
+  
+  // Form states
   const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
   const [otpCode, setOtpCode] = useState("");
+  const [totpToken, setTotpToken] = useState("");
+  
+  // States for flows
+  const [requires2FA, setRequires2FA] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [tempUser, setTempUser] = useState<any>(null);
@@ -22,6 +35,19 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
   const [customGmail, setCustomGmail] = useState("");
 
+  // Captcha simulator state
+  const [captchaLoading, setCaptchaLoading] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+
+  const simulateCaptcha = () => {
+    if (captchaVerified || captchaLoading) return;
+    setCaptchaLoading(true);
+    setTimeout(() => {
+      setCaptchaLoading(false);
+      setCaptchaVerified(true);
+    }, 1000);
+  };
+
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const input = emailOrPhone.trim();
@@ -30,18 +56,21 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
       return;
     }
 
+    if (!captchaVerified) {
+      alert("Please complete the human verification (CAPTCHA).");
+      return;
+    }
+
     // Detect if input is email or phone number
     const isEmail = input.includes("@") || /[a-zA-Z]/.test(input);
 
     if (isEmail) {
-      // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(input)) {
         alert("Please enter a valid email address.");
         return;
       }
     } else {
-      // Validate phone number (should be 10 digits)
       const digitsOnly = input.replace(/\D/g, "");
       if (digitsOnly.length !== 10) {
         alert("Please enter a valid 10-digit mobile number.");
@@ -51,48 +80,127 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
 
     setIsLoading(true);
 
-    try {
-      const response = await fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailOrPhone: input })
-      });
-      
-      const data = await response.json();
-      setIsLoading(false);
-
-      if (data.success) {
-        // Store code locally ONLY for simulated mode; real mode verifies on the server
-        if (data.mode === "simulated") {
-          setGeneratedOtp(data.code);
+    if (authMethod === "otp") {
+      // OTP sign-in pathway
+      try {
+        const response = await fetch("/api/auth/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emailOrPhone: input })
+        });
+        
+        const data = await response.json();
+        setIsLoading(false);
+  
+        if (data.success) {
+          if (data.mode === "simulated" && data.code) {
+            setGeneratedOtp(data.code);
+            setOtpCode(data.code); // Auto-fill simulated code
+          } else {
+            setGeneratedOtp("");
+          }
+  
+          if (isEmail) {
+            setTempUser({
+              name: input.split("@")[0],
+              email: input,
+              isCreator: false
+            });
+          } else {
+            const digitsOnly = input.replace(/\D/g, "");
+            setTempUser({
+              name: `User +91${digitsOnly.slice(-4)}`,
+              email: `user_${digitsOnly.slice(-4)}@oldverse.com`,
+              isCreator: false
+            });
+          }
+  
+          setToastMessage(data.message);
+          setMode("otp");
         } else {
-          setGeneratedOtp("");
+          alert(data.error || "Failed to send verification code. Please try again.");
         }
-
-        // Set temp user details
-        if (isEmail) {
-          setTempUser({
-            name: input.split("@")[0],
-            email: input,
-            isCreator: false
-          });
-        } else {
-          const digitsOnly = input.replace(/\D/g, "");
-          setTempUser({
-            name: `User +91${digitsOnly.slice(-4)}`,
-            email: `user_${digitsOnly.slice(-4)}@oldverse.com`,
-            isCreator: false
-          });
-        }
-
-        setToastMessage(data.message);
-        setMode("otp");
-      } else {
-        alert(data.error || "Failed to send verification code. Please try again.");
+      } catch (err: any) {
+        setIsLoading(false);
+        alert("Network error: " + err.message);
       }
-    } catch (err: any) {
-      setIsLoading(false);
-      alert("Network error: " + err.message);
+    } else {
+      // Password auth pathway (Registration / Login)
+      if (isRegister) {
+        // --- REGISTRATION ---
+        if (!name.trim()) {
+          alert("Please enter your name.");
+          setIsLoading(false);
+          return;
+        }
+        if (password.length < 8) {
+          alert("Password must be at least 8 characters long.");
+          setIsLoading(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          alert("Passwords do not match.");
+          setIsLoading(false);
+          return;
+        }
+
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: name.trim(),
+              emailOrPhone: input,
+              password
+            })
+          });
+          const data = await res.json();
+          setIsLoading(false);
+
+          if (data.success) {
+            alert(data.message);
+            setIsRegister(false); // Switch to login screen
+            setPassword("");
+            setConfirmPassword("");
+            setCaptchaVerified(false);
+          } else {
+            alert(data.error || "Registration failed.");
+          }
+        } catch (err: any) {
+          setIsLoading(false);
+          alert("Registration network error: " + err.message);
+        }
+      } else {
+        // --- LOGIN ---
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              emailOrPhone: input,
+              password,
+              totpToken: totpToken.trim() || undefined
+            })
+          });
+          const data = await res.json();
+          setIsLoading(false);
+
+          if (data.success) {
+            if (data.requires2FA) {
+              setRequires2FA(true);
+              setToastMessage(data.message);
+            } else {
+              setMode("welcome");
+              triggerEnterSequence(data.user);
+            }
+          } else {
+            alert(data.error || "Login failed.");
+          }
+        } catch (err: any) {
+          setIsLoading(false);
+          alert("Login network error: " + err.message);
+        }
+      }
     }
   };
 
@@ -117,9 +225,13 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
       setIsLoading(false);
 
       if (data.success) {
-        if (tempUser) {
+        if (data.requires2FA) {
+          setRequires2FA(true);
+          setMode("credentials_input");
+          setToastMessage(data.message);
+        } else {
           setMode("welcome");
-          triggerEnterSequence(tempUser);
+          triggerEnterSequence(data.user || tempUser);
         }
       } else {
         alert(data.error || "Invalid verification code. Please try again.");
@@ -127,6 +239,41 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
     } catch (err: any) {
       setIsLoading(false);
       alert("Network error: " + err.message);
+    }
+  };
+
+  const handleTotpVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = totpToken.trim();
+    if (!code) {
+      alert("Please enter the 2FA token.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emailOrPhone: emailOrPhone.trim(),
+          password,
+          totpToken: code
+        })
+      });
+      const data = await res.json();
+      setIsLoading(false);
+
+      if (data.success) {
+        setMode("welcome");
+        triggerEnterSequence(data.user);
+      } else {
+        alert(data.error || "Invalid 2FA token. Please try again.");
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      alert("2FA validation error: " + err.message);
     }
   };
 
@@ -143,13 +290,14 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
       setIsLoading(false);
 
       if (data.success) {
-        if (data.mode === "simulated") {
+        if (data.mode === "simulated" && data.code) {
           setGeneratedOtp(data.code);
+          setOtpCode(data.code); // Auto-fill simulated code on resend
         } else {
           setGeneratedOtp("");
+          setOtpCode("");
         }
         setToastMessage(data.message);
-        setOtpCode("");
       } else {
         alert(data.error || "Failed to resend code.");
       }
@@ -162,15 +310,33 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
   const handleSocialSelect = (account: { name: string; email: string }) => {
     setIsLoading(true);
     setGoogleModalOpen(false);
-    setTimeout(() => {
-      setIsLoading(false);
-      const socialUser = {
-        name: account.name,
-        email: account.email,
-        isCreator: false
-      };
-      setMode("welcome");
-      triggerEnterSequence(socialUser);
+    
+    // Simulate API registration & login for Google Auth
+    setTimeout(async () => {
+      try {
+        const response = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // Mock login using simulated email registration pathway
+          body: JSON.stringify({ emailOrPhone: account.email, otpCode: "MOCK_SOCIAL" })
+        });
+        
+        // Mock successful login directly
+        setIsLoading(false);
+        const socialUser = {
+          name: account.name,
+          email: account.email,
+          isCreator: account.email.includes("creator") || account.email.includes("pioneer")
+        };
+        setMode("welcome");
+        triggerEnterSequence(socialUser);
+      } catch (err) {
+        setIsLoading(false);
+        // Direct fallback
+        const socialUser = { name: account.name, email: account.email, isCreator: false };
+        setMode("welcome");
+        triggerEnterSequence(socialUser);
+      }
     }, 800);
   };
 
@@ -212,7 +378,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#07090e] relative px-4 select-none font-sans">
       
-      {/* Floating System Toast for OTP Simulation */}
+      {/* Floating System Toast for OTP Simulation / 2FA updates */}
       {toastMessage && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#121926] border border-[#F5A623]/30 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-slide-down max-w-sm w-full mx-4">
           <div className="h-2 w-2 rounded-full bg-[#F5A623] animate-pulse" />
@@ -223,7 +389,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
         </div>
       )}
 
-      {/* Subtle Background glow */}
+      {/* Background glow */}
       <div className="absolute inset-0 bg-cover bg-center filter brightness-[0.15] pointer-events-none" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1200')" }} />
       <div className="absolute inset-0 bg-gradient-to-t from-[#07090e] via-[#07090e]/40 to-[#07090e]/60 pointer-events-none" />
 
@@ -287,56 +453,225 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 </div>
               </div>
 
-              {/* Blank spacer for alignment */}
               <div className="hidden md:block h-8" />
             </div>
 
             {/* RIGHT SIDE PANEL: Actions */}
             <div className="w-full md:w-7/12 bg-[#0f141d] p-8 md:p-12 relative flex flex-col justify-center">
               
-              {/* FORM WRAPPERS */}
-              {mode === "credentials_input" && (
+              {/* TWO FACTOR AUTHENTICATION VIEW */}
+              {requires2FA ? (
+                <div className="space-y-6 animate-fade-in font-grotesk">
+                  <button
+                    onClick={() => {
+                      setRequires2FA(false);
+                      setTotpToken("");
+                    }}
+                    className="flex items-center gap-1.5 text-xs text-[#F5A623] hover:text-[#F5A623]/85 font-semibold cursor-pointer"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Login
+                  </button>
+
+                  <div className="space-y-2">
+                    <KeyRound className="h-10 w-10 text-[#F5A623] mx-auto md:mx-0 animate-pulse" />
+                    <h3 className="text-lg font-bold text-white">Two-Factor Authentication</h3>
+                    <p className="text-xs text-white/60">
+                      Enter the 6-digit verification code from your authenticator app.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleTotpVerify} className="space-y-4">
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={totpToken}
+                      onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
+                      placeholder="000 000"
+                      className="w-full text-center text-xl font-bold tracking-widest py-3.5 border border-white/10 hover:border-white/20 bg-white/5 focus:border-[#F5A623] rounded-lg focus:outline-none text-white placeholder-white/25"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-bold text-sm tracking-wide transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      {isLoading ? (
+                        <div className="h-4 w-4 border-t-2 border-b-2 border-black rounded-full animate-spin"></div>
+                      ) : (
+                        "Verify and Sign In"
+                      )}
+                    </button>
+                  </form>
+                </div>
+              ) : mode === "credentials_input" ? (
                 <div className="space-y-6 animate-fade-in">
                   
+                  {/* Mode / Method Selector Toggles */}
+                  <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setAuthMethod("otp");
+                          setIsRegister(false);
+                        }}
+                        className={`text-xs font-semibold px-3 py-1 rounded transition-all cursor-pointer ${
+                          authMethod === "otp"
+                            ? "bg-[#F5A623] text-black font-bold"
+                            : "text-white/50 hover:text-white"
+                        }`}
+                      >
+                        OTP Sign In
+                      </button>
+                      <button
+                        onClick={() => setAuthMethod("password")}
+                        className={`text-xs font-semibold px-3 py-1 rounded transition-all cursor-pointer ${
+                          authMethod === "password"
+                            ? "bg-[#F5A623] text-black font-bold"
+                            : "text-white/50 hover:text-white"
+                        }`}
+                      >
+                        Password
+                      </button>
+                    </div>
+
+                    {authMethod === "password" && (
+                      <button
+                        onClick={() => {
+                          setIsRegister(!isRegister);
+                          setCaptchaVerified(false);
+                        }}
+                        className="text-xs text-[#F5A623] hover:underline cursor-pointer"
+                      >
+                        {isRegister ? "Already registered? Log In" : "New? Create account"}
+                      </button>
+                    )}
+                  </div>
+
                   {/* Header */}
                   <div className="space-y-2">
-                    <div className="inline-block bg-[#F5A623] text-black font-extrabold px-3 py-1 text-sm rounded font-grotesk">
-                      Sign In
+                    <div className="inline-block bg-[#F5A623]/10 border border-[#F5A623]/30 text-[#F5A623] font-bold px-3 py-1 text-xs rounded font-grotesk">
+                      {isRegister ? "Register Account" : "Secure Sign In"}
                     </div>
-                    <h2 className="text-base font-bold text-white font-grotesk">
-                      Enjoy The OldVerse's exclusive features and benefits.
+                    <h2 className="text-sm font-semibold text-white font-grotesk">
+                      {isRegister
+                        ? "Register with your credentials to start your creative journey."
+                        : "Enjoy premium cinematic streaming and creator workspace tools."}
                     </h2>
                   </div>
 
                   {/* Input Form */}
                   <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+                    {isRegister && (
+                      <div className="relative flex items-center border border-white/10 hover:border-white/20 bg-white/5 focus-within:border-[#F5A623] rounded-lg transition-colors overflow-hidden">
+                        <div className="pl-4 pr-2 text-white/50 select-none">
+                          <UserCheck className="h-4 w-4 text-[#F5A623]" />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          value={name}
+                          autoComplete="name"
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Enter your full name"
+                          className="w-full pl-2 pr-4 py-3 bg-transparent text-xs text-white focus:outline-none placeholder-white/25 font-grotesk"
+                        />
+                      </div>
+                    )}
+
                     <div className="relative flex items-center border border-white/10 hover:border-white/20 bg-white/5 focus-within:border-[#F5A623] rounded-lg transition-colors overflow-hidden">
                       <div className="flex items-center gap-1.5 pl-4 pr-2 text-white/50 select-none">
                         {isInputEmail ? <Mail className="h-4 w-4 text-[#F5A623]" /> : <Phone className="h-4 w-4 text-[#F5A623]" />}
-                        {!isInputEmail && emailOrPhone.length > 0 && <span className="text-sm font-bold text-white/70">+91</span>}
+                        {!isInputEmail && emailOrPhone.length > 0 && <span className="text-xs font-bold text-white/70">+91</span>}
                       </div>
                       <input
                         type="text"
                         required
                         value={emailOrPhone}
+                        autoComplete="username"
                         onChange={(e) => setEmailOrPhone(e.target.value)}
-                        placeholder="Enter Email or Mobile number"
-                        className="w-full pl-2 pr-4 py-3.5 bg-transparent text-sm text-white focus:outline-none placeholder-white/25 font-grotesk"
+                        placeholder="Enter Email or 10-digit Mobile"
+                        className="w-full pl-2 pr-4 py-3.5 bg-transparent text-xs text-white focus:outline-none placeholder-white/25 font-grotesk"
                       />
                     </div>
-                    <p className="text-[11px] text-white/40 font-light font-grotesk">
-                      {isInputEmail ? "We will send an OTP code to your email." : "We will send an SMS to verify your mobile number."}
-                    </p>
+
+                    {authMethod === "password" && (
+                      <div className="space-y-4">
+                        <div className="relative flex items-center border border-white/10 hover:border-white/20 bg-white/5 focus-within:border-[#F5A623] rounded-lg transition-colors overflow-hidden">
+                          <div className="pl-4 pr-2 text-white/50 select-none">
+                            <Lock className="h-4 w-4 text-[#F5A623]" />
+                          </div>
+                          <input
+                            type="password"
+                            required
+                            value={password}
+                            autoComplete="current-password"
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter password (min 8 chars)"
+                            className="w-full pl-2 pr-4 py-3.5 bg-transparent text-xs text-white focus:outline-none placeholder-white/25 font-grotesk"
+                          />
+                        </div>
+
+                        {isRegister && (
+                          <div className="relative flex items-center border border-white/10 hover:border-white/20 bg-white/5 focus-within:border-[#F5A623] rounded-lg transition-colors overflow-hidden">
+                            <div className="pl-4 pr-2 text-white/50 select-none">
+                              <Lock className="h-4 w-4 text-[#F5A623]" />
+                            </div>
+                            <input
+                              type="password"
+                              required
+                              value={confirmPassword}
+                              autoComplete="new-password"
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="Confirm password"
+                              className="w-full pl-2 pr-4 py-3.5 bg-transparent text-xs text-white focus:outline-none placeholder-white/25 font-grotesk"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* MOCK CLOUDFLARE TURNSTILE CAPTCHA WIDGET */}
+                    <div className="p-3 border border-white/5 bg-[#121926]/40 rounded-lg flex items-center justify-between font-grotesk">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="captcha-check"
+                          checked={captchaVerified}
+                          disabled={captchaVerified || captchaLoading}
+                          onChange={simulateCaptcha}
+                          className="h-4.5 w-4.5 rounded border-white/20 bg-white/5 text-[#F5A623] focus:ring-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <label htmlFor="captcha-check" className="text-[11px] text-white/70 select-none cursor-pointer">
+                          {captchaLoading ? "Verifying security token..." : "I am not a robot"}
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-white/20">
+                        {captchaLoading ? (
+                          <RefreshCw className="h-4 w-4 animate-spin text-[#F5A623]" />
+                        ) : captchaVerified ? (
+                          <div className="h-2 w-2 rounded-full bg-[#10B981] animate-ping" />
+                        ) : (
+                          <ShieldCheck className="h-4 w-4" />
+                        )}
+                        <span className="text-[9px] uppercase tracking-wider font-semibold text-white/30">Turnstile</span>
+                      </div>
+                    </div>
 
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-bold text-sm tracking-wide transition-all shadow-lg shadow-[#F5A623]/10 cursor-pointer flex items-center justify-center gap-2 font-grotesk"
+                      className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-bold text-xs tracking-wide transition-all shadow-lg shadow-[#F5A623]/10 cursor-pointer flex items-center justify-center gap-2 font-grotesk"
                     >
                       {isLoading ? (
                         <div className="h-4 w-4 border-t-2 border-b-2 border-black rounded-full animate-spin"></div>
+                      ) : authMethod === "otp" ? (
+                        "Send OTP Code"
+                      ) : isRegister ? (
+                        "Create Account"
                       ) : (
-                        "Next"
+                        "Log In"
                       )}
                     </button>
                   </form>
@@ -352,7 +687,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
 
                   {/* Social Buttons */}
                   <div className="flex justify-center font-grotesk">
-                    {/* Google Sign In Trigger */}
                     <button
                       onClick={() => setGoogleModalOpen(true)}
                       className="flex items-center justify-center gap-2.5 w-full py-3 border border-white/10 hover:border-white/20 bg-white/3 hover:bg-white/5 rounded-lg transition-colors text-xs font-semibold text-white/95 cursor-pointer"
@@ -383,67 +717,67 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                   </div>
 
                 </div>
-              )}
-
-              {/* OTP VERIFICATION VIEW */}
-              {mode === "otp" && (
-                <div className="space-y-6 animate-fade-in font-grotesk">
-                  
-                  {/* Back button */}
-                  <button
-                    onClick={() => setMode("credentials_input")}
-                    className="flex items-center gap-1.5 text-xs text-[#F5A623] hover:text-[#F5A623]/85 font-semibold cursor-pointer"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </button>
-
-                  <div className="space-y-2">
-                    <ShieldCheck className="h-10 w-10 text-[#F5A623] mx-auto md:mx-0 animate-pulse" />
-                    <h3 className="text-lg font-bold text-white">Enter OTP Code</h3>
-                    <p className="text-xs text-white/60">
-                      We sent a verification code to{" "}
-                      <span className="text-white font-bold">
-                        {isInputEmail ? emailOrPhone : `+91 ${emailOrPhone}`}
-                      </span>.
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleOtpVerify} className="space-y-4">
-                    <input
-                      type="text"
-                      required
-                      maxLength={4}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value)}
-                      placeholder="Enter 4-digit OTP"
-                      className="w-full text-center text-lg font-bold tracking-widest py-3 border border-white/10 hover:border-white/20 bg-white/5 focus:border-[#F5A623] rounded-lg focus:outline-none text-white placeholder-white/25"
-                    />
-
+              ) : (
+                /* OTP VERIFICATION VIEW */
+                mode === "otp" && (
+                  <div className="space-y-6 animate-fade-in font-grotesk">
+                    
                     <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-bold text-sm tracking-wide transition-all cursor-pointer"
+                      onClick={() => setMode("credentials_input")}
+                      className="flex items-center gap-1.5 text-xs text-[#F5A623] hover:text-[#F5A623]/85 font-semibold cursor-pointer"
                     >
-                      {isLoading ? (
-                        <div className="h-4 w-4 border-t-2 border-b-2 border-black rounded-full animate-spin mx-auto"></div>
-                      ) : (
-                        "Verify OTP"
-                      )}
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
                     </button>
-                  </form>
 
-                  <div className="text-center md:text-left">
-                    <button
-                      type="button"
-                      onClick={handleResendCode}
-                      className="text-xs text-white/50 hover:text-[#F5A623] transition-colors cursor-pointer"
-                    >
-                      Resend Code
-                    </button>
+                    <div className="space-y-2">
+                      <ShieldCheck className="h-10 w-10 text-[#F5A623] mx-auto md:mx-0 animate-pulse" />
+                      <h3 className="text-lg font-bold text-white">Enter OTP Code</h3>
+                      <p className="text-xs text-white/60">
+                        We sent a verification code to{" "}
+                        <span className="text-white font-bold">
+                          {isInputEmail ? emailOrPhone : `+91 ${emailOrPhone}`}
+                        </span>.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleOtpVerify} className="space-y-4">
+                      <input
+                        type="text"
+                        required
+                        maxLength={4}
+                        value={otpCode}
+                        autoComplete="one-time-code"
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                        placeholder="Enter 4-digit OTP"
+                        className="w-full text-center text-lg font-bold tracking-widest py-3 border border-white/10 hover:border-white/20 bg-white/5 focus:border-[#F5A623] rounded-lg focus:outline-none text-white placeholder-white/25"
+                      />
+
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-bold text-sm tracking-wide transition-all cursor-pointer"
+                      >
+                        {isLoading ? (
+                          <div className="h-4 w-4 border-t-2 border-b-2 border-black rounded-full animate-spin mx-auto"></div>
+                        ) : (
+                          "Verify OTP"
+                        )}
+                      </button>
+                    </form>
+
+                    <div className="text-center md:text-left">
+                      <button
+                        type="button"
+                        onClick={handleResendCode}
+                        className="text-xs text-white/50 hover:text-[#F5A623] transition-colors cursor-pointer"
+                      >
+                        Resend Code
+                      </button>
+                    </div>
+
                   </div>
-
-                </div>
+                )
               )}
 
             </div>
@@ -456,7 +790,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
       {googleModalOpen && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[110] flex items-center justify-center px-4 font-sans">
           <div className="bg-[#121926] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-fade-in">
-            {/* Close Button */}
             <button 
               onClick={() => setGoogleModalOpen(false)}
               className="absolute top-4 right-4 p-1 rounded-md text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
@@ -464,7 +797,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
               <X className="h-5 w-5" />
             </button>
 
-            {/* Google Logo / Header */}
             <div className="text-center space-y-2">
               <svg className="h-8 w-8 mx-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -476,7 +808,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
               <p className="text-xs text-white/50 font-grotesk">to continue to The OldVerse</p>
             </div>
 
-            {/* List of Mock Accounts */}
             <div className="space-y-3 font-grotesk">
               <button
                 onClick={() => handleSocialSelect({ name: "John Doe", email: "johndoe@gmail.com" })}
@@ -505,7 +836,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
               </button>
             </div>
 
-            {/* Divider */}
             <div className="flex items-center gap-3 font-grotesk">
               <div className="h-[1px] bg-white/5 flex-grow" />
               <span className="text-[9px] text-white/35 font-semibold uppercase tracking-wider">
@@ -514,7 +844,6 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
               <div className="h-[1px] bg-white/5 flex-grow" />
             </div>
 
-            {/* Use custom Gmail form */}
             <form onSubmit={handleCustomGmailSubmit} className="space-y-3 font-grotesk">
               <div className="relative flex items-center border border-white/10 hover:border-white/20 bg-white/5 focus-within:border-[#F5A623] rounded-lg transition-colors overflow-hidden">
                 <div className="pl-3.5 pr-2 text-white/50 select-none">

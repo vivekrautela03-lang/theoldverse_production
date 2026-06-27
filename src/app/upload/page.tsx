@@ -26,10 +26,30 @@ export default function CreatorUploadPortal() {
   // Output published item
   const [publishedItem, setPublishedItem] = useState<MediaItem | null>(null);
 
-  // Mock File Selection
+  // Mock File Selection with security validation
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      
+      // 1. Validate File Size: Max 50MB
+      const maxSizeBytes = 50 * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        alert("Security Validation: File size exceeds the maximum allowed limit of 50MB.");
+        e.target.value = ""; // clear selection
+        return;
+      }
+      
+      // 2. Validate File Type: Only video extensions allowed
+      const allowedExtensions = [".mp4", ".mov", ".mkv", ".webm", ".avi"];
+      const fileNameLower = file.name.toLowerCase();
+      const hasAllowedExtension = allowedExtensions.some(ext => fileNameLower.endsWith(ext));
+      
+      if (!hasAllowedExtension || (file.type && !file.type.startsWith("video/"))) {
+        alert("Security Validation: Invalid file format. Only video uploads (.mp4, .mov, .mkv, .webm, .avi) are permitted.");
+        e.target.value = ""; // clear selection
+        return;
+      }
+
       setFileName(file.name);
       setFileSize((file.size / (1024 * 1024)).toFixed(1) + " MB");
       setUploadProgress(0);

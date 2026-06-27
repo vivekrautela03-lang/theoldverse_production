@@ -1,16 +1,34 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import AuthPortal from "./AuthPortal";
+import { useRouter } from "next/navigation";
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
 
-  const checkLogin = () => {
+  const checkLogin = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setIsLoggedIn(true);
+          return;
+        }
+      }
+    } catch (err) {
+      // ignore
+    }
+    
+    // Fallback/Redirect if unauthorized
+    setIsLoggedIn(false);
     if (typeof window !== "undefined") {
-      const user = localStorage.getItem("oldverse_user");
-      setIsLoggedIn(!!user);
+      localStorage.removeItem("oldverse_user");
+      window.dispatchEvent(new Event("oldverse_store_update"));
+      router.push("/auth");
     }
   };
 
@@ -37,7 +55,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   }
 
   if (!isLoggedIn) {
-    return <AuthPortal onLoginSuccess={() => setIsLoggedIn(true)} />;
+    return null; // Gated by redirect in checkLogin
   }
 
   return <>{children}</>;
