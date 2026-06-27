@@ -34,9 +34,6 @@ export default function AdminConsolePage() {
   const [sudoRequired, setSudoRequired] = useState(true);
   const [sudoEmail, setSudoEmail] = useState("theoldverse@gmail.com");
   const [sudoPassword, setSudoPassword] = useState("");
-  const [sudoOtpInput, setSudoOtpInput] = useState("");
-  const [step, setStep] = useState<"credentials" | "otp">("credentials");
-  const [otpBypassCode, setOtpBypassCode] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
@@ -77,6 +74,16 @@ export default function AdminConsolePage() {
     return false;
   };
 
+  const loadData = async () => {
+    setLoading(true);
+    const successUsers = await fetchUsers();
+    const successLogs = await fetchLogs();
+    if (successUsers && successLogs) {
+      setSudoRequired(false);
+    }
+    setLoading(false);
+  };
+
   // Sync dashboard data safely
   useEffect(() => {
     let isMounted = true;
@@ -95,45 +102,8 @@ export default function AdminConsolePage() {
     return () => { isMounted = false; };
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
-    const successUsers = await fetchUsers();
-    const successLogs = await fetchLogs();
-    if (successUsers && successLogs) {
-      setSudoRequired(false);
-    }
-    setLoading(false);
-  };
-
   // Step-Up Actions
-  const handleSendSudoOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    setAuthLoading(true);
-
-    try {
-      const response = await fetch("/api/admin/stepup/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: sudoEmail, password: sudoPassword })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setStep("otp");
-        if (data.simulatedCode) {
-          setOtpBypassCode(data.simulatedCode);
-        }
-      } else {
-        setAuthError(data.error || "Failed to send step-up code.");
-      }
-    } catch {
-      setAuthError("Network error occurred.");
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleVerifySudoOtp = async (e: React.FormEvent) => {
+  const handleVerifySudoPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
     setAuthLoading(true);
@@ -142,15 +112,12 @@ export default function AdminConsolePage() {
       const response = await fetch("/api/admin/stepup/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: sudoEmail, otpCode: sudoOtpInput })
+        body: JSON.stringify({ email: sudoEmail, password: sudoPassword })
       });
       const data = await response.json();
       if (data.success) {
         setSudoRequired(false);
         setSudoPassword("");
-        setSudoOtpInput("");
-        setStep("credentials");
-        setOtpBypassCode(null);
         confetti({
           particleCount: 80,
           spread: 60,
@@ -158,7 +125,7 @@ export default function AdminConsolePage() {
         });
         loadData();
       } else {
-        setAuthError(data.error || "Invalid OTP code.");
+        setAuthError(data.error || "Invalid password.");
       }
     } catch {
       setAuthError("Network error occurred.");
@@ -254,9 +221,9 @@ export default function AdminConsolePage() {
             <div className="h-14 w-14 bg-oldverse-accent/15 rounded-full flex items-center justify-center mx-auto border border-oldverse-accent/25">
               <Lock className="h-6 w-6 text-oldverse-accent" />
             </div>
-            <h2 className="font-bebas text-3xl tracking-wider text-oldverse-text uppercase">Step-Up Authentication</h2>
+            <h2 className="font-bebas text-3xl tracking-wider text-oldverse-text uppercase">Sudo Authorization</h2>
             <p className="text-[10px] text-oldverse-secondary font-light uppercase tracking-widest">
-              Emergency Sudo Authorization Required
+              Confirm Admin Password to Access Console
             </p>
           </div>
 
@@ -266,96 +233,46 @@ export default function AdminConsolePage() {
             </div>
           )}
 
-          {step === "credentials" ? (
-            <form onSubmit={handleSendSudoOtp} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5" /> Admin Email
-                </label>
-                <input
-                  type="email"
-                  value={sudoEmail}
-                  onChange={(e) => setSudoEmail(e.target.value)}
-                  className="w-full text-xs p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
-                  required
-                />
-              </div>
+          <form onSubmit={handleVerifySudoPassword} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" /> Admin Email
+              </label>
+              <input
+                type="email"
+                value={sudoEmail}
+                onChange={(e) => setSudoEmail(e.target.value)}
+                className="w-full text-xs p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors border-none"
+                required
+              />
+            </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5" /> Admin Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={sudoPassword}
-                  onChange={(e) => setSudoPassword(e.target.value)}
-                  className="w-full text-xs p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
-                  required
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5" /> Confirm Admin Password
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={sudoPassword}
+                onChange={(e) => setSudoPassword(e.target.value)}
+                className="w-full text-xs p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
+                required
+              />
+            </div>
 
-              <button
-                type="submit"
-                disabled={authLoading}
-                className="w-full py-3.5 bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs text-black font-bebas font-black tracking-widest uppercase rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                {authLoading ? "Verifying..." : (
-                  <>
-                    Request Sudo OTP <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifySudoOtp} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-[10px] text-oldverse-secondary uppercase font-bold tracking-wider flex items-center gap-1.5">
-                  <Key className="h-3.5 w-3.5" /> Enter 6-Digit OTP Code
-                </label>
-                <p className="text-[10px] text-oldverse-secondary font-light">
-                  A verification code has been dispatched. Enter it below to unlock sudo privileges.
-                </p>
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="000000"
-                  value={sudoOtpInput}
-                  onChange={(e) => setSudoOtpInput(e.target.value)}
-                  className="w-full text-center text-xl font-bold tracking-widest p-3 bg-black/40 border border-white/10 rounded-xl text-oldverse-text focus:outline-none focus:border-oldverse-accent transition-colors"
-                  required
-                />
-              </div>
-
-              {otpBypassCode && (
-                <div className="bg-oldverse-accent/5 border border-oldverse-accent/25 rounded-lg p-3 text-center space-y-1.5">
-                  <span className="text-[9px] text-oldverse-accent font-bold uppercase tracking-widest block">[Local Sudo Debug Mode]</span>
-                  <span className="font-mono font-bold text-lg text-white">{otpBypassCode}</span>
-                </div>
+            <button
+              type="submit"
+              disabled={authLoading}
+              className="w-full py-3.5 bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs text-black font-bebas font-black tracking-widest uppercase rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              {authLoading ? "Unlocking Console..." : (
+                <>
+                  Unlock Console <ArrowRight className="h-4 w-4" />
+                </>
               )}
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("credentials");
-                    setOtpBypassCode(null);
-                    setAuthError(null);
-                  }}
-                  className="flex-1 py-3 border border-white/10 hover:border-white/20 bg-white/3 text-xs text-white uppercase font-grotesk font-semibold rounded-xl"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="flex-1 py-3 bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs text-black font-bebas font-black tracking-widest uppercase rounded-xl transition-all cursor-pointer"
-                >
-                  {authLoading ? "Unlocking..." : "Verify Code"}
-                </button>
-              </div>
-            </form>
-          )}
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -581,7 +498,7 @@ export default function AdminConsolePage() {
 
             {/* 3. Security Audit Logs Control Panel */}
             {activeTab === "logs" && (
-              <div className="space-y-6 animate-fade-in">
+              <div className="space-y-6 animate-fade-in font-mono">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="font-bebas text-2xl tracking-wider text-oldverse-text uppercase">Security Audit Trails</h3>
@@ -599,7 +516,7 @@ export default function AdminConsolePage() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto border border-white/5 rounded-xl max-h-[500px] overflow-y-auto pr-1 no-scrollbar font-mono">
+                <div className="overflow-x-auto border border-white/5 rounded-xl max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-white/5 text-oldverse-secondary uppercase font-grotesk tracking-widest text-[9px] sticky top-0 backdrop-blur-md">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/serverDb";
 import { signJwt } from "@/lib/jwt";
+import { verifyPassword } from "@/lib/authCrypto";
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
@@ -8,37 +9,28 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { email, otpCode } = body;
+    const { email, password } = body;
     const targetEmail = (email || "").trim().toLowerCase();
-    const inputCode = (otpCode || "").trim();
 
     if (targetEmail !== "theoldverse@gmail.com") {
+      serverDb.addAuditLog("ADMIN_STEPUP_FAIL_EMAIL", ip, userAgent, `Step-up blocked: Invalid admin email supplied: ${targetEmail}`);
       return NextResponse.json({ success: false, error: "Access Denied." }, { status: 403 });
     }
-
-    const globalContext = global as typeof globalThis & { otpStore?: Map<string, string> };
-    const otpStore = globalContext.otpStore;
-    if (!otpStore) {
-      return NextResponse.json({ success: false, error: "No active verification requests." }, { status: 400 });
-    }
-
-    const correctCode = otpStore.get(`admin_stepup_${targetEmail}`);
-    if (!correctCode || correctCode !== inputCode) {
-      serverDb.addAuditLog(
-        "ADMIN_STEPUP_FAIL_OTP",
-        ip,
-        userAgent,
-        `Incorrect step-up OTP entered for administrator: ${targetEmail}`
-      );
-      return NextResponse.json({ success: false, error: "Invalid verification code." }, { status: 400 });
-    }
-
-    // Clear verification state immediately
-    otpStore.delete(`admin_stepup_${targetEmail}`);
 
     const adminUser = serverDb.getUser(targetEmail);
     if (!adminUser || !adminUser.isAdmin) {
       return NextResponse.json({ success: false, error: "Access Denied." }, { status: 403 });
+    }
+
+    const isPasswordValid = verifyPassword(password, adminUser.salt, adminUser.passwordHash);
+    if (!isPasswordValid) {
+      serverDb.addAuditLog(
+        "ADMIN_STEPUP_FAIL_PWD",
+        ip,
+        userAgent,
+        `Incorrect step-up password entered for administrator: ${targetEmail}`
+      );
+      return NextResponse.json({ success: false, error: "Invalid password." }, { status: 400 });
     }
 
     // Sign sudo access token (valid for 30 minutes)
