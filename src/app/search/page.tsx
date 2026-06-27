@@ -2,20 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Film, User, Star, Clock, Sparkles } from "lucide-react";
+import { Search, Film, Star, Clock, Sparkles } from "lucide-react";
 import { getStoreData } from "@/lib/supabaseStore";
-import { MediaItem, Creator } from "@/lib/mockData";
+import { MediaItem } from "@/lib/mockData";
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "shows" | "creators" | "bts">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "shows" | "bts">("all");
   const [allMedia, setAllMedia] = useState<MediaItem[]>([]);
-  const [allCreators, setAllCreators] = useState<Creator[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   const loadSearchData = () => {
     setAllMedia(getStoreData.media());
-    setAllCreators(getStoreData.creators());
   };
 
   useEffect(() => {
@@ -53,15 +51,7 @@ export default function SearchPage() {
     return true; // "all"
   });
 
-  const filteredCreators = activeFilter === "all" || activeFilter === "creators"
-    ? allCreators.filter((c) =>
-        c.name.toLowerCase().includes(queryNormalized) ||
-        c.username.toLowerCase().includes(queryNormalized) ||
-        c.bio.toLowerCase().includes(queryNormalized)
-      )
-    : [];
-
-  const hasResults = filteredMedia.length > 0 || filteredCreators.length > 0;
+  const hasResults = filteredMedia.length > 0;
 
   return (
     <div className="bg-oldverse-bg min-h-screen pt-24 pb-16">
@@ -86,7 +76,6 @@ export default function SearchPage() {
             {[
               { id: "all", label: "All Archives" },
               { id: "shows", label: "Films & Shows" },
-              { id: "creators", label: "Creators" },
               { id: "bts", label: "Behind The Scenes" }
             ].map((filter) => (
               <button
@@ -118,38 +107,6 @@ export default function SearchPage() {
             </div>
           ) : (
             <>
-              {/* Creators Results */}
-              {filteredCreators.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-bebas text-xl sm:text-2xl tracking-wider text-oldverse-text uppercase">
-                    Matching Creators ({filteredCreators.length})
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {filteredCreators.map((creator) => (
-                      <Link
-                        key={creator.id}
-                        href={`/creator/${creator.id}`}
-                        className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-oldverse-card/50 hover:border-oldverse-accent/25 transition-all group"
-                      >
-                        <img
-                          src={creator.avatar}
-                          alt={creator.name}
-                          className="h-12 w-12 rounded-full object-cover border border-white/5"
-                        />
-                        <div className="min-w-0 flex-grow">
-                          <h4 className="font-grotesk text-sm font-bold text-oldverse-text group-hover:text-oldverse-accent transition-colors truncate">
-                            {creator.name}
-                          </h4>
-                          <p className="text-[10px] text-oldverse-secondary truncate">@{creator.username}</p>
-                        </div>
-                        <span className="text-[9px] uppercase font-bebas text-oldverse-accent-secondary border border-oldverse-accent-secondary/20 px-2 py-0.5 rounded bg-oldverse-accent-secondary/5 flex-none">
-                          View Stage
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Films / Series Results */}
               {filteredMedia.length > 0 && (
