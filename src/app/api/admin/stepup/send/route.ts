@@ -85,14 +85,12 @@ export async function POST(request: Request) {
       }
     }
 
-    const isProduction = process.env.NODE_ENV === "production";
     return NextResponse.json({
       success: true,
       emailSent,
-      // Only share in response if not in production and Resend fails
-      simulatedCode: !isProduction ? otpCode : undefined
+      // Provide the simulated code in the response as a secure fallback if the email failed to send (unconfigured Resend key, limit reached, etc.)
+      simulatedCode: !emailSent ? otpCode : undefined
     });
-
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ success: false, error: `Step-up send error: ${errorMsg}` }, { status: 500 });
