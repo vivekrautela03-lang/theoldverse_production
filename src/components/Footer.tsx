@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -36,14 +37,16 @@ export default function Footer() {
         {/* Divider */}
         <div className="border-t border-white/5 pt-8" />
 
-        {/* Section 3: Redesigned Footer Links (Asymmetrical layout) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-4 pb-8">
-          {/* Col 1 & 2 combined: Brand details & studio mission */}
-          <div className="md:col-span-2 space-y-5">
+        {/* Section 3: Redesigned Footer Links (Directory and Connect) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 pt-4 pb-8">
+          {/* Col 1 & 2: Brand details & studio mission */}
+          <div className="sm:col-span-2 space-y-5">
             <div className="flex items-center select-none">
-              <img
+              <Image
                 src="/logo.png"
                 alt="THE OLDVERSE Logo"
+                width={150}
+                height={28}
                 className="h-7 w-auto object-contain"
               />
             </div>
@@ -52,7 +55,29 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Col 3: Connect details */}
+          {/* Col 3: Directory / Sitemap links */}
+          <div className="space-y-4">
+            <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Sitemap</h4>
+            <ul className="space-y-2 text-xs font-light">
+              <li>
+                <Link href="/" className="hover:text-oldverse-accent transition-colors">Home Archive</Link>
+              </li>
+              <li>
+                <Link href="/projects" className="hover:text-oldverse-accent transition-colors">Films & Projects</Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-oldverse-accent transition-colors">About the Studio</Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Contact Details</Link>
+              </li>
+              <li>
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">XML Sitemap</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 4: Connect details */}
           <div className="space-y-4">
             <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Connect</h4>
             <ul className="space-y-2.5 text-xs font-light">
@@ -73,17 +98,32 @@ export default function Footer() {
         </div>
 
         {/* Copyright & Legal Compliance Links */}
-        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-light">
+        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-light">
           <p>&copy; {currentYear} The OldVerse. All Rights Reserved.</p>
-          <div className="flex gap-4 text-oldverse-secondary">
-            <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Legal Notice</Link>
+          
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-oldverse-secondary">
+            <Link href="/privacy" className="hover:text-oldverse-accent transition-colors">Privacy Policy</Link>
             <span>&bull;</span>
-            <Link href="/about" className="hover:text-oldverse-accent transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-oldverse-accent transition-colors">Terms & Conditions</Link>
             <span>&bull;</span>
-            <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Terms of Use</Link>
+            <Link href="/cookies" className="hover:text-oldverse-accent transition-colors">Cookie Policy</Link>
+            <span>&bull;</span>
+            <Link href="/accessibility" className="hover:text-oldverse-accent transition-colors">Accessibility Statement</Link>
+            <span>&bull;</span>
+            <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Contact</Link>
           </div>
-        </div>
 
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="px-3.5 py-1.5 border border-white/10 hover:border-oldverse-accent/30 bg-white/3 hover:bg-white/5 text-[9px] font-bold uppercase tracking-wider text-oldverse-text rounded-full transition-all cursor-pointer flex items-center gap-1.5"
+            aria-label="Scroll back to top of viewport"
+          >
+            <span>Back to Top</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+            </svg>
+          </button>
+        </div>
       </div>
     </footer>
   );
