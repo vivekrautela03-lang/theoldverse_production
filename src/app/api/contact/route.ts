@@ -168,7 +168,41 @@ Sent via The OldVerse Contact Portal.`;
       }
     }
 
-    // 3. Fallback: Simulated Mode (Log to console / write local debug log)
+    // 3. Try FormSubmit.co as a reliable direct forwarding fallback
+    console.log("[Contact API] Attempting delivery via FormSubmit...");
+    try {
+      const fsResponse = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          name: escapedName,
+          email: escapedEmail,
+          subject: emailSubject,
+          message: escapedMessage,
+        }),
+      });
+
+      const fsData = await fsResponse.json();
+      if (fsResponse.ok && fsData.success === "true") {
+        serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
+        return NextResponse.json({
+          success: true,
+          mode: "formsubmit",
+          message: "Your message has been sent successfully!",
+        });
+      } else {
+        console.warn("[Contact API] FormSubmit returned error:", fsData);
+        errors.push(`FormSubmit Error: ${fsData.message || "Failed to submit form"}`);
+      }
+    } catch (err: any) {
+      console.warn("[Contact API] FormSubmit dispatch exception:", err.message);
+      errors.push(`FormSubmit Exception: ${err.message}`);
+    }
+
+    // 4. Fallback: Simulated Mode (Log to console / write local debug log)
     console.log("\n==================================================");
     console.log("✉️  [SIMULATED EMAIL DELIVERY] - THE OLDVERSE");
     console.log(`To: ${recipientEmail}`);
