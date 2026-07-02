@@ -120,157 +120,132 @@ function MovieCard({ item, isActive, onActivate, onDeactivate }: MovieCardProps)
         </div>
 
         {/* Details bottom half */}
-        <div className="p-3 sm:p-4 space-y-3 bg-[#141414]">
-          {/* Row 1: Orange Play button, duration, Watchlist, Info */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {item.videoUrl?.includes("instagram.com") ? (
-                <a
-                  href={item.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-[#F5A623] hover:bg-[#FF8C32] text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-bold font-grotesk tracking-wider uppercase transition-all shadow-md active:scale-95"
-                >
-                  <Play className="h-3.5 w-3.5 fill-current" />
-                  Play
-                </a>
-              ) : (
-                <Link
-                  href={`/watch/${item.id}`}
-                  className="bg-[#F5A623] hover:bg-[#FF8C32] text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-bold font-grotesk tracking-wider uppercase transition-all shadow-md active:scale-95"
-                >
-                  <Play className="h-3.5 w-3.5 fill-current" />
-                  Play
-                </Link>
-              )}
-              
-              <span className="text-[10px] sm:text-xs text-white/60 font-semibold tracking-wide ml-1">
-                {item.duration || "1 Season"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Watchlist Plus Button */}
-              <button
-                onClick={handleWatchlistToggle}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
-                title="Watchlist"
-              >
-                {isInWatchlist ? <Check className="h-4 w-4 text-[#F5A623]" /> : <Plus className="h-4 w-4" />}
-              </button>
-
-              {/* More Info Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowInfo(true);
-                  onDeactivate();
-                }}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
-                title="More Details"
-              >
-                <Info className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Row 2: Title */}
-          <h4 className="text-xs sm:text-sm font-bold text-white font-grotesk tracking-wide truncate">
-            {item.title}
-          </h4>
-
-          {/* Row 3: Genres */}
-          <p className="text-[10px] sm:text-xs text-white/50 truncate">
-            {item.category === "Music" ? "Music, Romance, Audio" : item.category === "Series" ? "Drama, Sci-Fi, Romance" : `${item.category}, Spotlight`}
-          </p>
-
-          {/* Row 4: Age Badge & Interactive Rating Stars */}
-          <div className="flex items-center justify-between pt-2 border-t border-white/5">
-            <span className="border border-white/20 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] text-white/50 font-bold font-grotesk tracking-wider uppercase">
-              {item.isOriginal ? "U/A 13+" : "U/A 16+"}
-            </span>
-
-            {/* Interactive Rating Stars */}
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
+        <div className="p-3 sm:p-4 bg-[#141414]">
+          {showInfo ? (
+            /* Detailed Info Slide inside the expanding box */
+            <div className="space-y-2.5 animate-fade-in text-xs font-sans">
+              <div className="flex items-center justify-between border-b border-white/5 pb-1">
+                <span className="text-[10px] uppercase font-grotesk font-semibold text-[#F5A623]">
+                  {item.category} Details
+                </span>
                 <button
-                  key={star}
-                  type="button"
-                  onClick={(e) => handleRate(star, e)}
-                  onMouseEnter={() => setRatingHover(star)}
-                  onMouseLeave={() => setRatingHover(0)}
-                  className="p-0.5 cursor-pointer transition-transform hover:scale-110"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowInfo(false);
+                  }}
+                  className="p-1 rounded text-white/50 hover:text-white hover:bg-white/5 cursor-pointer transition-colors"
+                  title="Show Main Options"
                 >
-                  <Star
-                    className={`h-3 w-3 ${
-                      star <= (ratingHover || userRating)
-                        ? "text-[#F5A623] fill-[#F5A623]"
-                        : "text-white/20"
-                    }`}
-                  />
+                  <X className="h-3.5 w-3.5" />
                 </button>
-              ))}
+              </div>
+              <p className="text-[10px] sm:text-[11px] font-light text-white/80 leading-relaxed max-h-[75px] overflow-y-auto no-scrollbar">
+                {item.description}
+              </p>
+              <div className="flex justify-between items-center text-[9px] text-white/40 pt-1 border-t border-white/5 font-grotesk">
+                <span>Cast: {item.cast?.slice(0, 2).join(", ") || "Crew"}</span>
+                <span>Release: {item.releaseDate || "2026"}</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Standard Controls / Options Row */
+            <div className="space-y-3">
+              {/* Row 1: Orange Play button, duration, Watchlist, Info */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {item.videoUrl?.includes("instagram.com") ? (
+                    <a
+                      href={item.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-[#F5A623] hover:bg-[#FF8C32] text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-bold font-grotesk tracking-wider uppercase transition-all shadow-md active:scale-95"
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current" />
+                      Play
+                    </a>
+                  ) : (
+                    <Link
+                      href={`/watch/${item.id}`}
+                      className="bg-[#F5A623] hover:bg-[#FF8C32] text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-bold font-grotesk tracking-wider uppercase transition-all shadow-md active:scale-95"
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current" />
+                      Play
+                    </Link>
+                  )}
+                  
+                  <span className="text-[10px] sm:text-xs text-white/60 font-semibold tracking-wide ml-1">
+                    {item.duration || "1 Season"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* Watchlist Plus Button */}
+                  <button
+                    onClick={handleWatchlistToggle}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
+                    title="Watchlist"
+                  >
+                    {isInWatchlist ? <Check className="h-4 w-4 text-[#F5A623]" /> : <Plus className="h-4 w-4" />}
+                  </button>
+
+                  {/* More Info Button */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowInfo(true);
+                    }}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
+                    title="More Details"
+                  >
+                    <Info className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Row 2: Title */}
+              <h4 className="text-xs sm:text-sm font-bold text-white font-grotesk tracking-wide truncate">
+                {item.title}
+              </h4>
+
+              {/* Row 3: Genres */}
+              <p className="text-[10px] sm:text-xs text-white/50 truncate">
+                {item.category === "Music" ? "Music, Romance, Audio" : item.category === "Series" ? "Drama, Sci-Fi, Romance" : `${item.category}, Spotlight`}
+              </p>
+
+              {/* Row 4: Age Badge & Interactive Rating Stars */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                <span className="border border-white/20 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] text-white/50 font-bold font-grotesk tracking-wider uppercase">
+                  {item.isOriginal ? "U/A 13+" : "U/A 16+"}
+                </span>
+
+                {/* Interactive Rating Stars */}
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={(e) => handleRate(star, e)}
+                      onMouseEnter={() => setRatingHover(star)}
+                      onMouseLeave={() => setRatingHover(0)}
+                      className="p-0.5 cursor-pointer transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`h-3 w-3 ${
+                          star <= (ratingHover || userRating)
+                            ? "text-[#F5A623] fill-[#F5A623]"
+                            : "text-white/20"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Info Details Overlay Panel */}
-      {showInfo && (
-        <div className="absolute inset-0 bg-black/95 z-40 p-4 flex flex-col justify-between animate-fade-in font-sans rounded-lg">
-          <div className="space-y-3 flex-grow overflow-y-auto no-scrollbar">
-            <div className="flex items-center justify-between border-b border-white/5 pb-1">
-              <span className="text-[10px] uppercase font-grotesk font-semibold text-oldverse-accent">
-                {item.category}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowInfo(false);
-                }}
-                className="p-1 rounded text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
-                title="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <h4 className="font-grotesk text-sm font-bold text-oldverse-text">
-              {item.title}
-            </h4>
-
-            <p className="text-[11px] font-light text-oldverse-secondary leading-relaxed">
-              {item.description}
-            </p>
-          </div>
-
-          <div className="pt-2 border-t border-white/5">
-            {item.videoUrl?.includes("instagram.com") ? (
-              <a
-                href={item.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
-              >
-                <Play className="h-3 w-3 fill-oldverse-bg" />
-                Play Video
-              </a>
-            ) : (
-              <Link
-                href={`/watch/${item.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
-              >
-                <Play className="h-3 w-3 fill-oldverse-bg" />
-                Play Video
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
