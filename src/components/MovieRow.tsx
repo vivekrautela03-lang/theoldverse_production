@@ -65,121 +65,140 @@ function MovieCard({ item }: MovieCardProps) {
   return (
     <div 
       onClick={handleCardClick}
-      className="flex-none w-36 sm:w-44 md:w-52 aspect-[2/3] relative group cursor-pointer bg-oldverse-card rounded-lg transition-all duration-300 ease-out hover:scale-105 hover:z-30 hover:shadow-2xl"
+      className="flex-none w-36 sm:w-44 md:w-52 aspect-[2/3] relative group cursor-pointer bg-oldverse-card rounded-lg"
     >
-      {/* Poster Image Container */}
-      <div className="w-full h-full rounded-lg overflow-hidden border border-white/5 relative">
+      {/* 1. Base Poster Card (scales down slightly when group is hovered to draw focus to expanding card) */}
+      <div className="w-full h-full rounded-lg overflow-hidden border border-white/5 relative transition-all duration-300 group-hover:opacity-30">
         <img
           src={item.posterUrl}
           alt={item.title}
-          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          className="h-full w-full object-cover"
           loading="lazy"
         />
-
-        {/* Mobile active state indicator indicator dot */}
-        {isOverlayActive && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-[10px] text-white font-bold bg-[#0066FF] px-2.5 py-1 rounded">Active Info</span>
+        {item.continueWatchingProgress !== undefined && (
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-10">
+            <div
+              className="h-full bg-oldverse-accent"
+              style={{ width: `${item.continueWatchingProgress}%` }}
+            />
           </div>
         )}
       </div>
 
-      {/* Absolute Expanding Hover Dropdown */}
-      <div className={`absolute top-[99%] left-0 w-full bg-[#141414] border border-white/10 border-t-0 rounded-b-lg p-3 z-30 shadow-2xl transition-all duration-300 pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100 transform origin-top scale-y-95 group-hover:scale-y-100 space-y-2.5 ${
-        isOverlayActive ? "opacity-100 pointer-events-auto scale-y-100" : ""
-      }`}>
-        {/* Row 1: Play, duration, plus, info icons */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            {item.videoUrl?.includes("instagram.com") ? (
-              <a
-                href={item.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="bg-[#0066FF] hover:bg-[#0055DD] text-white px-3 py-1.5 rounded flex items-center gap-1 text-[10px] font-bold tracking-wide transition-colors"
-              >
-                <Play className="h-3 w-3 fill-current" />
-                Play
-              </a>
-            ) : (
-              <Link
-                href={`/watch/${item.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-[#0066FF] hover:bg-[#0055DD] text-white px-3 py-1.5 rounded flex items-center gap-1 text-[10px] font-bold tracking-wide transition-colors"
-              >
-                <Play className="h-3 w-3 fill-current" />
-                Play
-              </Link>
-            )}
-            
-            <span className="text-[9px] text-white/50 font-medium ml-1">
-              {item.duration || "2h 10m"}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Watchlist Plus Button */}
-            <button
-              onClick={handleWatchlistToggle}
-              className="w-6 h-6 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
-              title="Watchlist"
-            >
-              {isInWatchlist ? <Check className="h-3.5 w-3.5 text-oldverse-accent" /> : <Plus className="h-3.5 w-3.5" />}
-            </button>
-
-            {/* More Info Button */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowInfo(true);
-                setIsOverlayActive(false);
-              }}
-              className="w-6 h-6 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
-              title="More Details"
-            >
-              <Info className="h-3.5 w-3.5" />
-            </button>
-          </div>
+      {/* 2. Netflix-style Landscape Expanding Hover Overlay Card */}
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] sm:w-[300px] md:w-[340px] bg-[#141414] rounded-xl shadow-2xl z-50 border border-white/10 overflow-hidden transition-all duration-300 pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 space-y-0 ${
+          isOverlayActive ? "opacity-100 pointer-events-auto scale-100" : ""
+        }`}
+      >
+        {/* Banner image top half */}
+        <div className="relative h-[110px] sm:h-[140px] md:h-[160px] w-full">
+          <img
+            src={item.bannerUrl || item.posterUrl}
+            alt={item.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] to-transparent" />
+          
+          <span className="absolute bottom-2 left-3 bg-black/60 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] text-white/80 font-bold uppercase font-grotesk tracking-wide border border-white/10">
+            {item.isOriginal ? "Original" : "Spotlight"}
+          </span>
         </div>
 
-        {/* Row 2: Title */}
-        <h4 className="text-[11px] font-bold text-white font-grotesk tracking-wide truncate">
-          {item.title}
-        </h4>
+        {/* Details bottom half */}
+        <div className="p-3 sm:p-4 space-y-3 bg-[#141414]">
+          {/* Row 1: Orange Play button, duration, Watchlist, Info */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {item.videoUrl?.includes("instagram.com") ? (
+                <a
+                  href={item.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-[#F5A623] hover:bg-[#FF8C32] text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-bold font-grotesk tracking-wider uppercase transition-all shadow-md active:scale-95"
+                >
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  Play
+                </a>
+              ) : (
+                <Link
+                  href={`/watch/${item.id}`}
+                  className="bg-[#F5A623] hover:bg-[#FF8C32] text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-bold font-grotesk tracking-wider uppercase transition-all shadow-md active:scale-95"
+                >
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  Play
+                </Link>
+              )}
+              
+              <span className="text-[10px] sm:text-xs text-white/60 font-semibold tracking-wide ml-1">
+                {item.duration || "1 Season"}
+              </span>
+            </div>
 
-        {/* Row 3: Genres */}
-        <p className="text-[9px] text-white/40 truncate">
-          {item.category === "Music" ? "Music, Romance, Audio" : item.category === "Series" ? "Drama, Sci-Fi, Romance" : `${item.category}, Spotlight`}
-        </p>
-
-        {/* Row 4: Ratings & Star Rating Section */}
-        <div className="flex items-center justify-between pt-1 border-t border-white/5">
-          <span className="border border-white/20 px-1 py-0.5 rounded text-[8px] text-white/50 font-medium font-grotesk tracking-wide uppercase">
-            {item.isOriginal ? "U/A 13+" : "U/A 16+"}
-          </span>
-
-          {/* Interactive Rating Stars */}
-          <div className="flex items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((star) => (
+            <div className="flex items-center gap-2">
+              {/* Watchlist Plus Button */}
               <button
-                key={star}
-                type="button"
-                onClick={(e) => handleRate(star, e)}
-                onMouseEnter={() => setRatingHover(star)}
-                onMouseLeave={() => setRatingHover(0)}
-                className="p-0.5 cursor-pointer transition-transform hover:scale-110"
+                onClick={handleWatchlistToggle}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
+                title="Watchlist"
               >
-                <Star
-                  className={`h-2.5 w-2.5 ${
-                    star <= (ratingHover || userRating)
-                      ? "text-oldverse-accent fill-oldverse-accent"
-                      : "text-white/20"
-                  }`}
-                />
+                {isInWatchlist ? <Check className="h-4 w-4 text-[#F5A623]" /> : <Plus className="h-4 w-4" />}
               </button>
-            ))}
+
+              {/* More Info Button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowInfo(true);
+                  setIsOverlayActive(false);
+                }}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
+                title="More Details"
+              >
+                <Info className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Row 2: Title */}
+          <h4 className="text-xs sm:text-sm font-bold text-white font-grotesk tracking-wide truncate">
+            {item.title}
+          </h4>
+
+          {/* Row 3: Genres */}
+          <p className="text-[10px] sm:text-xs text-white/50 truncate">
+            {item.category === "Music" ? "Music, Romance, Audio" : item.category === "Series" ? "Drama, Sci-Fi, Romance" : `${item.category}, Spotlight`}
+          </p>
+
+          {/* Row 4: Age Badge & Interactive Rating Stars */}
+          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+            <span className="border border-white/20 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] text-white/50 font-bold font-grotesk tracking-wider uppercase">
+              {item.isOriginal ? "U/A 13+" : "U/A 16+"}
+            </span>
+
+            {/* Interactive Rating Stars */}
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={(e) => handleRate(star, e)}
+                  onMouseEnter={() => setRatingHover(star)}
+                  onMouseLeave={() => setRatingHover(0)}
+                  className="p-0.5 cursor-pointer transition-transform hover:scale-110"
+                >
+                  <Star
+                    className={`h-3 w-3 ${
+                      star <= (ratingHover || userRating)
+                        ? "text-[#F5A623] fill-[#F5A623]"
+                        : "text-white/20"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -237,16 +256,6 @@ function MovieCard({ item }: MovieCardProps) {
               </Link>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Progress Bar for continue watching */}
-      {item.continueWatchingProgress !== undefined && (
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-20">
-          <div
-            className="h-full bg-oldverse-accent"
-            style={{ width: `${item.continueWatchingProgress}%` }}
-          />
         </div>
       )}
     </div>
@@ -330,7 +339,7 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
         {/* Horizontal scroll container */}
         <div
           ref={rowRef}
-          className="flex gap-4 overflow-x-auto overflow-y-visible no-scrollbar pt-4 pb-28 -mb-24 px-1 scroll-smooth"
+          className="flex gap-4 overflow-x-auto overflow-y-visible no-scrollbar pt-6 pb-20 -mb-16 px-1 scroll-smooth"
         >
           {items.map((item) => (
             <MovieCard key={item.id} item={item} />
