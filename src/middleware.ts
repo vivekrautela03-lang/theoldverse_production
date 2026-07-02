@@ -92,8 +92,8 @@ export function middleware(request: NextRequest) {
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' data: https://images.unsplash.com https://*.unsplash.com https://commondatastorage.googleapis.com;
-    media-src 'self' https://commondatastorage.googleapis.com https://instagram.com https://*.instagram.com https://*.cdninstagram.com;
+    img-src 'self' data: https://images.unsplash.com https://*.unsplash.com https://commondatastorage.googleapis.com https://res.cloudinary.com;
+    media-src 'self' https://commondatastorage.googleapis.com https://instagram.com https://*.instagram.com https://*.cdninstagram.com https://res.cloudinary.com;
     connect-src 'self' https://api.resend.com https://api.web3forms.com;
     font-src 'self' https://fonts.gstatic.com;
     frame-src 'self' https://challenges.cloudflare.com;

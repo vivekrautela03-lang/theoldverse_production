@@ -319,7 +319,7 @@ export const mockMediaItems: MediaItem[] = [
     rating: "9.7",
     posterUrl: "/destined.jpg",
     bannerUrl: "/destined.jpg",
-    videoUrl: "https://www.instagram.com/reel/DZ2PNMuSljj/?igsh=MW5oMm9wMmFtYzF6ag==",
+    videoUrl: "https://res.cloudinary.com/q15xvfwy/video/upload/v1782977513/WhatsApp_Video_2026-07-02_at_1.00.51_PM_fiybig.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
     isTrending: true,

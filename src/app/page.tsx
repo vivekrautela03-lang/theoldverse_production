@@ -143,13 +143,7 @@ export default function HomePage() {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0 z-0"
           >
-            {featuredItem.id.startsWith("media-love") || featuredItem.isHeroSlide ? (
-              <img
-                src={featuredItem.bannerUrl}
-                alt={featuredItem.title}
-                className="w-full h-full object-cover filter brightness-[0.35] contrast-[1.05]"
-              />
-            ) : (
+            {featuredItem.videoUrl && (featuredItem.videoUrl.includes(".mp4") || featuredItem.videoUrl.includes("cloudinary")) ? (
               <video
                 autoPlay
                 loop
@@ -158,6 +152,12 @@ export default function HomePage() {
                 className="w-full h-full object-cover filter brightness-[0.45] contrast-[1.05]"
                 src={featuredItem.videoUrl}
                 poster={featuredItem.bannerUrl}
+              />
+            ) : (
+              <img
+                src={featuredItem.bannerUrl}
+                alt={featuredItem.title}
+                className="w-full h-full object-cover filter brightness-[0.35] contrast-[1.05]"
               />
             )}
             {/* Black radial vignette gradient overlays */}
