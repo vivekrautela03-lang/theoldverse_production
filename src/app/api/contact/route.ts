@@ -87,7 +87,41 @@ Sent via The OldVerse Contact Portal.`;
 
     const errors: string[] = [];
 
-    // 1. Try Resend first (highly stable for backend environments)
+    // 1. Try FormSubmit.co as the primary direct forwarding mechanism (highly reliable out-of-the-box)
+    console.log("[Contact API] Attempting delivery via FormSubmit...");
+    try {
+      const fsResponse = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          name: escapedName,
+          email: escapedEmail,
+          subject: emailSubject,
+          message: escapedMessage,
+        }),
+      });
+
+      const fsData = await fsResponse.json();
+      if (fsResponse.ok && (fsData.success === "true" || fsData.success === true)) {
+        serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
+        return NextResponse.json({
+          success: true,
+          mode: "formsubmit",
+          message: "Your message has been sent successfully!",
+        });
+      } else {
+        console.warn("[Contact API] FormSubmit returned error:", fsData);
+        errors.push(`FormSubmit Error: ${fsData.message || "Failed to submit form"}`);
+      }
+    } catch (err: any) {
+      console.warn("[Contact API] FormSubmit dispatch exception:", err.message);
+      errors.push(`FormSubmit Exception: ${err.message}`);
+    }
+
+    // 2. Try Resend as a fallback if FormSubmit fails
     if (process.env.RESEND_API_KEY) {
       console.log("[Contact API] Attempting delivery via Resend...");
       try {
@@ -125,7 +159,7 @@ Sent via The OldVerse Contact Portal.`;
       }
     }
 
-    // 2. Try Web3Forms (if Resend wasn't configured or failed)
+    // 3. Try Web3Forms (if Resend wasn't configured or failed)
     if (process.env.WEB3FORMS_ACCESS_KEY) {
       console.log("[Contact API] Attempting delivery via Web3Forms...");
       try {
@@ -170,40 +204,6 @@ Sent via The OldVerse Contact Portal.`;
         console.warn("[Contact API] Web3Forms dispatch failed:", err.message);
         errors.push(`Web3Forms Exception: ${err.message}`);
       }
-    }
-
-    // 3. Try FormSubmit.co as a reliable direct forwarding fallback
-    console.log("[Contact API] Attempting delivery via FormSubmit...");
-    try {
-      const fsResponse = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify({
-          name: escapedName,
-          email: escapedEmail,
-          subject: emailSubject,
-          message: escapedMessage,
-        }),
-      });
-
-      const fsData = await fsResponse.json();
-      if (fsResponse.ok && (fsData.success === "true" || fsData.success === true)) {
-        serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
-        return NextResponse.json({
-          success: true,
-          mode: "formsubmit",
-          message: "Your message has been sent successfully!",
-        });
-      } else {
-        console.warn("[Contact API] FormSubmit returned error:", fsData);
-        errors.push(`FormSubmit Error: ${fsData.message || "Failed to submit form"}`);
-      }
-    } catch (err: any) {
-      console.warn("[Contact API] FormSubmit dispatch exception:", err.message);
-      errors.push(`FormSubmit Exception: ${err.message}`);
     }
 
     // 4. Fallback: Simulated Mode (Log to console / write local debug log)
