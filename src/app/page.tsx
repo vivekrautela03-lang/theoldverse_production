@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Volume2, VolumeX, Info, Star, Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
@@ -20,17 +20,31 @@ export default function HomePage() {
   const [isClient, setIsClient] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Play video programmatically to ensure mobile compatibility (iOS Safari / Android Chrome)
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch((err) => {
-        console.warn("Hero video autoplay failed/blocked:", err);
-      });
+  const videoRef = useCallback((node: HTMLVideoElement | null) => {
+    if (node) {
+      node.muted = true;
+      node.playsInline = true;
+      node.setAttribute("playsinline", "true");
+      node.setAttribute("muted", "true");
+      node.load();
+      
+      const playPromise = node.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Autoplay blocked on mount. Setting up touch-to-play fallback:", err);
+          
+          // Fallback: Start playing on first touch/click interaction on mobile devices
+          const forcePlay = () => {
+            node.play().catch(() => {});
+            document.removeEventListener("touchstart", forcePlay);
+            document.removeEventListener("click", forcePlay);
+          };
+          document.addEventListener("touchstart", forcePlay, { passive: true });
+          document.addEventListener("click", forcePlay, { passive: true });
+        });
+      }
     }
-  }, [featuredItem]);
+  }, []);
 
   // Fetch from local storage store
   const loadData = () => {
