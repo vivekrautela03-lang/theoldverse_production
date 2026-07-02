@@ -381,7 +381,7 @@ export const mockMediaItems: MediaItem[] = [
     rating: "0.0",
     posterUrl: "/naadaniya.png",
     bannerUrl: "/naadaniya.png",
-    videoUrl: "https://www.instagram.com/reel/DRl3ybJkllr/?igsh=d2lyeTB3amlqbzE=",
+    videoUrl: "https://res.cloudinary.com/q15xvfwy/video/upload/v1783006313/WhatsApp_Video_2026-07-02_at_8.58.19_PM_wk6qim.mp4",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
     isTrending: true,
