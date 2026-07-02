@@ -157,6 +157,16 @@ export default function Navbar() {
                 <Search className="h-5 w-5" />
               </Link>
 
+              {/* Login Button */}
+              {!user && (
+                <Link
+                  href="/auth"
+                  className="font-grotesk font-extrabold text-sm sm:text-base text-white hover:text-oldverse-accent transition-colors duration-250 px-1 uppercase tracking-wider"
+                >
+                  Login
+                </Link>
+              )}
+
               {/* Hamburger Settings Menu */}
               <button
                 onClick={() => setDesktopDrawerOpen(!desktopDrawerOpen)}
