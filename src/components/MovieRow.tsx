@@ -8,9 +8,12 @@ import { getStoreData, mutateStore } from "@/lib/supabaseStore";
 
 interface MovieCardProps {
   item: MediaItem;
+  isActive: boolean;
+  onActivate: () => void;
+  onDeactivate: () => void;
 }
 
-function MovieCard({ item }: MovieCardProps) {
+function MovieCard({ item, isActive, onActivate, onDeactivate }: MovieCardProps) {
   const [showInfo, setShowInfo] = useState(false);
   const [isOverlayActive, setIsOverlayActive] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -51,13 +54,14 @@ function MovieCard({ item }: MovieCardProps) {
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Check if max-width is 1024px (mobile/touch device)
+    e.stopPropagation();
     const isTouch = window.matchMedia("(max-width: 1024px)").matches;
     if (isTouch) {
-      if (!isOverlayActive) {
+      if (!isActive) {
         e.preventDefault();
-        e.stopPropagation();
-        setIsOverlayActive(true);
+        onActivate();
+      } else {
+        onDeactivate();
       }
     }
   };
@@ -89,19 +93,28 @@ function MovieCard({ item }: MovieCardProps) {
       <div 
         onClick={(e) => e.stopPropagation()}
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] sm:w-[300px] md:w-[340px] bg-[#141414] rounded-xl shadow-2xl z-50 border border-white/10 overflow-hidden transition-all duration-300 pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 space-y-0 ${
-          isOverlayActive ? "opacity-100 pointer-events-auto scale-100" : ""
+          isActive ? "opacity-100 pointer-events-auto scale-100" : ""
         }`}
       >
-        {/* Banner image top half */}
-        <div className="relative h-[110px] sm:h-[140px] md:h-[160px] w-full">
+        {/* Banner image top half with blur-contain backdrop */}
+        <div className="relative h-[110px] sm:h-[140px] md:h-[160px] w-full overflow-hidden bg-black flex items-center justify-center">
+          {/* Blurred poster background to fill landscape box */}
+          <img
+            src={item.posterUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover filter blur-md opacity-40 scale-110"
+            loading="lazy"
+          />
+          {/* Centered clean banner/poster with original aspect ratio */}
           <img
             src={item.bannerUrl || item.posterUrl}
             alt={item.title}
-            className="w-full h-full object-cover"
+            className="relative h-full object-contain z-10"
+            loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent z-20" />
           
-          <span className="absolute bottom-2 left-3 bg-black/60 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] text-white/80 font-bold uppercase font-grotesk tracking-wide border border-white/10">
+          <span className="absolute bottom-2 left-3 bg-black/60 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] text-white/80 font-bold uppercase font-grotesk tracking-wide border border-white/10 z-20">
             {item.isOriginal ? "Original" : "Spotlight"}
           </span>
         </div>
@@ -152,7 +165,7 @@ function MovieCard({ item }: MovieCardProps) {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowInfo(true);
-                  setIsOverlayActive(false);
+                  onDeactivate();
                 }}
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white cursor-pointer hover:bg-white/5 transition-colors"
                 title="More Details"
@@ -272,6 +285,7 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
 
   const checkScrollLimits = () => {
     if (rowRef.current) {
@@ -279,8 +293,30 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
       setShowLeftArrow(scrollLeft > 5);
       // Math.ceil is used to prevent rounding discrepancies
       setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 5);
+      
+      // Auto close popovers when row is scrolled/swiped
+      setActiveCardId(null);
     }
   };
+
+  // Close active card when vertical page scroll occurs
+  useEffect(() => {
+    const handlePageScroll = () => {
+      setActiveCardId(null);
+    };
+    window.addEventListener("scroll", handlePageScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handlePageScroll);
+  }, []);
+
+  // Close active card when tapping outside anywhere
+  useEffect(() => {
+    if (!activeCardId) return;
+    const handleOutsideClick = () => {
+      setActiveCardId(null);
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [activeCardId]);
 
   useEffect(() => {
     const row = rowRef.current;
@@ -342,7 +378,13 @@ export default function MovieRow({ title, items, subtitle }: MovieRowProps) {
           className="flex gap-4 overflow-x-auto overflow-y-visible no-scrollbar pt-6 pb-20 -mb-16 px-1 scroll-smooth"
         >
           {items.map((item) => (
-            <MovieCard key={item.id} item={item} />
+            <MovieCard 
+              key={item.id} 
+              item={item} 
+              isActive={activeCardId === item.id}
+              onActivate={() => setActiveCardId(item.id)}
+              onDeactivate={() => setActiveCardId(null)}
+            />
           ))}
         </div>
 
