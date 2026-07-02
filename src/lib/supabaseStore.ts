@@ -66,25 +66,41 @@ export const getStoreData = {
   followedIds: (): string[] => {
     if (!isBrowser()) return [];
     const stored = localStorage.getItem(STORAGE_KEYS.FOLLOWED);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   },
 
   applications: (): Record<string, boolean> => {
     if (!isBrowser()) return {};
     const stored = localStorage.getItem(STORAGE_KEYS.APPLICATIONS);
-    return stored ? JSON.parse(stored) : {};
+    try {
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
   },
 
   watchlistIds: (): string[] => {
     if (!isBrowser()) return [];
     const stored = localStorage.getItem(STORAGE_KEYS.WATCHLIST);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   },
 
   likedIds: (): string[] => {
     if (!isBrowser()) return [];
     const stored = localStorage.getItem(STORAGE_KEYS.LIKES);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   },
 
   history: (): { id: string; mediaId: string; title: string; posterUrl: string; date: string }[] => {
@@ -98,7 +114,11 @@ export const getStoreData = {
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(defaultHistory));
       return defaultHistory;
     }
-    return JSON.parse(stored);
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
   },
 
   downloads: (): { mediaId: string; title: string; size: string; progress: number }[] => {
@@ -112,7 +132,11 @@ export const getStoreData = {
       localStorage.setItem(STORAGE_KEYS.DOWNLOADS, JSON.stringify(defaultDownloads));
       return defaultDownloads;
     }
-    return JSON.parse(stored);
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
   },
 
   comments: (mediaId: string): { author: string; avatar: string; text: string; date: string }[] => {
