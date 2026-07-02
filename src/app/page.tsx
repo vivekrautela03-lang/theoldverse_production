@@ -271,7 +271,7 @@ export default function HomePage() {
                     href={featuredItem.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#0066FF] hover:bg-[#0055DD] text-white font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#F5A623] hover:bg-[#FF8C32] text-black font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
                   >
                     <Play className="h-4 w-4 fill-current" />
                     Play
@@ -279,7 +279,7 @@ export default function HomePage() {
                 ) : (
                   <Link
                     href={`/watch/${featuredItem.id}`}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#0066FF] hover:bg-[#0055DD] text-white font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#F5A623] hover:bg-[#FF8C32] text-black font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
                   >
                     <Play className="h-4 w-4 fill-current" />
                     Play
