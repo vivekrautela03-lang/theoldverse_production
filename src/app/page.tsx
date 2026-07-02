@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Volume2, VolumeX, Info, Star, Plus, Check } from "lucide-react";
+import { Play, Volume2, VolumeX, Info, Star, Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import MovieRow from "@/components/MovieRow";
 import AuthPortal from "@/components/AuthPortal";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
@@ -19,6 +19,7 @@ export default function HomePage() {
   const [isFollowingCreator, setIsFollowingCreator] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Play video programmatically to ensure mobile compatibility (iOS Safari / Android Chrome)
@@ -64,6 +65,7 @@ export default function HomePage() {
     if (current) {
       const followed = getStoreData.followedIds();
       setIsFollowingCreator(followed.includes(current.creatorId));
+      setIsInWatchlist(getStoreData.watchlistIds().includes(current.id));
     }
   };
 
@@ -100,17 +102,23 @@ export default function HomePage() {
   // Sync featuredItem when currentSlideIndex changes
   useEffect(() => {
     if (slides.length > 0) {
-      const current = slides[currentSlideIndex];
-      if (current) {
-        setFeaturedItem(current);
-        const followed = getStoreData.followedIds();
-        setIsFollowingCreator(followed.includes(current.creatorId));
+      const item = slides[currentSlideIndex];
+      setFeaturedItem(item || null);
+      if (item) {
+        setIsInWatchlist(getStoreData.watchlistIds().includes(item.id));
       }
     }
   }, [currentSlideIndex, slides]);
 
   const handleSlideSelect = (index: number) => {
     setCurrentSlideIndex(index);
+  };
+
+  const handleWatchlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!featuredItem) return;
+    const nextVal = mutateStore.toggleWatchlist(featuredItem.id);
+    setIsInWatchlist(nextVal);
   };
 
 
@@ -202,136 +210,138 @@ export default function HomePage() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Hero Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-10 sm:pb-16 md:pb-20 relative z-20">
-          <div className="max-w-2xl space-y-4">
+        {/* Hero Content Overlay (Image 2 style) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-12 sm:pb-16 md:pb-24 relative z-20 flex flex-col justify-end min-h-[50vh] sm:min-h-[60vh] md:min-h-[80vh]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 w-full">
             
-            {/* Slide Pagination Dots */}
-            <div className="flex gap-2">
-              {slides.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSlideSelect(idx)}
-                  className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
-                    currentSlideIndex === idx ? "w-6 bg-oldverse-accent" : "w-2 bg-white/30 hover:bg-white/50"
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
+            {/* Left Content Column */}
+            <div className="max-w-2xl space-y-4">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={featuredItem.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-3.5"
+                >
+                  {/* Languages | Genres Metadata */}
+                  <p className="text-xs font-semibold text-oldverse-accent tracking-wide font-grotesk">
+                    Hindi &bull; {featuredItem.category === "Music" ? "Music, Romance, Serene" : featuredItem.category === "Series" ? "Romance, Sci-Fi, Drama" : "Original, Spotlight"}
+                  </p>
 
-            {/* Slide Details with transition */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={featuredItem.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-4"
-              >
-                {/* Tag / Category */}
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] sm:text-xs uppercase tracking-widest bg-oldverse-accent text-oldverse-bg font-bold font-grotesk px-3 py-1 rounded-full">
-                    {featuredItem.isOriginal ? "Original" : "Spotlight"}
-                  </span>
-                  <div className="flex items-center gap-1 text-xs text-oldverse-accent font-semibold">
-                    <Star className="h-4 w-4 fill-oldverse-accent" />
-                    <span>{featuredItem.rating} Rating</span>
-                  </div>
-                </div>
-
-                {/* Title */}
-                {featuredItem.id.startsWith("media-love") ? (
-                  <div className="space-y-1">
-                    <span className="text-[10px] sm:text-xs font-grotesk font-bold tracking-widest text-oldverse-accent uppercase">
-                      Now Screening / Music Clip
-                    </span>
-                    <h3 className="font-bebas text-2xl sm:text-3xl tracking-wide text-oldverse-text uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                  {/* Title */}
+                  {featuredItem.id.startsWith("media-love") ? (
+                    <div className="space-y-1">
+                      <span className="text-[10px] sm:text-xs font-grotesk font-bold tracking-widest text-oldverse-accent uppercase">
+                        Now Screening / Music Clip
+                      </span>
+                      <h3 className="font-bebas text-3xl sm:text-4xl md:text-5xl tracking-wide text-oldverse-text uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                        {featuredItem.title}
+                      </h3>
+                    </div>
+                  ) : (
+                    <h2 className="font-bebas text-4xl sm:text-5xl md:text-7xl tracking-wider text-oldverse-text leading-none uppercase filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
                       {featuredItem.title}
-                    </h3>
+                    </h2>
+                  )}
+
+                  {/* Synopsis */}
+                  <p className="text-white/60 text-xs sm:text-sm font-light leading-relaxed max-w-xl filter drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] line-clamp-3">
+                    {featuredItem.description}
+                  </p>
+
+                  {/* Creator Credit */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-white/40 font-grotesk uppercase tracking-wider">Created By</span>
+                    <Link 
+                      href={`/creator/${featuredItem.creatorId}`}
+                      className="text-xs font-grotesk font-bold text-oldverse-text hover:text-oldverse-accent transition-colors"
+                    >
+                      Shivanshi & Vivek Rautela
+                    </Link>
                   </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Action Buttons Row */}
+              <div className="flex flex-wrap items-center gap-4 pt-3">
+                {featuredItem.videoUrl?.includes("instagram.com") ? (
+                  <a
+                    href={featuredItem.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#0066FF] hover:bg-[#0055DD] text-white font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
+                  >
+                    <Play className="h-4 w-4 fill-current" />
+                    Play
+                  </a>
                 ) : (
-                  <h2 className="font-bebas text-4xl sm:text-5xl md:text-7xl tracking-wider text-oldverse-text leading-none uppercase filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                    {featuredItem.title}
-                  </h2>
+                  <Link
+                    href={`/watch/${featuredItem.id}`}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#0066FF] hover:bg-[#0055DD] text-white font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
+                  >
+                    <Play className="h-4 w-4 fill-current" />
+                    Play
+                  </Link>
                 )}
 
-                {/* Synopsis */}
-                <p className="text-oldverse-secondary text-xs sm:text-sm font-light leading-relaxed max-w-xl filter drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] line-clamp-3">
-                  {featuredItem.description}
-                </p>
-
-                {/* Creator Credit */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-oldverse-secondary font-grotesk uppercase tracking-wider">Created By</span>
-                  <Link 
-                    href={`/creator/${featuredItem.creatorId}`}
-                    className="text-xs font-grotesk font-bold text-oldverse-text hover:text-oldverse-accent transition-colors"
+                {featuredItem.videoUrl?.includes("instagram.com") ? (
+                  <a
+                    href={featuredItem.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white font-grotesk font-bold text-sm tracking-wide transition-all hover:scale-102"
                   >
-                    Shivanshi & Vivek Rautela
+                    <Info className="h-4 w-4" />
+                    More Info
+                  </a>
+                ) : (
+                  <Link
+                    href={`/watch/${featuredItem.id}#description`}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white font-grotesk font-bold text-sm tracking-wide transition-all hover:scale-102"
+                  >
+                    <Info className="h-4 w-4" />
+                    More Info
                   </Link>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                )}
 
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              {featuredItem.videoUrl?.includes("instagram.com") ? (
-                <a
-                  href={featuredItem.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
+                {/* Add to My List Button */}
+                <button
+                  onClick={handleWatchlistToggle}
+                  className="flex items-center gap-2 px-3 py-2 text-white/80 hover:text-white transition-colors text-sm font-semibold hover:scale-102 cursor-pointer"
                 >
-                  <Play className="h-4 w-4 fill-oldverse-bg" />
-                  Play Show
-                </a>
-              ) : (
-                <Link
-                  href={`/watch/${featuredItem.id}`}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg font-grotesk font-bold text-xs tracking-wider uppercase shadow-lg shadow-oldverse-accent/20 transition-all duration-300 hover:scale-105"
-                >
-                  <Play className="h-4 w-4 fill-oldverse-bg" />
-                  Play Show
-                </Link>
-              )}
+                  {isInWatchlist ? <Check className="h-4.5 w-4.5 text-oldverse-accent" /> : <Plus className="h-4.5 w-4.5" />}
+                  <span>{isInWatchlist ? "In My List" : "Add to My List"}</span>
+                </button>
+              </div>
+            </div>
 
-              <a
-                href="https://instagram.com/theoldverse_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text font-grotesk font-bold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-105"
+            {/* Right Controls Column (Navigation Arrows & Mute) */}
+            <div className="flex items-center self-end md:self-auto gap-2">
+              {/* Prev Button */}
+              <button
+                onClick={() => setCurrentSlideIndex((prevIdx) => (prevIdx - 1 + slides.length) % slides.length)}
+                className="p-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white transition-all cursor-pointer hover:scale-105"
+                aria-label="Previous Slide"
               >
-                <Plus className="h-4 w-4" />
-                Follow
-              </a>
+                <ChevronLeft className="h-4 w-4" />
+              </button>
 
-              {featuredItem.videoUrl?.includes("instagram.com") ? (
-                <a
-                  href={featuredItem.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
-                  title="Details"
-                >
-                  <Info className="h-4 w-4" />
-                </a>
-              ) : (
-                <Link
-                  href={`/watch/${featuredItem.id}#description`}
-                  className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
-                  title="Details"
-                >
-                  <Info className="h-4 w-4" />
-                </Link>
-              )}
+              {/* Next Button */}
+              <button
+                onClick={() => setCurrentSlideIndex((prevIdx) => (prevIdx + 1) % slides.length)}
+                className="p-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white transition-all cursor-pointer hover:scale-105"
+                aria-label="Next Slide"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
 
-              {/* Mute toggle button (only for videos) */}
-              {!featuredItem.id.startsWith("media-love") && (
+              {/* Mute Toggle Button */}
+              {featuredItem.videoUrl && (
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="p-2.5 rounded-full border border-white/15 bg-oldverse-card/60 backdrop-blur-md text-oldverse-text hover:text-oldverse-accent hover:border-oldverse-accent/30 transition-colors"
+                  className="p-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white transition-all cursor-pointer hover:scale-105 ml-2"
                   aria-label="Toggle Sound"
                 >
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -339,6 +349,20 @@ export default function HomePage() {
               )}
             </div>
 
+          </div>
+
+          {/* Centered Pagination Dots at the very bottom */}
+          <div className="flex justify-center gap-1.5 pt-8 w-full">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSlideSelect(idx)}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  currentSlideIndex === idx ? "w-6 bg-white" : "w-1.5 bg-white/30 hover:bg-white/50"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
       </section>
