@@ -93,6 +93,23 @@ export default function Navbar() {
     };
   }, []);
 
+  // Click outside to close settings dropdown
+  useEffect(() => {
+    if (!desktopDrawerOpen) return;
+    
+    const handleOutsideClick = (e: MouseEvent) => {
+      const navElement = document.querySelector("nav");
+      if (navElement && !navElement.contains(e.target as Node)) {
+        setDesktopDrawerOpen(false);
+      }
+    };
+    
+    document.addEventListener("click", handleOutsideClick);
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [desktopDrawerOpen]);
+
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -144,7 +161,10 @@ export default function Navbar() {
 
             {/* Hamburger Settings Menu (Right) */}
             <button
-              onClick={() => setDesktopDrawerOpen(!desktopDrawerOpen)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setDesktopDrawerOpen(!desktopDrawerOpen);
+              }}
               className="p-1.5 text-white/90 hover:text-white focus:outline-none transition-transform hover:scale-105 cursor-pointer"
               aria-label="Menu"
             >
@@ -208,7 +228,10 @@ export default function Navbar() {
 
               {/* Hamburger Settings Menu */}
               <button
-                onClick={() => setDesktopDrawerOpen(!desktopDrawerOpen)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDesktopDrawerOpen(!desktopDrawerOpen);
+                }}
                 className="p-1.5 text-white/90 hover:text-white focus:outline-none transition-transform hover:scale-105 cursor-pointer"
                 aria-label="Menu"
               >
@@ -251,14 +274,10 @@ export default function Navbar() {
 
       {/* Settings Dropdown Popover */}
       {desktopDrawerOpen && (
-        <>
-          {/* Transparent click handler backdrop to close dropdown */}
-          <div 
-            className="fixed inset-0 z-40 bg-transparent"
-            onClick={() => setDesktopDrawerOpen(false)}
-          />
-
-          <div className="absolute top-16 right-4 w-[320px] bg-[#161515] border border-white/10 rounded-2xl shadow-2xl z-50 p-5 space-y-4 animate-fade-in font-sans">
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-16 right-4 w-[320px] bg-[#161515] border border-white/10 rounded-2xl shadow-2xl z-50 p-5 space-y-4 animate-fade-in font-sans"
+        >
             {/* Header info */}
             <div className="flex items-center justify-between pb-2 border-b border-white/5">
               <span className="text-[10px] uppercase font-bold tracking-wider text-white/40">
@@ -401,7 +420,6 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-        </>
       )}
 
       {/* Language Preferences Dialog Modal */}
