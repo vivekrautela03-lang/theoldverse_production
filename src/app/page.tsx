@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Volume2, VolumeX, Info, Star, Plus, Check } from "lucide-react";
@@ -19,6 +19,17 @@ export default function HomePage() {
   const [isFollowingCreator, setIsFollowingCreator] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Play video programmatically to ensure mobile compatibility (iOS Safari / Android Chrome)
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch((err) => {
+        console.warn("Hero video autoplay failed/blocked:", err);
+      });
+    }
+  }, [featuredItem]);
 
   // Fetch from local storage store
   const loadData = () => {
@@ -155,6 +166,7 @@ export default function HomePage() {
           >
             {featuredItem.videoUrl && (featuredItem.videoUrl.includes(".mp4") || featuredItem.videoUrl.includes("cloudinary")) ? (
               <video
+                ref={videoRef}
                 autoPlay
                 muted={isMuted}
                 playsInline
