@@ -51,27 +51,25 @@ export function middleware(request: NextRequest) {
   const isAdminConsole = pathname.startsWith("/admin-console") || pathname.startsWith("/api/admin");
 
   if (isAdminConsole) {
-    if (!payload || !payload.isAdmin) {
-      if (pathname.startsWith("/api/")) {
-        return NextResponse.json({ success: false, error: "Access Denied: Admin authorization required." }, { status: 403 });
-      }
-      const url = request.nextUrl.clone();
-      url.pathname = "/auth";
-      return NextResponse.redirect(url);
-    }
-
-    // Step-up (sudo mode) validation for all admin operations (except step-up endpoints themselves)
     const isStepUpApi = pathname.startsWith("/api/admin/stepup");
+    
     if (!isStepUpApi) {
       const adminSession = request.cookies.get("admin_session")?.value;
-      let sudoPayload: any = null;
+      let sudoPayload: { sudo?: boolean } | null = null;
       if (adminSession) {
-        sudoPayload = verifyJwt(adminSession);
+        sudoPayload = verifyJwt(adminSession) as { sudo?: boolean } | null;
       }
-      if (!sudoPayload || !sudoPayload.sudo) {
+
+      const isSudoValid = sudoPayload && sudoPayload.sudo;
+
+      if (!isSudoValid) {
         if (pathname.startsWith("/api/")) {
-          return NextResponse.json({ success: false, error: "Step-up authentication required.", stepUpRequired: true }, { status: 401 });
+          return NextResponse.json(
+            { success: false, error: "Step-up authentication required.", stepUpRequired: true },
+            { status: 401 }
+          );
         }
+        // Let the page load so it renders the password/email lock screen directly
       }
     }
   }
