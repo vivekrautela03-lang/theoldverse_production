@@ -535,6 +535,33 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince" }
     ],
     gallery: ["/media_1.jpg"]
+  },
+  {
+    id: "media-music-7",
+    title: "SOME PAINS BLOOM",
+    type: "original",
+    category: "Music",
+    description: "Some pains bloom where love once lived. A raw, poignant exploration of memory, lingering echoes, and emotional healing.",
+    duration: "Coming Soon",
+    rating: "0.0",
+    posterUrl: "/some_pains_bloom.jpg",
+    bannerUrl: "/some_pains_bloom.jpg",
+    videoUrl: "https://www.instagram.com/reel/DYRVDc_yKKD/?igsh=dzg3NnpuZHN3ZTVm",
+    creatorId: "creator-love",
+    creatorName: "Shivanshi",
+    isTrending: true,
+    isOriginal: true,
+    isHeroSlide: true,
+    releaseDate: "Coming Soon",
+    cast: ["Sumit Chauhan", "Soundarya"],
+    crew: [
+      { role: "Director & Producer", name: "Shivanshi & Vivek Rautela" },
+      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
+      { role: "Cameramen", name: "Prince & Ujjwal Gurung" },
+      { role: "Assistant Director", name: "Rishika" },
+      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince" }
+    ],
+    gallery: ["/some_pains_bloom.jpg"]
   }
 ];
 
