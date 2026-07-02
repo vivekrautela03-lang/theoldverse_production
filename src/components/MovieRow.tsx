@@ -11,104 +11,86 @@ interface MovieCardProps {
 
 function MovieCard({ item }: MovieCardProps) {
   const [showInfo, setShowInfo] = useState(false);
+  const [isOverlayActive, setIsOverlayActive] = useState(false);
+
+  // Close overlay on outside click
+  useEffect(() => {
+    if (!isOverlayActive) return;
+    const handleOutsideClick = () => {
+      setIsOverlayActive(false);
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [isOverlayActive]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Check if max-width is 1024px (mobile/touch device)
+    const isTouch = window.matchMedia("(max-width: 1024px)").matches;
+    if (isTouch) {
+      if (!isOverlayActive) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsOverlayActive(true);
+      }
+    }
+  };
 
   return (
-    <div className="flex-none w-44 sm:w-56 md:w-64 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl">
-      {/* Media Poster (Play Link) */}
-      {item.videoUrl?.includes("instagram.com") ? (
-        <a
-          href={item.videoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute inset-0 block h-full w-full z-0"
-        >
-          <img
-            src={item.posterUrl}
-            alt={item.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            loading="lazy"
-          />
-        </a>
-      ) : (
-        <Link
-          href={`/watch/${item.id}`}
-          className="absolute inset-0 block h-full w-full z-0"
-        >
-          <img
-            src={item.posterUrl}
-            alt={item.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            loading="lazy"
-          />
-        </Link>
-      )}
+    <div 
+      onClick={handleCardClick}
+      className="flex-none w-36 sm:w-44 md:w-52 aspect-[2/3] relative rounded-lg overflow-hidden group cursor-pointer bg-oldverse-card border border-white/5 transition-all duration-500 ease-out hover:scale-[1.04] hover:z-10 hover:border-oldverse-accent/30 hover:shadow-2xl"
+    >
+      {/* Poster Image */}
+      <img
+        src={item.posterUrl}
+        alt={item.title}
+        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+        loading="lazy"
+      />
 
-      {/* Black overlay at the bottom for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10" />
-
-      {/* Hover overlay details */}
-      <div className="absolute inset-0 flex flex-col justify-end p-4 md:translate-y-4 md:group-hover:translate-y-0 translate-y-0 transition-transform duration-500 ease-out z-20">
-        {/* Watch Button / Category */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] uppercase font-grotesk font-semibold bg-oldverse-accent/15 text-oldverse-accent border border-oldverse-accent/25 px-2 py-0.5 rounded-full">
-            {item.category}
-          </span>
-          {item.isOriginal && (
-            <span className="text-[9px] uppercase font-bebas tracking-wider text-oldverse-accent-secondary bg-white/5 px-2 py-0.5 rounded border border-white/5">
-              Original
-            </span>
-          )}
-        </div>
-
-        <h4 className="font-grotesk text-sm font-bold text-oldverse-text leading-snug line-clamp-2 mb-1 group-hover:text-oldverse-accent transition-colors duration-300">
-          {item.title}
-        </h4>
-
-        {/* Rating & Duration */}
-        <div className="flex items-center gap-3 text-xs text-oldverse-secondary mb-3">
-          <div className="flex items-center gap-0.5 text-oldverse-accent">
-            <Star className="h-3 w-3 fill-oldverse-accent" />
-            <span className="font-semibold">{item.rating}</span>
-          </div>
-          <div className="flex items-center gap-0.5">
-            <Clock className="h-3 w-3" />
-            <span>{item.duration}</span>
-          </div>
-        </div>
-
-        {/* Quick actions (Play Now (stacked/bigger), More Info) */}
-        <div className="flex flex-col gap-2 pt-2 border-t border-white/5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 delay-75 z-30">
-          {item.videoUrl?.includes("instagram.com") ? (
-            <a
-              href={item.videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs sm:text-sm font-bold transition-all duration-300 shadow-md"
-            >
-              <Play className="h-3.5 w-3.5 fill-oldverse-bg animate-pulse" />
-              Play Now
-            </a>
-          ) : (
-            <Link
-              href={`/watch/${item.id}`}
-              className="w-full flex items-center justify-center gap-2 py-2 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs sm:text-sm font-bold transition-all duration-300 shadow-md"
-            >
-              <Play className="h-3.5 w-3.5 fill-oldverse-bg animate-pulse" />
-              Play Now
-            </Link>
-          )}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowInfo(true);
-            }}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-oldverse-text text-[10px] sm:text-xs font-bold transition-all duration-300 cursor-pointer"
+      {/* Hover/Tap Overlay containing Play & Info Buttons */}
+      <div 
+        className={`absolute inset-0 bg-black/75 backdrop-blur-[4px] flex flex-col items-center justify-center p-4 gap-3 transition-all duration-300 z-20 ${
+          isOverlayActive 
+            ? "opacity-100 pointer-events-auto" 
+            : "opacity-0 md:group-hover:opacity-100 pointer-events-none md:group-hover:pointer-events-auto"
+        }`}
+      >
+        {/* Play Now Button */}
+        {item.videoUrl?.includes("instagram.com") ? (
+          <a
+            href={item.videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="w-11 h-11 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
+            title="Play Now"
           >
-            <Info className="h-3.5 w-3.5" />
-            Info Details
-          </button>
-        </div>
+            <Play className="h-5 w-5 fill-oldverse-bg ml-0.5" />
+          </a>
+        ) : (
+          <Link
+            href={`/watch/${item.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="w-11 h-11 rounded-full bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
+            title="Play Now"
+          >
+            <Play className="h-5 w-5 fill-oldverse-bg ml-0.5" />
+          </Link>
+        )}
+
+        {/* Info Details Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowInfo(true);
+            setIsOverlayActive(false);
+          }}
+          className="px-4 py-1.5 rounded-full border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-oldverse-text text-[10px] sm:text-[11px] font-medium tracking-wide uppercase transition-all duration-300 cursor-pointer"
+        >
+          Info Details
+        </button>
       </div>
 
       {/* Info Details Overlay Panel */}
@@ -147,6 +129,7 @@ function MovieCard({ item }: MovieCardProps) {
                 href={item.videoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
               >
                 <Play className="h-3 w-3 fill-oldverse-bg" />
@@ -155,6 +138,7 @@ function MovieCard({ item }: MovieCardProps) {
             ) : (
               <Link
                 href={`/watch/${item.id}`}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full flex items-center justify-center gap-1 py-1.5 rounded bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold transition-all duration-300"
               >
                 <Play className="h-3 w-3 fill-oldverse-bg" />
