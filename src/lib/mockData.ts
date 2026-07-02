@@ -349,14 +349,14 @@ export const mockMediaItems: MediaItem[] = [
   },
   {
     id: "media-music-1",
-    title: "CHEST PAIN (I Love)",
+    title: "THE ACHE BENEATH MY RIBS",
     type: "original",
     category: "Music",
-    description: "A music short clip. Destined to someone. Happy, childish, joyful.",
+    description: "Some pains bloom where love once lived. A raw, poignant exploration of memory, lingering echoes, and emotional healing.",
     duration: "Coming Soon",
     rating: "0.0",
-    posterUrl: "/chest_pain_i_love.jpg",
-    bannerUrl: "/chest_pain_i_love.jpg",
+    posterUrl: "/the_ache_beneath_my_ribs.jpg",
+    bannerUrl: "/the_ache_beneath_my_ribs.jpg",
     videoUrl: "https://www.instagram.com/reel/DRhowWaEu2v/?igsh=aGhzZ254bXZibnJs",
     creatorId: "creator-love",
     creatorName: "Shivanshi",
@@ -364,15 +364,12 @@ export const mockMediaItems: MediaItem[] = [
     isOriginal: true,
     isHeroSlide: true,
     releaseDate: "Coming Soon",
-    cast: ["Amarjeet", "Soni"],
+    cast: ["Sony", "Amarjeet"],
     crew: [
-      { role: "Directed & Produced by", name: "Shivanshi & Vivek Rautela" },
-      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
-      { role: "Cameraman", name: "Prince & Ujjwal Gurung" },
-      { role: "Assistant Director", name: "Rishika" },
-      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince" }
+      { role: "Director & Producer", name: "Shivanshi & Vivek Rautela" },
+      { role: "Editor", name: "Shivansh Mourya" }
     ],
-    gallery: ["/chest_pain_i_love.jpg"]
+    gallery: ["/the_ache_beneath_my_ribs.jpg"]
   },
   {
     id: "media-music-2",
@@ -535,33 +532,6 @@ export const mockMediaItems: MediaItem[] = [
       { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince" }
     ],
     gallery: ["/media_1.jpg"]
-  },
-  {
-    id: "media-music-7",
-    title: "SOME PAINS BLOOM",
-    type: "original",
-    category: "Music",
-    description: "Some pains bloom where love once lived. A raw, poignant exploration of memory, lingering echoes, and emotional healing.",
-    duration: "Coming Soon",
-    rating: "0.0",
-    posterUrl: "/some_pains_bloom.jpg",
-    bannerUrl: "/some_pains_bloom.jpg",
-    videoUrl: "https://www.instagram.com/reel/DYRVDc_yKKD/?igsh=dzg3NnpuZHN3ZTVm",
-    creatorId: "creator-love",
-    creatorName: "Shivanshi",
-    isTrending: true,
-    isOriginal: true,
-    isHeroSlide: true,
-    releaseDate: "Coming Soon",
-    cast: ["Sumit Chauhan", "Soundarya"],
-    crew: [
-      { role: "Director & Producer", name: "Shivanshi & Vivek Rautela" },
-      { role: "Editor", name: "Shivanshi & Shivansh Mourya" },
-      { role: "Cameramen", name: "Prince & Ujjwal Gurung" },
-      { role: "Assistant Director", name: "Rishika" },
-      { role: "Production Team", name: "Ujjwal Gurung, Ujjwal Sangal, Prince" }
-    ],
-    gallery: ["/some_pains_bloom.jpg"]
   }
 ];
 
