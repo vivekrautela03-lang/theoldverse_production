@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Home, Menu, X, Info, Phone, Mail, Clapperboard, LogOut, User, Landmark, Plus, Settings } from "lucide-react";
+import { Search, Home, Menu, X, Info, Phone, Mail, Clapperboard, LogOut, User, Landmark, Plus, Settings, Languages, Clock, Baby, Tv, Smartphone, HelpCircle, Cast } from "lucide-react";
 
 export default function Navbar() {
   const [desktopDrawerOpen, setDesktopDrawerOpen] = useState(false);
@@ -14,6 +14,45 @@ export default function Navbar() {
   
   // Auth state
   const [user, setUser] = useState<any>(null);
+
+  // Dropdown setting states
+  const [kidsMode, setKidsMode] = useState(false);
+  const [languageModalOpen, setLanguageModalOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [tvModalOpen, setTvModalOpen] = useState(false);
+  const [tvPairingCode, setTvPairingCode] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setKidsMode(localStorage.getItem("oldverse_kids_mode") === "true");
+      setSelectedLanguage(localStorage.getItem("oldverse_language") || "English");
+    }
+  }, []);
+
+  const handleToggleKidsMode = () => {
+    const nextVal = !kidsMode;
+    setKidsMode(nextVal);
+    localStorage.setItem("oldverse_kids_mode", String(nextVal));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+  };
+
+  const handleSelectLanguage = (lang: string) => {
+    setSelectedLanguage(lang);
+    localStorage.setItem("oldverse_language", lang);
+    setLanguageModalOpen(false);
+    alert(`Language preferences updated to: ${lang}`);
+  };
+
+  const handleOpenTvModal = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setTvPairingCode(code);
+    setTvModalOpen(true);
+    setDesktopDrawerOpen(false);
+  };
 
   const fetchUser = async () => {
     try {
@@ -210,135 +249,230 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Sliding Drawer */}
+      {/* Settings Dropdown Popover */}
       {desktopDrawerOpen && (
-        <div className="fixed inset-y-0 right-0 w-80 bg-black/95 backdrop-blur-md z-[100] p-6 flex flex-col justify-between shadow-2xl border-l border-white/10 animate-slide-in font-sans">
-          <div className="space-y-6 flex-grow overflow-y-auto no-scrollbar">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/5">
-              <span className="font-sans font-bold uppercase tracking-wider text-white text-xs">
-                {user ? `Hi, ${user.name}` : "Menu & Features"}
+        <>
+          {/* Transparent click handler backdrop to close dropdown */}
+          <div 
+            className="fixed inset-0 z-40 bg-transparent"
+            onClick={() => setDesktopDrawerOpen(false)}
+          />
+
+          <div className="absolute top-16 right-4 w-[320px] bg-[#161515] border border-white/10 rounded-2xl shadow-2xl z-50 p-5 space-y-4 animate-fade-in font-sans">
+            {/* Header info */}
+            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-white/40">
+                {user ? `Account: ${user.name}` : "Settings & Preferences"}
               </span>
               <button
                 onClick={() => setDesktopDrawerOpen(false)}
-                className="p-1.5 rounded text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
+                className="p-1 rounded text-white/40 hover:text-white hover:bg-white/5 cursor-pointer"
               >
-                <X className="h-4.5 w-4.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Navigation Links */}
-            <div className="flex flex-col gap-1 text-sm text-white/80 border-b border-white/5 pb-4">
+            {/* List items */}
+            <div className="space-y-4">
+              {/* My List */}
               <Link
-                href="/"
+                href={user ? "/profile#watchlist" : "/auth"}
                 onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+                className="flex items-center gap-3.5 py-1 text-white/80 hover:text-white transition-colors group"
               >
-                <Home className="h-4 w-4 text-white/70" />
-                <span>Home Page</span>
+                <Plus className="h-5 w-5 text-white/50 group-hover:text-oldverse-accent transition-colors" />
+                <span className="text-sm font-medium tracking-wide">My List</span>
               </Link>
 
-              <Link
-                href="/projects"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+              {/* Language Preferences */}
+              <button
+                onClick={() => {
+                  setLanguageModalOpen(true);
+                  setDesktopDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3.5 py-1 text-left text-white/80 hover:text-white transition-colors group cursor-pointer"
               >
-                <Clapperboard className="h-4 w-4 text-white/70" />
-                <span>Projects</span>
+                <Languages className="h-5 w-5 text-white/50 group-hover:text-oldverse-accent transition-colors" />
+                <div className="flex-grow flex justify-between items-center pr-1">
+                  <span className="text-sm font-medium tracking-wide">Language Preferences</span>
+                  <span className="text-[10px] text-oldverse-accent font-semibold uppercase">{selectedLanguage}</span>
+                </div>
+              </button>
+
+              {/* Watch History */}
+              <Link
+                href={user ? "/profile#history" : "/auth"}
+                onClick={() => setDesktopDrawerOpen(false)}
+                className="flex items-center gap-3.5 py-1 text-white/80 hover:text-white transition-colors group"
+              >
+                <Clock className="h-5 w-5 text-white/50 group-hover:text-oldverse-accent transition-colors" />
+                <span className="text-sm font-medium tracking-wide">Watch History</span>
               </Link>
 
-              {/* Private routes gating shown in navigation if logged in */}
-              {user && (
-                <>
-                  <Link
-                    href="/profile"
-                    onClick={() => setDesktopDrawerOpen(false)}
-                    className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-                  >
-                    <User className="h-4 w-4 text-[#F5A623]" />
-                    <span>My Profile & Resume</span>
-                  </Link>
-
-                  {user.isCreator && (
-                    <>
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setDesktopDrawerOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-                      >
-                        <Settings className="h-4 w-4 text-[#F5A623]" />
-                        <span>Creator Dashboard</span>
-                      </Link>
-                      <Link
-                        href="/upload"
-                        onClick={() => setDesktopDrawerOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
-                      >
-                        <Plus className="h-4 w-4 text-[#F5A623]" />
-                        <span>Upload Video</span>
-                      </Link>
-                     </>
-                  )}
-                  {user.isAdmin && (
-                    <Link
-                      href="/admin-console"
-                      onClick={() => setDesktopDrawerOpen(false)}
-                      className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors border-t border-white/5 pt-3 mt-1"
+              {/* Kids Mode Toggle */}
+              <div className="flex items-start gap-3.5 py-1">
+                <Baby className="h-5 w-5 text-white/50 mt-0.5" />
+                <div className="flex-grow space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-white/80 tracking-wide">Kids Mode</span>
+                    {/* Toggle Switch */}
+                    <button
+                      onClick={handleToggleKidsMode}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 cursor-pointer ${
+                        kidsMode ? "bg-[#3B82F6]" : "bg-white/10"
+                      }`}
                     >
-                      <Landmark className="h-4 w-4 text-[#F5A623]" />
-                      <span className="font-bold text-[#F5A623]">Admin Console</span>
-                    </Link>
-                  )}
+                      <span
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ${
+                          kidsMode ? "translate-x-4.5" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-[10px] leading-relaxed text-white/40 font-light">
+                    Enable content for users under 13 by turning it on.
+                  </p>
+                </div>
+              </div>
 
-                </>
-              )}
-
-              <Link
-                href="/about"
-                onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+              {/* Activate TV */}
+              <button
+                onClick={handleOpenTvModal}
+                className="w-full flex items-center gap-3.5 py-1 text-left text-white/80 hover:text-white transition-colors group cursor-pointer"
               >
-                <Info className="h-4 w-4 text-white/70" />
-                <span>About Us</span>
-              </Link>
-              
+                <Cast className="h-5 w-5 text-white/50 group-hover:text-oldverse-accent transition-colors" />
+                <span className="text-sm font-medium tracking-wide">Activate TV</span>
+              </button>
+
+              {/* Download App */}
+              <button
+                onClick={() => {
+                  alert("The OldVerse Mobile App is coming soon to Android & iOS App Stores!");
+                  setDesktopDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3.5 py-1 text-left text-white/80 hover:text-white transition-colors group cursor-pointer"
+              >
+                <Smartphone className="h-5 w-5 text-white/50 group-hover:text-oldverse-accent transition-colors" />
+                <span className="text-sm font-medium tracking-wide">Download App</span>
+              </button>
+
+              {/* Help Center */}
               <Link
                 href="/contact"
                 onClick={() => setDesktopDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/5 hover:text-white transition-colors"
+                className="flex items-center gap-3.5 py-1 text-white/80 hover:text-white transition-colors group"
               >
-                <Phone className="h-4 w-4 text-white/70" />
-                <span>Contact Us</span>
+                <HelpCircle className="h-5 w-5 text-white/50 group-hover:text-oldverse-accent transition-colors" />
+                <span className="text-sm font-medium tracking-wide">Help Center</span>
               </Link>
             </div>
 
-            {/* Session Action */}
-            <div className="pt-2">
+            {/* Session Action Footer */}
+            <div className="pt-3 border-t border-white/5">
               {user ? (
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-xs font-bold text-red-400 transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-xs font-bold text-red-400 transition-all cursor-pointer font-grotesk uppercase"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3.5 w-3.5" />
                   Logout Session
                 </button>
               ) : (
                 <Link
                   href="/auth"
                   onClick={() => setDesktopDrawerOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs font-bold text-black transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-xs font-bold text-black transition-all cursor-pointer font-grotesk uppercase"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-3.5 w-3.5" />
                   Login / Register
                 </Link>
               )}
             </div>
 
+            {/* Admin Console shortcut link if logged in as Admin */}
+            {user?.isAdmin && (
+              <Link
+                href="/admin-console"
+                onClick={() => setDesktopDrawerOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-[#F5A623]/30 hover:text-[#F5A623] text-xs font-bold text-white transition-all cursor-pointer font-grotesk uppercase"
+              >
+                <Landmark className="h-3.5 w-3.5" />
+                Admin Console
+              </Link>
+            )}
           </div>
-          
-          <div className="pt-4 border-t border-white/5 text-center text-[10px] text-white/40">
-            THE OLDVERSE &copy; {new Date().getFullYear()}
+        </>
+      )}
+
+      {/* Language Preferences Dialog Modal */}
+      {languageModalOpen && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[120] flex items-center justify-center px-4 font-sans">
+          <div className="bg-[#121926] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-6 relative animate-fade-in">
+            <button
+              onClick={() => setLanguageModalOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded-md text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="text-center space-y-2">
+              <Languages className="h-8 w-8 mx-auto text-oldverse-accent" />
+              <h3 className="text-lg font-bold text-white font-grotesk">Language Preferences</h3>
+              <p className="text-xs text-white/50">Choose your preferred audio & interface language.</p>
+            </div>
+
+            <div className="space-y-2 font-grotesk">
+              {["English", "Hindi", "Spanish", "French"].map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => handleSelectLanguage(lang)}
+                  className={`w-full p-3 rounded-lg border text-left text-xs font-semibold transition-colors cursor-pointer flex justify-between items-center ${
+                    selectedLanguage === lang
+                      ? "border-oldverse-accent bg-oldverse-accent/5 text-oldverse-accent"
+                      : "border-white/5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white"
+                  }`}
+                >
+                  <span>{lang}</span>
+                  {selectedLanguage === lang && <span className="h-1.5 w-1.5 rounded-full bg-oldverse-accent" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TV Activation Modal */}
+      {tvModalOpen && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] flex items-center justify-center px-4 font-sans">
+          <div className="bg-[#121926] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-6 relative animate-fade-in text-center">
+            <button
+              onClick={() => setTvModalOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded-md text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="space-y-2">
+              <Tv className="h-10 w-10 mx-auto text-oldverse-accent animate-pulse" />
+              <h3 className="text-lg font-bold text-white font-grotesk">Activate Your TV</h3>
+              <p className="text-xs text-white/50 leading-relaxed">
+                Open The OldVerse app on your smart TV and enter this activation code to sync your profile.
+              </p>
+            </div>
+
+            {/* Code display box */}
+            <div className="bg-white/5 rounded-xl border border-white/10 py-5">
+              <span className="text-3xl font-extrabold tracking-widest text-white font-mono uppercase">
+                {tvPairingCode}
+              </span>
+            </div>
+
+            <div className="space-y-3 pt-2 text-[10px] text-white/35 font-light leading-relaxed">
+              <p>Waiting for TV pairing request...</p>
+              <div className="h-1 w-20 bg-white/10 rounded-full mx-auto overflow-hidden">
+                <div className="h-full bg-oldverse-accent rounded-full animate-marquee w-1/2" />
+              </div>
+            </div>
           </div>
         </div>
       )}

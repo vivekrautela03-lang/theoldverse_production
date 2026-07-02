@@ -35,7 +35,19 @@ export default function HomePage() {
   const loadData = () => {
     const allMedia = getStoreData.media();
     const allCreators = getStoreData.creators();
-    setMediaItems(allMedia);
+
+    // Kids Mode filtering
+    const isKidsMode = localStorage.getItem("oldverse_kids_mode") === "true";
+    const filteredMedia = isKidsMode
+      ? allMedia.filter(item => 
+          !item.category.toLowerCase().includes("crime") && 
+          !item.category.toLowerCase().includes("thriller") &&
+          !item.description.toLowerCase().includes("mature") &&
+          !item.description.toLowerCase().includes("violence")
+        )
+      : allMedia;
+
+    setMediaItems(filteredMedia);
     setCreators(allCreators);
 
     // Check login state
@@ -43,10 +55,10 @@ export default function HomePage() {
     setIsLoggedIn(!!user);
 
     // Get items flagged specifically for the hero slideshow
-    const featuredSlides = allMedia.filter(item => item.isHeroSlide === true);
+    const featuredSlides = filteredMedia.filter(item => item.isHeroSlide === true);
     setSlides(featuredSlides);
 
-    const current = featuredSlides[0] || allMedia[0];
+    const current = featuredSlides[0] || filteredMedia[0];
     setFeaturedItem(current || null);
 
     if (current) {
