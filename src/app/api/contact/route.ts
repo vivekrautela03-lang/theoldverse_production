@@ -19,8 +19,12 @@ export async function POST(request: Request) {
   const userAgent = request.headers.get("user-agent") || "";
 
   try {
-    // 1. Rate Limiting: 5 contact requests per 10 minutes per IP
-    const rateLimit = serverDb.checkRateLimit(`contact_rate_${ip}`, 5, 10 * 60 * 1000);
+    // 1. Rate Limiting: 5 contact requests per 10 minutes per IP (bypassed in development mode for developer testing)
+    const isProd = process.env.NODE_ENV === "production";
+    const rateLimit = isProd
+      ? serverDb.checkRateLimit(`contact_rate_${ip}`, 5, 10 * 60 * 1000)
+      : { allowed: true };
+
     if (!rateLimit.allowed) {
       serverDb.addAuditLog(
         "CONTACT_RATE_LIMIT",
@@ -186,7 +190,7 @@ Sent via The OldVerse Contact Portal.`;
       });
 
       const fsData = await fsResponse.json();
-      if (fsResponse.ok && fsData.success === "true") {
+      if (fsResponse.ok && (fsData.success === "true" || fsData.success === true)) {
         serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
         return NextResponse.json({
           success: true,
