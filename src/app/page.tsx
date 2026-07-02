@@ -53,16 +53,26 @@ export default function HomePage() {
     return () => window.removeEventListener("oldverse_store_update", loadData);
   }, []);
 
-  // Set up auto-slide carousel rotation (every 6 seconds)
+  // Set up auto-slide carousel rotation (every 6 seconds for static slides, waits for videos to end)
   useEffect(() => {
     if (slides.length === 0) return;
+
+    // Check if the current featuredItem is a playable video slide
+    const isPlayableVideo = featuredItem && featuredItem.videoUrl && (
+      featuredItem.videoUrl.includes(".mp4") || 
+      featuredItem.videoUrl.includes("cloudinary")
+    );
+
+    // If it's a playable video slide, do NOT use the 6-second automatic interval.
+    // Instead, the slide transition will be triggered when the video ends (via onEnded).
+    if (isPlayableVideo) return;
 
     const interval = setInterval(() => {
       setCurrentSlideIndex((prevIndex) => (prevIndex + 1) % slides.length);
     }, 6000);
 
     return () => clearInterval(interval);
-  }, [slides]);
+  }, [slides, featuredItem]);
 
   // Sync featuredItem when currentSlideIndex changes
   useEffect(() => {
@@ -146,9 +156,11 @@ export default function HomePage() {
             {featuredItem.videoUrl && (featuredItem.videoUrl.includes(".mp4") || featuredItem.videoUrl.includes("cloudinary")) ? (
               <video
                 autoPlay
-                loop
                 muted={isMuted}
                 playsInline
+                onEnded={() => {
+                  setCurrentSlideIndex((prevIndex) => (prevIndex + 1) % slides.length);
+                }}
                 className="w-full h-full object-cover filter brightness-[0.45] contrast-[1.05]"
                 src={featuredItem.videoUrl}
                 poster={featuredItem.bannerUrl}
