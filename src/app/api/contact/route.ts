@@ -95,6 +95,8 @@ Sent via The OldVerse Contact Portal.`;
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
+          "Referer": "https://theoldverse.com/",
+          "User-Agent": userAgent || "Mozilla/5.0",
         },
         body: JSON.stringify({
           name: escapedName,
