@@ -92,8 +92,10 @@ function MovieCard({ item, isActive, onActivate, onDeactivate }: MovieCardProps)
       {/* 2. Netflix-style Landscape Expanding Hover Overlay Card */}
       <div 
         onClick={(e) => e.stopPropagation()}
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] sm:w-[300px] md:w-[340px] bg-[#141414] rounded-xl shadow-2xl z-50 border border-white/10 overflow-hidden transition-all duration-300 pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 space-y-0 ${
-          isActive ? "opacity-100 pointer-events-auto scale-100" : ""
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] sm:w-[300px] md:w-[340px] bg-[#141414] rounded-xl shadow-2xl z-50 border border-white/10 overflow-hidden transition-all duration-300 transform scale-90 group-hover:scale-100 group-hover:opacity-100 group-hover:pointer-events-auto ${
+          isActive 
+            ? "opacity-100 pointer-events-auto scale-100" 
+            : "opacity-0 pointer-events-none"
         }`}
       >
         {/* Banner image top half with blur-contain backdrop */}
