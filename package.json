@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/server": "^1.2.0",
+    "@vercel/speed-insights": "^2.0.0",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.41.0",
     "lucide-react": "^1.21.0",

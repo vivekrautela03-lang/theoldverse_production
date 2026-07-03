@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "THE OLDVERSE | Every Story Deserves A Stage",
@@ -29,6 +30,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <CookieConsent />
+        <SpeedInsights />
       </body>
     </html>
   );
