@@ -13,18 +13,18 @@ export async function POST(request: Request) {
     const targetEmail = (email || "").trim().toLowerCase();
 
     if (targetEmail !== "theoldverse@gmail.com") {
-      serverDb.addAuditLog("ADMIN_STEPUP_FAIL_EMAIL", ip, userAgent, `Step-up blocked: Invalid admin email supplied: ${targetEmail}`);
+      await serverDb.addAuditLog("ADMIN_STEPUP_FAIL_EMAIL", ip, userAgent, `Step-up blocked: Invalid admin email supplied: ${targetEmail}`);
       return NextResponse.json({ success: false, error: "Access Denied." }, { status: 403 });
     }
 
-    const adminUser = serverDb.getUser(targetEmail);
+    const adminUser = await serverDb.getUser(targetEmail);
     if (!adminUser || !adminUser.isAdmin) {
       return NextResponse.json({ success: false, error: "Access Denied." }, { status: 403 });
     }
 
     const isPasswordValid = verifyPassword(password, adminUser.salt, adminUser.passwordHash);
     if (!isPasswordValid) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "ADMIN_STEPUP_FAIL_PWD",
         ip,
         userAgent,
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     };
     const sudoToken = signJwt(sudoPayload, 30 * 60);
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "ADMIN_STEPUP_SUCCESS",
       ip,
       userAgent,

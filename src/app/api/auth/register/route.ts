@@ -18,9 +18,9 @@ export async function POST(request: Request) {
   
   try {
     // 1. Rate Limiting: 5 registrations per hour per IP
-    const rateLimit = serverDb.checkRateLimit(`register_rate_${ip}`, 5, 3600 * 1000);
+    const rateLimit = await serverDb.checkRateLimit(`register_rate_${ip}`, 5, 3600 * 1000);
     if (!rateLimit.allowed) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "REGISTER_BLOCKED",
         ip,
         userAgent,
@@ -75,9 +75,9 @@ export async function POST(request: Request) {
     }
 
     // Check if user already exists
-    const existingUser = serverDb.getUser(emailOrPhoneInput);
+    const existingUser = await serverDb.getUser(emailOrPhoneInput);
     if (existingUser) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "REGISTER_ATTEMPT_DUPLICATE",
         ip,
         userAgent,
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     const { salt, hash } = hashPassword(passwordInput);
     // Flag creators if name or email specifies it
     const isCreator = emailOrPhoneInput.toLowerCase().includes("creator") || emailOrPhoneInput.includes("pioneer");
-    const newUser = serverDb.createUser(
+    const newUser = await serverDb.createUser(
       escapedName,
       emailOrPhoneInput,
       hash,
@@ -103,11 +103,11 @@ export async function POST(request: Request) {
       isCreator
     );
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "REGISTER_SUCCESS",
       ip,
       userAgent,
-      `User registered successfully: ID: ${newUser.id}, Identifier: ${emailOrPhoneInput}`
+      `New user registered successfully. ID: ${newUser.id}, Creator: ${newUser.isCreator}`
     );
 
     return NextResponse.json({

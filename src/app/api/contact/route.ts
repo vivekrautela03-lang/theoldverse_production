@@ -22,11 +22,11 @@ export async function POST(request: Request) {
     // 1. Rate Limiting: 5 contact requests per 10 minutes per IP (bypassed in development mode for developer testing)
     const isProd = process.env.NODE_ENV === "production";
     const rateLimit = isProd
-      ? serverDb.checkRateLimit(`contact_rate_${ip}`, 5, 10 * 60 * 1000)
+      ? await serverDb.checkRateLimit(`contact_rate_${ip}`, 5, 10 * 60 * 1000)
       : { allowed: true };
 
     if (!rateLimit.allowed) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "CONTACT_RATE_LIMIT",
         ip,
         userAgent,
@@ -108,7 +108,7 @@ Sent via The OldVerse Contact Portal.`;
 
       const fsData = await fsResponse.json();
       if (fsResponse.ok && (fsData.success === "true" || fsData.success === true)) {
-        serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
+        await serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
         return NextResponse.json({
           success: true,
           mode: "formsubmit",
@@ -144,7 +144,7 @@ Sent via The OldVerse Contact Portal.`;
 
         const data = await response.json();
         if (response.ok) {
-          serverDb.addAuditLog("CONTACT_SENT_RESEND", ip, userAgent, `Contact form sent via Resend for: ${escapedEmail}`);
+          await serverDb.addAuditLog("CONTACT_SENT_RESEND", ip, userAgent, `Contact form sent via Resend for: ${escapedEmail}`);
           return NextResponse.json({
             success: true,
             mode: "resend",
@@ -191,7 +191,7 @@ Sent via The OldVerse Contact Portal.`;
         }
 
         if (response.ok && data.success) {
-          serverDb.addAuditLog("CONTACT_SENT_WEB3FORMS", ip, userAgent, `Contact form sent via Web3Forms for: ${escapedEmail}`);
+          await serverDb.addAuditLog("CONTACT_SENT_WEB3FORMS", ip, userAgent, `Contact form sent via Web3Forms for: ${escapedEmail}`);
           return NextResponse.json({
             success: true,
             mode: "web3forms",
@@ -233,7 +233,7 @@ Sent via The OldVerse Contact Portal.`;
       // Ignore write failures
     }
 
-    serverDb.addAuditLog("CONTACT_SENT_SIMULATED", ip, userAgent, `Contact form logged locally for: ${escapedEmail}`);
+    await serverDb.addAuditLog("CONTACT_SENT_SIMULATED", ip, userAgent, `Contact form logged locally for: ${escapedEmail}`);
 
     if (process.env.RESEND_API_KEY || process.env.WEB3FORMS_ACCESS_KEY) {
       return NextResponse.json({
@@ -251,7 +251,7 @@ Sent via The OldVerse Contact Portal.`;
     });
 
   } catch (error: any) {
-    serverDb.addAuditLog("CONTACT_ERROR", ip, userAgent, `Contact form exception: ${error.message}`);
+    await serverDb.addAuditLog("CONTACT_ERROR", ip, userAgent, `Contact form exception: ${error.message}`);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

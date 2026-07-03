@@ -5,9 +5,18 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Volume2, VolumeX, Info, Star, Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import MovieRow from "@/components/MovieRow";
-import AuthPortal from "@/components/AuthPortal";
+import dynamic from "next/dynamic";
 import { getStoreData, mutateStore } from "@/lib/supabaseStore";
 import { MediaItem, Creator } from "@/lib/mockData";
+
+const AuthPortal = dynamic(() => import("@/components/AuthPortal"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="h-8 w-8 border-2 border-t-transparent border-[#F5A623] rounded-full animate-spin"></div>
+    </div>
+  )
+});
 
 export default function HomePage() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);

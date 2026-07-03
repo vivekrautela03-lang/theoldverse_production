@@ -29,9 +29,9 @@ export async function POST(request: Request) {
 
   try {
     // Rate Limiting: 10 OTP verifications per minute per IP
-    const rateLimit = serverDb.checkRateLimit(`verify_otp_rate_${ip}`, 10, 60 * 1000);
+    const rateLimit = await serverDb.checkRateLimit(`verify_otp_rate_${ip}`, 10, 60 * 1000);
     if (!rateLimit.allowed) {
-      serverDb.addAuditLog("OTP_VERIFY_BLOCKED", ip, userAgent, `OTP verification rate limit hit for IP: ${ip}`);
+      await serverDb.addAuditLog("OTP_VERIFY_BLOCKED", ip, userAgent, `OTP verification rate limit hit for IP: ${ip}`);
       return NextResponse.json(
         { success: false, error: "Too many attempts. Please wait a minute and try again." },
         { status: 429 }
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       otpStore.delete(input);
 
       // 1. Get or Create User in Server DB
-      let user = serverDb.getUser(input);
+      let user = await serverDb.getUser(input);
       if (!user) {
         // Automatically create account for passwordless sign-up
         const isEmail = input.includes("@");
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         // Flag as creator if includes specific keywords
         const isCreator = input.toLowerCase().includes("creator") || input.includes("pioneer");
         
-        user = serverDb.createUser(
+        user = await serverDb.createUser(
           defaultName,
           input,
           hash,
@@ -80,14 +80,14 @@ export async function POST(request: Request) {
           isCreator
         );
         
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "OTP_SIGNUP_SUCCESS",
           ip,
           userAgent,
           `Dynamically registered user via OTP: ID: ${user.id}, Identifier: ${input}`
         );
       } else {
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "OTP_LOGIN_SUCCESS",
           ip,
           userAgent,
@@ -121,7 +121,7 @@ export async function POST(request: Request) {
 
       const accessToken = signJwt(accessTokenPayload, 15 * 60);
       const refreshExpirySeconds = 7 * 24 * 3600;
-      serverDb.createSession(user.id, sessionToken, refreshExpirySeconds, ip, userAgent);
+      await serverDb.createSession(user.id, sessionToken, refreshExpirySeconds, ip, userAgent);
 
       // 3. Return user data and set secure HttpOnly cookies
       const response = NextResponse.json({
@@ -155,7 +155,7 @@ export async function POST(request: Request) {
       return response;
     }
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "OTP_VERIFY_FAIL",
       ip,
       userAgent,
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "Invalid verification code" });
 
   } catch (error: any) {
-    serverDb.addAuditLog("OTP_VERIFY_ERROR", ip, userAgent, `OTP verify failure: ${error.message}`);
+    await serverDb.addAuditLog("OTP_VERIFY_ERROR", ip, userAgent, `OTP verify failure: ${error.message}`);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

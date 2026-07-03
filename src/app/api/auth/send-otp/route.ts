@@ -13,9 +13,9 @@ export async function POST(request: Request) {
 
   try {
     // Rate Limiting: 5 OTP requests per 5 minutes per IP
-    const rateLimit = serverDb.checkRateLimit(`otp_rate_${ip}`, 5, 5 * 60 * 1000);
+    const rateLimit = await serverDb.checkRateLimit(`otp_rate_${ip}`, 5, 5 * 60 * 1000);
     if (!rateLimit.allowed) {
-      serverDb.addAuditLog("OTP_SEND_BLOCKED", ip, userAgent, `OTP rate limit hit for IP: ${ip}`);
+      await serverDb.addAuditLog("OTP_SEND_BLOCKED", ip, userAgent, `OTP rate limit hit for IP: ${ip}`);
       return NextResponse.json(
         { success: false, error: "Too many requests. Please wait a few minutes before requesting another code." },
         { status: 429 }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     // 1. Email OTP: Simulate email delivery
     if (isEmail) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "OTP_CREATED",
         ip,
         userAgent,
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
           to: formattedPhone
         });
 
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "OTP_SENT_TWILIO",
           ip,
           userAgent,
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
         });
 
       } catch (twilioError: any) {
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "TWILIO_ERROR",
           ip,
           userAgent,
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
     }
 
     // Default to simulated mode if Twilio credentials are not set
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "OTP_CREATED_SIMULATED",
       ip,
       userAgent,
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    serverDb.addAuditLog("OTP_SEND_ERROR", ip, userAgent, `OTP send failure: ${error.message}`);
+    await serverDb.addAuditLog("OTP_SEND_ERROR", ip, userAgent, `OTP send failure: ${error.message}`);
     return NextResponse.json(
       { success: false, error: "An unexpected error occurred while sending OTP." },
       { status: 500 }

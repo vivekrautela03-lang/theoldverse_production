@@ -28,9 +28,9 @@ export async function POST(request: Request) {
   
   try {
     // 1. IP Rate Limiting: 10 login requests per minute per IP
-    const rateLimit = serverDb.checkRateLimit(`login_rate_${ip}`, 10, 60 * 1000);
+    const rateLimit = await serverDb.checkRateLimit(`login_rate_${ip}`, 10, 60 * 1000);
     if (!rateLimit.allowed) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "LOGIN_BLOCKED_RATE",
         ip,
         userAgent,
@@ -55,10 +55,10 @@ export async function POST(request: Request) {
     }
 
     // 2. Retrieve User
-    const user = serverDb.getUser(emailOrPhone);
+    const user = await serverDb.getUser(emailOrPhone);
     if (!user) {
       // Return generic error to prevent user enumeration
-      serverDb.addAuditLog("LOGIN_FAIL_NO_USER", ip, userAgent, `Login failed for non-existent identifier: ${emailOrPhone}`);
+      await serverDb.addAuditLog("LOGIN_FAIL_NO_USER", ip, userAgent, `Login failed for non-existent identifier: ${emailOrPhone}`);
       return NextResponse.json(
         { success: false, error: "Invalid email/phone or password." },
         { status: 400 }
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     // 3. Brute-Force Protection / Lockout Check
     if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "LOGIN_FAIL_LOCKED",
         ip,
         userAgent,
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
         // Lock out account for 15 minutes
         const lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
         updates.lockedUntil = lockedUntil;
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "ACCOUNT_LOCKOUT",
           ip,
           userAgent,
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         );
         message = "Account locked temporarily due to too many failed attempts. Please try again in 15 minutes.";
       } else {
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "LOGIN_FAIL_PWD",
           ip,
           userAgent,
@@ -113,14 +113,14 @@ export async function POST(request: Request) {
         );
       }
 
-      serverDb.updateUser(user.id, updates);
+      await serverDb.updateUser(user.id, updates);
       return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
 
     // 5. 2FA Check
     if (user.twoFactorEnabled) {
       if (!totpToken) {
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "LOGIN_2FA_REQUIRED",
           ip,
           userAgent,
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
       // Verify 2FA token
       const is2faValid = verifyTotp(user.twoFactorSecret!, totpToken);
       if (!is2faValid) {
-        serverDb.addAuditLog(
+        await serverDb.addAuditLog(
           "LOGIN_FAIL_2FA",
           ip,
           userAgent,
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
     }
 
     // 6. Reset Lockout Counter & Log Successful Auth
-    serverDb.updateUser(user.id, {
+    await serverDb.updateUser(user.id, {
       failedLogins: 0,
       lockedUntil: undefined
     });
@@ -170,9 +170,9 @@ export async function POST(request: Request) {
 
     // Save Session in Server Database (expires in 7d)
     const refreshExpirySeconds = 7 * 24 * 3600;
-    serverDb.createSession(user.id, sessionToken, refreshExpirySeconds, ip, userAgent);
+    await serverDb.createSession(user.id, sessionToken, refreshExpirySeconds, ip, userAgent);
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "LOGIN_SUCCESS",
       ip,
       userAgent,
@@ -214,7 +214,7 @@ export async function POST(request: Request) {
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "LOGIN_ERROR",
       ip,
       userAgent,

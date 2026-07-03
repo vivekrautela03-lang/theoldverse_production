@@ -94,6 +94,65 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
     return () => window.removeEventListener("oldverse_store_update", loadMediaDetails);
   }, [id, activeTab]);
 
+  // Dynamic SEO & Structured Schema.org JSON-LD injection
+  useEffect(() => {
+    if (!mediaItem) return;
+
+    // 1. Dynamic Page Title
+    document.title = `${mediaItem.title} - Watch on TheOldverse`;
+
+    // 2. Structured Schema.org JSON-LD
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": mediaItem.type === "series" ? "TVSeries" : "Movie",
+      "name": mediaItem.title,
+      "description": mediaItem.description,
+      "image": mediaItem.bannerUrl || mediaItem.posterUrl,
+      "genre": mediaItem.category,
+      "dateCreated": mediaItem.releaseDate || "2026",
+      "author": {
+        "@type": "Organization",
+        "name": "TheOldverse Production"
+      }
+    };
+
+    // Remove any existing dynamic script
+    const existingScript = document.getElementById("jsonld-schema-watch");
+    if (existingScript) existingScript.remove();
+
+    // Inject new script
+    const script = document.createElement("script");
+    script.id = "jsonld-schema-watch";
+    script.type = "application/ld+json";
+    script.innerHTML = JSON.stringify(schemaData);
+    document.head.appendChild(script);
+
+    // 3. Dynamic Meta Tags (OpenGraph / Twitter)
+    const setMetaTag = (property: string, content: string, attr = "property") => {
+      let el = document.querySelector(`meta[${attr}="${property}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+
+    setMetaTag("og:title", mediaItem.title);
+    setMetaTag("og:description", mediaItem.description);
+    setMetaTag("og:image", mediaItem.bannerUrl || mediaItem.posterUrl);
+    setMetaTag("og:type", "video.movie");
+    setMetaTag("twitter:card", "summary_large_image");
+    setMetaTag("twitter:title", mediaItem.title);
+    setMetaTag("twitter:description", mediaItem.description);
+    setMetaTag("twitter:image", mediaItem.bannerUrl || mediaItem.posterUrl);
+
+    return () => {
+      const scriptToRemove = document.getElementById("jsonld-schema-watch");
+      if (scriptToRemove) scriptToRemove.remove();
+    };
+  }, [mediaItem]);
+
   const selectEpisode = (ep: Episode) => {
     setActiveVideoUrl(ep.videoUrl);
     setActivePosterUrl(ep.thumbnail);

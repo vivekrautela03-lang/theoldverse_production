@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Token invalid or expired" }, { status: 401 });
     }
 
-    const user = serverDb.getUserById(payload.sub);
+    const user = await serverDb.getUserById(payload.sub);
     if (!user) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 401 });
     }
@@ -30,11 +30,11 @@ export async function POST(request: Request) {
     const { secret, otpauthUrl } = generateTotpSecret(user.emailOrPhone);
 
     // Save temporary secret (do not enable 2FA yet until verified)
-    serverDb.updateUser(user.id, {
+    await serverDb.updateUser(user.id, {
       twoFactorSecret: secret // Store in secret field temporarily
     });
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "2FA_SETUP_INITIATED",
       request.headers.get("x-forwarded-for") || "127.0.0.1",
       request.headers.get("user-agent") || "",

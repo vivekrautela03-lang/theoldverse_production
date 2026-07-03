@@ -8,7 +8,8 @@ export async function POST(request: Request) {
     const { action, targetId, emailOrPhone, roleUpdates, otpLength = 6 } = body;
 
     if (action === "get-users") {
-      const users = serverDb.getUsers().map(u => ({
+      const allUsers = await serverDb.getUsers();
+      const users = allUsers.map(u => ({
         id: u.id,
         name: u.name,
         emailOrPhone: u.emailOrPhone,
@@ -24,13 +25,13 @@ export async function POST(request: Request) {
       if (!targetId || !roleUpdates) {
         return NextResponse.json({ success: false, error: "targetId and roleUpdates are required." }, { status: 400 });
       }
-      const user = serverDb.getUserById(targetId);
+      const user = await serverDb.getUserById(targetId);
       if (!user) {
         return NextResponse.json({ success: false, error: "User not found." }, { status: 404 });
       }
       
-      serverDb.updateUser(targetId, roleUpdates);
-      serverDb.addAuditLog(
+      await serverDb.updateUser(targetId, roleUpdates);
+      await serverDb.addAuditLog(
         "ADMIN_USER_UPDATE",
         "127.0.0.1",
         "Admin Console",
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
 
       (global as any).otpStore.set(emailOrPhone.trim().toLowerCase(), code);
       
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "ADMIN_OTP_GENERATED",
         "127.0.0.1",
         "Admin Console",

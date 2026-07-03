@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Token invalid or expired" }, { status: 401 });
     }
 
-    const user = serverDb.getUserById(payload.sub);
+    const user = await serverDb.getUserById(payload.sub);
     if (!user || !user.twoFactorSecret) {
       return NextResponse.json({ success: false, error: "2FA has not been setup yet." }, { status: 400 });
     }
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     // Verify TOTP code
     const isTokenValid = verifyTotp(user.twoFactorSecret, code);
     if (!isTokenValid) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "2FA_VERIFICATION_FAILED",
         ip,
         userAgent,
@@ -47,11 +47,11 @@ export async function POST(request: Request) {
     }
 
     // Enable 2FA permanently
-    serverDb.updateUser(user.id, {
+    await serverDb.updateUser(user.id, {
       twoFactorEnabled: true
     });
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "2FA_ENABLED",
       ip,
       userAgent,

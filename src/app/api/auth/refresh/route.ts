@@ -22,9 +22,9 @@ export async function POST(request: Request) {
     }
 
     // 2. Lookup Session in Server Database
-    const session = serverDb.getSession(refreshCookie);
+    const session = await serverDb.getSession(refreshCookie);
     if (!session) {
-      serverDb.addAuditLog(
+      await serverDb.addAuditLog(
         "REFRESH_FAIL_NO_SESSION",
         ip,
         userAgent,
@@ -35,8 +35,8 @@ export async function POST(request: Request) {
 
     // 3. Expiration Check
     if (new Date(session.expiresAt) < new Date()) {
-      serverDb.revokeSession(refreshCookie);
-      serverDb.addAuditLog(
+      await serverDb.revokeSession(refreshCookie);
+      await serverDb.addAuditLog(
         "SESSION_EXPIRED",
         ip,
         userAgent,
@@ -50,8 +50,8 @@ export async function POST(request: Request) {
       // SECURITY WARNING: This refresh token has been used already!
       // This indicates that either the user or an attacker is attempting to reuse an invalidated token.
       // Action: Revoke all active sessions for the user to prevent further hijacking.
-      serverDb.revokeSessionsForUser(session.userId);
-      serverDb.addAuditLog(
+      await serverDb.revokeSessionsForUser(session.userId);
+      await serverDb.addAuditLog(
         "REFRESH_TOKEN_REUSE_DETECTED",
         ip,
         userAgent,
@@ -69,9 +69,9 @@ export async function POST(request: Request) {
     }
 
     // 5. Get User details
-    const user = serverDb.getUserById(session.userId);
+    const user = await serverDb.getUserById(session.userId);
     if (!user) {
-      serverDb.revokeSession(refreshCookie);
+      await serverDb.revokeSession(refreshCookie);
       return NextResponse.json({ success: false, error: "User not found" }, { status: 401 });
     }
 
@@ -86,16 +86,16 @@ export async function POST(request: Request) {
     };
 
     // Mark current session as rotated
-    serverDb.updateSession(session.id, { rotated: true, rotatedTo: newSessionToken });
+    await serverDb.updateSession(session.id, { rotated: true, rotatedTo: newSessionToken });
 
     // Create a new session in database
     const refreshExpirySeconds = 7 * 24 * 3600;
-    serverDb.createSession(user.id, newSessionToken, refreshExpirySeconds, ip, userAgent);
+    await serverDb.createSession(user.id, newSessionToken, refreshExpirySeconds, ip, userAgent);
 
     // Generate new Access Token (JWT, 15m)
     const accessToken = signJwt(accessTokenPayload, 15 * 60);
 
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "SESSION_REFRESHED",
       ip,
       userAgent,
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
     return response;
 
   } catch (error: any) {
-    serverDb.addAuditLog(
+    await serverDb.addAuditLog(
       "REFRESH_ERROR",
       ip,
       userAgent,

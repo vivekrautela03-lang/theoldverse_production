@@ -3,7 +3,7 @@ import { serverDb } from "@/lib/serverDb";
 
 export async function GET() {
   try {
-    const logs = serverDb.getAuditLogs();
+    const logs = await serverDb.getAuditLogs();
     return NextResponse.json({ success: true, logs });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);

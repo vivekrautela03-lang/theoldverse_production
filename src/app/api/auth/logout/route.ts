@@ -15,10 +15,10 @@ export async function POST(request: Request) {
     const refreshToken = getCookie("session_rt");
     if (refreshToken) {
       // Revoke session in database
-      const session = serverDb.getSession(refreshToken);
+      const session = await serverDb.getSession(refreshToken);
       if (session) {
-        serverDb.revokeSession(refreshToken);
-        serverDb.addAuditLog(
+        await serverDb.revokeSession(refreshToken);
+        await serverDb.addAuditLog(
           "LOGOUT",
           ip,
           userAgent,

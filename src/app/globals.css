@@ -150,3 +150,10 @@ body {
   animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Accessibility Focus outlines for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #F5A623 !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.2) !important;
+}
+

@@ -1,20 +1,18 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://theoldverse.com";
-
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: [
         "/admin-console/",
+        "/api/",
         "/dashboard/",
-        "/profile/",
         "/upload/",
-        "/api/"
-      ]
+        "/profile/",
+      ],
     },
-    sitemap: `${baseUrl}/sitemap.xml`
+    sitemap: "https://theoldverse.com/sitemap.xml",
   };
 }

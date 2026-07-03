@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import { supabaseAdmin } from "./supabaseClient";
 
 // Hashing helper to seed the admin account (avoid circular import during init)
 const PBKDF2_ITERATIONS = 100000;
@@ -18,9 +17,6 @@ function hashPasswordSimple(password: string): { salt: string; hash: string } {
   ).toString("hex");
   return { salt, hash };
 }
-
-const DB_DIR = path.join(process.cwd(), ".next");
-const DB_FILE = path.join(DB_DIR, "server-db.json");
 
 interface UserSchema {
   id: string;
@@ -42,7 +38,7 @@ interface SessionSchema {
   userId: string;
   expiresAt: string; // ISO string
   rotated: boolean;
-  rotatedTo?: string; // session ID it was rotated to
+  rotatedTo?: string;
   ip: string;
   userAgent: string;
 }
@@ -61,282 +57,380 @@ interface AuditLogSchema {
   details: string;
 }
 
-interface DbSchema {
-  users: UserSchema[];
-  sessions: SessionSchema[];
-  rateLimits: Record<string, RateLimitSchema>;
-  auditLogs: AuditLogSchema[];
-}
-
 /**
- * Initializes and reads/writes the server-side file database.
+ * Enterprise-grade Server Database powered by Supabase PostgreSQL.
  */
 class ServerDb {
-  private db: DbSchema = {
-    users: [],
-    sessions: [],
-    rateLimits: {},
-    auditLogs: [],
-  };
+  private seeded = false;
 
-  constructor() {
-    this.init();
-  }
-
-  private initializeDefaultDb() {
-    this.db = {
-      users: [],
-      sessions: [],
-      rateLimits: {},
-      auditLogs: [],
-    };
-    // Seed default Admin Account
-    const seedAdmin = hashPasswordSimple("oldverse2025");
-    this.db.users.push({
-      id: "user-admin",
-      name: "System Admin",
-      emailOrPhone: "theoldverse@gmail.com",
-      passwordHash: seedAdmin.hash,
-      salt: seedAdmin.salt,
-      isAdmin: true,
-      isCreator: true,
-      twoFactorEnabled: false,
-      failedLogins: 0,
-    });
-
-    // Seed default Creator Account (Visual Pioneer)
-    const seedPioneer = hashPasswordSimple("PioneerPass@123");
-    this.db.users.push({
-      id: "user-pioneer",
-      name: "Visual Pioneer",
-      emailOrPhone: "pioneer@oldverse.com",
-      passwordHash: seedPioneer.hash,
-      salt: seedPioneer.salt,
-      isAdmin: false,
-      isCreator: true,
-      twoFactorEnabled: false,
-      failedLogins: 0,
-    });
-
-    this.save();
-  }
-
-  private init() {
+  private async ensureSeeded() {
+    if (this.seeded) return;
     try {
-      if (!fs.existsSync(DB_DIR)) {
-        fs.mkdirSync(DB_DIR, { recursive: true });
-      }
+      const { data, error } = await supabaseAdmin
+        .from("users_db")
+        .select("id")
+        .limit(1);
+      
+      if (!error && (!data || data.length === 0)) {
+        console.log("[ServerDb] Seeding default admin and pioneer users to Supabase...");
+        
+        const seedAdmin = hashPasswordSimple("oldverse2025");
+        await supabaseAdmin.from("users_db").insert({
+          id: "user-admin",
+          name: "System Admin",
+          email_or_phone: "theoldverse@gmail.com",
+          password_hash: seedAdmin.hash,
+          salt: seedAdmin.salt,
+          is_admin: true,
+          is_creator: true,
+          two_factor_enabled: false,
+          failed_logins: 0
+        });
 
-      if (fs.existsSync(DB_FILE)) {
-        const fileContent = fs.readFileSync(DB_FILE, "utf8").trim();
-        if (fileContent) {
-          try {
-            this.db = JSON.parse(fileContent);
-            // Ensure all required fields exist
-            if (!this.db.users) this.db.users = [];
-            if (!this.db.sessions) this.db.sessions = [];
-            if (!this.db.rateLimits) this.db.rateLimits = {};
-            if (!this.db.auditLogs) this.db.auditLogs = [];
-          } catch {
-            console.warn("[ServerDb] JSON parsing failed, resetting database to defaults...");
-            this.initializeDefaultDb();
-          }
-        } else {
-          this.initializeDefaultDb();
-        }
-      } else {
-        this.initializeDefaultDb();
+        const seedPioneer = hashPasswordSimple("PioneerPass@123");
+        await supabaseAdmin.from("users_db").insert({
+          id: "user-pioneer",
+          name: "Visual Pioneer",
+          email_or_phone: "pioneer@oldverse.com",
+          password_hash: seedPioneer.hash,
+          salt: seedPioneer.salt,
+          is_admin: false,
+          is_creator: true,
+          two_factor_enabled: false,
+          failed_logins: 0
+        });
       }
+      this.seeded = true;
     } catch (err) {
-      console.error("[ServerDb Error] Initialization failed:", err);
-    }
-  }
-
-  private save() {
-    try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(this.db, null, 2), "utf8");
-    } catch (err) {
-      console.error("[ServerDb Error] Save failed:", err);
+      console.error("[ServerDb] Seeding validation exception:", err);
     }
   }
 
   // --- Users Table ---
 
-  public getUsers(): UserSchema[] {
-    this.init(); // reload to get fresh changes across serverless files
-    return this.db.users;
+  public async getUsers(): Promise<UserSchema[]> {
+    await this.ensureSeeded();
+    const { data } = await supabaseAdmin.from("users_db").select("*");
+    return (data || []).map(u => ({
+      id: u.id,
+      name: u.name,
+      emailOrPhone: u.email_or_phone,
+      passwordHash: u.password_hash,
+      salt: u.salt,
+      isAdmin: u.is_admin,
+      isCreator: u.is_creator,
+      twoFactorSecret: u.two_factor_secret || undefined,
+      twoFactorEnabled: u.two_factor_enabled,
+      failedLogins: u.failed_logins,
+      lockedUntil: u.locked_until || undefined
+    }));
   }
 
-  public getUser(emailOrPhone: string): UserSchema | undefined {
-    this.init();
+  public async getUser(emailOrPhone: string): Promise<UserSchema | undefined> {
+    await this.ensureSeeded();
     const target = emailOrPhone.trim().toLowerCase();
-    return this.db.users.find((u) => u.emailOrPhone.toLowerCase() === target);
+    const { data } = await supabaseAdmin
+      .from("users_db")
+      .select("*")
+      .eq("email_or_phone", target)
+      .maybeSingle();
+    
+    if (!data) return undefined;
+    return {
+      id: data.id,
+      name: data.name,
+      emailOrPhone: data.email_or_phone,
+      passwordHash: data.password_hash,
+      salt: data.salt,
+      isAdmin: data.is_admin,
+      isCreator: data.is_creator,
+      twoFactorSecret: data.two_factor_secret || undefined,
+      twoFactorEnabled: data.two_factor_enabled,
+      failedLogins: data.failed_logins,
+      lockedUntil: data.locked_until || undefined
+    };
   }
 
-  public getUserById(userId: string): UserSchema | undefined {
-    this.init();
-    return this.db.users.find((u) => u.id === userId);
+  public async getUserById(userId: string): Promise<UserSchema | undefined> {
+    await this.ensureSeeded();
+    const { data } = await supabaseAdmin
+      .from("users_db")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (!data) return undefined;
+    return {
+      id: data.id,
+      name: data.name,
+      emailOrPhone: data.email_or_phone,
+      passwordHash: data.password_hash,
+      salt: data.salt,
+      isAdmin: data.is_admin,
+      isCreator: data.is_creator,
+      twoFactorSecret: data.two_factor_secret || undefined,
+      twoFactorEnabled: data.two_factor_enabled,
+      failedLogins: data.failed_logins,
+      lockedUntil: data.locked_until || undefined
+    };
   }
 
-  public createUser(
+  public async createUser(
     name: string,
     emailOrPhone: string,
     passwordHash: string,
     salt: string,
     isAdmin = false,
     isCreator = false
-  ): UserSchema {
-    this.init();
-    const newUser: UserSchema = {
-      id: `user-${crypto.randomUUID()}`,
-      name,
-      emailOrPhone: emailOrPhone.trim().toLowerCase(),
-      passwordHash,
-      salt,
-      isAdmin,
-      isCreator,
-      twoFactorEnabled: false,
-      failedLogins: 0,
+  ): Promise<UserSchema> {
+    await this.ensureSeeded();
+    const id = `user-${crypto.randomUUID()}`;
+    const emailOrPhoneLower = emailOrPhone.trim().toLowerCase();
+    
+    const { data, error } = await supabaseAdmin
+      .from("users_db")
+      .insert({
+        id,
+        name,
+        email_or_phone: emailOrPhoneLower,
+        password_hash: passwordHash,
+        salt,
+        is_admin: isAdmin,
+        is_creator: isCreator,
+        two_factor_enabled: false,
+        failed_logins: 0
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      emailOrPhone: data.email_or_phone,
+      passwordHash: data.password_hash,
+      salt: data.salt,
+      isAdmin: data.is_admin,
+      isCreator: data.is_creator,
+      twoFactorSecret: data.two_factor_secret || undefined,
+      twoFactorEnabled: data.two_factor_enabled,
+      failedLogins: data.failed_logins,
+      lockedUntil: data.locked_until || undefined
     };
-    this.db.users.push(newUser);
-    this.save();
-    return newUser;
   }
 
-  public updateUser(userId: string, updates: Partial<UserSchema>): boolean {
-    this.init();
-    const index = this.db.users.findIndex((u) => u.id === userId);
-    if (index === -1) return false;
-    this.db.users[index] = { ...this.db.users[index], ...updates };
-    this.save();
-    return true;
+  public async updateUser(userId: string, updates: Partial<UserSchema>): Promise<boolean> {
+    await this.ensureSeeded();
+    const mappedUpdates: any = {};
+    if (updates.name !== undefined) mappedUpdates.name = updates.name;
+    if (updates.emailOrPhone !== undefined) mappedUpdates.email_or_phone = updates.emailOrPhone;
+    if (updates.passwordHash !== undefined) mappedUpdates.password_hash = updates.passwordHash;
+    if (updates.salt !== undefined) mappedUpdates.salt = updates.salt;
+    if (updates.isAdmin !== undefined) mappedUpdates.is_admin = updates.isAdmin;
+    if (updates.isCreator !== undefined) mappedUpdates.is_creator = updates.isCreator;
+    if (updates.twoFactorSecret !== undefined) mappedUpdates.two_factor_secret = updates.twoFactorSecret;
+    if (updates.twoFactorEnabled !== undefined) mappedUpdates.two_factor_enabled = updates.twoFactorEnabled;
+    if (updates.failedLogins !== undefined) mappedUpdates.failed_logins = updates.failedLogins;
+    if (updates.lockedUntil !== undefined) mappedUpdates.locked_until = updates.lockedUntil;
+
+    const { error } = await supabaseAdmin
+      .from("users_db")
+      .update(mappedUpdates)
+      .eq("id", userId);
+    
+    return !error;
   }
 
   // --- Sessions Table ---
 
-  public getSession(token: string): SessionSchema | undefined {
-    this.init();
-    return this.db.sessions.find((s) => s.token === token);
+  public async getSession(token: string): Promise<SessionSchema | undefined> {
+    await this.ensureSeeded();
+    const { data } = await supabaseAdmin
+      .from("sessions_db")
+      .select("*")
+      .eq("token", token)
+      .maybeSingle();
+
+    if (!data) return undefined;
+    return {
+      id: data.id,
+      token: data.token,
+      userId: data.user_id,
+      expiresAt: data.expires_at,
+      rotated: data.rotated,
+      rotatedTo: data.rotated_to || undefined,
+      ip: data.ip,
+      userAgent: data.user_agent
+    };
   }
 
-  public createSession(
+  public async createSession(
     userId: string,
     token: string,
     expiresInSeconds: number,
     ip: string,
     userAgent: string
-  ): SessionSchema {
-    this.init();
+  ): Promise<SessionSchema> {
+    await this.ensureSeeded();
     
-    // Revoke any previous unrotated sessions for user to avoid token accumulation
-    this.db.sessions = this.db.sessions.filter(
-      (s) => !(s.userId === userId && !s.rotated && new Date(s.expiresAt) < new Date())
-    );
+    // Clean up older expired/rotated sessions
+    await supabaseAdmin
+      .from("sessions_db")
+      .delete()
+      .eq("user_id", userId)
+      .lt("expires_at", new Date().toISOString());
 
-    const newSession: SessionSchema = {
-      id: `session-${crypto.randomUUID()}`,
-      token,
-      userId,
-      expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
-      rotated: false,
-      ip,
-      userAgent,
+    const id = `session-${crypto.randomUUID()}`;
+    const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString();
+    
+    const { data, error } = await supabaseAdmin
+      .from("sessions_db")
+      .insert({
+        id,
+        token,
+        user_id: userId,
+        expires_at: expiresAt,
+        rotated: false,
+        ip,
+        user_agent: userAgent
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      id: data.id,
+      token: data.token,
+      userId: data.user_id,
+      expiresAt: data.expires_at,
+      rotated: data.rotated,
+      rotatedTo: data.rotated_to || undefined,
+      ip: data.ip,
+      userAgent: data.user_agent
     };
-    this.db.sessions.push(newSession);
-    this.save();
-    return newSession;
   }
 
-  public updateSession(sessionId: string, updates: Partial<SessionSchema>): boolean {
-    this.init();
-    const index = this.db.sessions.findIndex((s) => s.id === sessionId);
-    if (index === -1) return false;
-    this.db.sessions[index] = { ...this.db.sessions[index], ...updates };
-    this.save();
-    return true;
+  public async updateSession(sessionId: string, updates: Partial<SessionSchema>): Promise<boolean> {
+    await this.ensureSeeded();
+    const mappedUpdates: any = {};
+    if (updates.rotated !== undefined) mappedUpdates.rotated = updates.rotated;
+    if (updates.rotatedTo !== undefined) mappedUpdates.rotated_to = updates.rotatedTo;
+    if (updates.expiresAt !== undefined) mappedUpdates.expires_at = updates.expiresAt;
+
+    const { error } = await supabaseAdmin
+      .from("sessions_db")
+      .update(mappedUpdates)
+      .eq("id", sessionId);
+    
+    return !error;
   }
 
-  public revokeSessionsForUser(userId: string) {
-    this.init();
-    this.db.sessions = this.db.sessions.filter((s) => s.userId !== userId);
-    this.save();
+  public async revokeSessionsForUser(userId: string): Promise<void> {
+    await this.ensureSeeded();
+    await supabaseAdmin
+      .from("sessions_db")
+      .delete()
+      .eq("user_id", userId);
   }
 
-  public revokeSession(token: string) {
-    this.init();
-    this.db.sessions = this.db.sessions.filter((s) => s.token !== token);
-    this.save();
+  public async revokeSession(token: string): Promise<void> {
+    await this.ensureSeeded();
+    await supabaseAdmin
+      .from("sessions_db")
+      .delete()
+      .eq("token", token);
   }
 
-  // --- Rate Limiter (API rate limits) ---
+  // --- Rate Limiter ---
 
-  /**
-   * sliding window rate limiting
-   */
-  public checkRateLimit(
+  public async checkRateLimit(
     key: string,
     limit: number,
     windowMs: number
-  ): { allowed: boolean; remaining: number; resetAt: string } {
-    this.init();
+  ): Promise<{ allowed: boolean; remaining: number; resetAt: string }> {
+    await this.ensureSeeded();
     const now = new Date();
-    const currentLimit = this.db.rateLimits[key];
+    
+    const { data } = await supabaseAdmin
+      .from("rate_limits")
+      .select("*")
+      .eq("key", key)
+      .maybeSingle();
 
-    if (!currentLimit || new Date(currentLimit.resetAt) < now) {
-      // Create new limit window
+    if (!data || new Date(data.reset_at) < now) {
       const resetAt = new Date(Date.now() + windowMs).toISOString();
-      this.db.rateLimits[key] = {
-        attempts: 1,
-        resetAt,
-      };
-      this.save();
+      await supabaseAdmin
+        .from("rate_limits")
+        .upsert({
+          key,
+          attempts: 1,
+          reset_at: resetAt,
+          updated_at: now.toISOString()
+        });
       return { allowed: true, remaining: limit - 1, resetAt };
     }
 
-    if (currentLimit.attempts >= limit) {
+    if (data.attempts >= limit) {
       return {
         allowed: false,
         remaining: 0,
-        resetAt: currentLimit.resetAt,
+        resetAt: data.reset_at
       };
     }
 
-    currentLimit.attempts += 1;
-    this.db.rateLimits[key] = currentLimit;
-    this.save();
+    const attempts = data.attempts + 1;
+    await supabaseAdmin
+      .from("rate_limits")
+      .update({
+        attempts,
+        updated_at: now.toISOString()
+      })
+      .eq("key", key);
+
     return {
       allowed: true,
-      remaining: limit - currentLimit.attempts,
-      resetAt: currentLimit.resetAt,
+      remaining: limit - attempts,
+      resetAt: data.reset_at
     };
   }
 
   // --- Security Audit Logging ---
 
-  public addAuditLog(event: string, ip: string, userAgent: string, details: string) {
-    this.init();
-    const logEntry: AuditLogSchema = {
-      id: `audit-${crypto.randomUUID()}`,
-      timestamp: new Date().toISOString(),
-      event,
-      ip,
-      userAgent: userAgent || "unknown",
-      details,
-    };
-    this.db.auditLogs.unshift(logEntry);
+  public async addAuditLog(event: string, ip: string, userAgent: string, details: string): Promise<void> {
+    await this.ensureSeeded();
+    const id = `audit-${crypto.randomUUID()}`;
+    const timestamp = new Date().toISOString();
     
-    // Cap audit logs at 1000 records to prevent file bloat
-    if (this.db.auditLogs.length > 1000) {
-      this.db.auditLogs = this.db.auditLogs.slice(0, 1000);
-    }
-    
-    this.save();
-    console.log(`[SECURITY AUDIT LOG] ${logEntry.timestamp} | ${event} | IP: ${ip} | ${details}`);
+    await supabaseAdmin
+      .from("audit_logs")
+      .insert({
+        id,
+        timestamp,
+        event,
+        ip,
+        user_agent: userAgent || "unknown",
+        details
+      });
+      
+    console.log(`[SECURITY AUDIT LOG] ${timestamp} | ${event} | IP: ${ip} | ${details}`);
   }
 
-  public getAuditLogs(): AuditLogSchema[] {
-    this.init();
-    return this.db.auditLogs;
+  public async getAuditLogs(): Promise<AuditLogSchema[]> {
+    await this.ensureSeeded();
+    const { data } = await supabaseAdmin
+      .from("audit_logs")
+      .select("*")
+      .order("timestamp", { ascending: false })
+      .limit(1000);
+      
+    return (data || []).map(l => ({
+      id: l.id,
+      timestamp: l.timestamp,
+      event: l.event,
+      ip: l.ip,
+      userAgent: l.user_agent,
+      details: l.details
+    }));
   }
 }
 

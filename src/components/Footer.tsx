@@ -108,6 +108,10 @@ export default function Footer() {
             <span>&bull;</span>
             <Link href="/cookies" className="hover:text-oldverse-accent transition-colors">Cookie Policy</Link>
             <span>&bull;</span>
+            <Link href="/dmca" className="hover:text-oldverse-accent transition-colors">DMCA Policy</Link>
+            <span>&bull;</span>
+            <Link href="/community-guidelines" className="hover:text-oldverse-accent transition-colors">Community Guidelines</Link>
+            <span>&bull;</span>
             <Link href="/accessibility" className="hover:text-oldverse-accent transition-colors">Accessibility Statement</Link>
             <span>&bull;</span>
             <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Contact</Link>

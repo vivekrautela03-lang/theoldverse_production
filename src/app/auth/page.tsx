@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import AuthPortal from "@/components/AuthPortal";
+import dynamic from "next/dynamic";
+
+const AuthPortal = dynamic(() => import("@/components/AuthPortal"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="h-8 w-8 border-2 border-t-transparent border-[#F5A623] rounded-full animate-spin"></div>
+    </div>
+  )
+});
 
 function AuthPageContent() {
   const router = useRouter();

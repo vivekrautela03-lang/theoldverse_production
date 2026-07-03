@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     }
 
     // Double check that user still exists
-    const user = serverDb.getUserById(payload.sub);
+    const user = await serverDb.getUserById(payload.sub);
     if (!user) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 401 });
     }
