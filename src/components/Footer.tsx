@@ -87,7 +87,7 @@ export default function Footer() {
               </li>
               <li>
                 <span className="text-oldverse-secondary">YouTube: </span>
-                <a href="https://youtube.com/@theoldverse_07" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">@theoldverse_07</a>
+                <a href="https://youtube.com/@The_oldverse" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">@The_oldverse</a>
               </li>
               <li>
                 <span className="text-oldverse-secondary">Email: </span>

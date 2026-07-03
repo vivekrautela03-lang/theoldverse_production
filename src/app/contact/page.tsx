@@ -193,8 +193,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-0.5">YouTube</span>
-                      <a href="https://youtube.com/@theoldverse_07" target="_blank" rel="noreferrer" className="text-sm font-medium text-white hover:text-oldverse-accent transition-colors">
-                        @theoldverse_07
+                      <a href="https://youtube.com/@The_oldverse" target="_blank" rel="noreferrer" className="text-sm font-medium text-white hover:text-oldverse-accent transition-colors">
+                        @The_oldverse
                       </a>
                     </div>
                   </li>
