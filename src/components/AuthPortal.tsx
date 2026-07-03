@@ -116,7 +116,8 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
         const { error } = await supabase.auth.signInWithOtp({
           email: input,
           options: {
-            shouldCreateUser: isRegister
+            shouldCreateUser: isRegister,
+            emailRedirectTo: window.location.origin
           }
         });
 
