@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyJwt } from "@/lib/jwt";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize a build-safe, edge-compatible Supabase client for token verification
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy-project.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-anon-key";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function getClientFingerprint(userAgent: string): string {
   const ua = userAgent.toLowerCase();
@@ -20,7 +25,7 @@ function getClientFingerprint(userAgent: string): string {
   return `${os}_${browser}`;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Define Protected Route Categories
@@ -30,20 +35,24 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/upload") ||
     pathname.startsWith("/watch");
 
-  // 2. Authentication Verification
+  // 2. Authentication Verification using Supabase getUser
   const accessToken = request.cookies.get("session_at")?.value;
-  let payload: { sub: string; email: string; isAdmin: boolean; isCreator: boolean; name: string; fp?: string } | null = null;
+  let payload: { sub: string; email: string; isAdmin: boolean; isCreator: boolean; name: string } | null = null;
 
   if (accessToken) {
-    const verified = verifyJwt(accessToken) as { sub: string; email: string; isAdmin: boolean; isCreator: boolean; name: string; fp?: string } | null;
-    const userAgent = request.headers.get("user-agent") || "";
-    const currentFingerprint = getClientFingerprint(userAgent);
-
-    if (verified) {
-      // Validate fingerprint if present in token
-      if (!verified.fp || verified.fp === currentFingerprint) {
-        payload = verified;
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+      if (user && !error) {
+        payload = {
+          sub: user.id,
+          email: user.email || "",
+          isAdmin: user.user_metadata?.role === "admin" || user.email === "theoldverse@gmail.com",
+          isCreator: user.user_metadata?.role === "creator" || user.user_metadata?.role === "admin" || user.email === "theoldverse@gmail.com" || user.email === "pioneer@oldverse.com",
+          name: user.user_metadata?.full_name || user.email?.split("@")[0] || "Viewer"
+        };
       }
+    } catch (e) {
+      console.error("[Middleware] Supabase token validation error:", e);
     }
   }
 
@@ -51,26 +60,19 @@ export function middleware(request: NextRequest) {
   const isAdminConsole = pathname.startsWith("/admin-console") || pathname.startsWith("/api/admin");
 
   if (isAdminConsole) {
-    const isStepUpApi = pathname.startsWith("/api/admin/stepup");
-    
-    if (!isStepUpApi) {
-      const adminSession = request.cookies.get("admin_session")?.value;
-      let sudoPayload: { sudo?: boolean } | null = null;
-      if (adminSession) {
-        sudoPayload = verifyJwt(adminSession) as { sudo?: boolean } | null;
+    // Standard role validation for Admin Console
+    const hasAdminRights = payload && (payload.isAdmin || payload.email === "theoldverse@gmail.com");
+    if (!hasAdminRights) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          { success: false, error: "Unauthorized access to administrator APIs." },
+          { status: 403 }
+        );
       }
-
-      const isSudoValid = sudoPayload && sudoPayload.sudo;
-
-      if (!isSudoValid) {
-        if (pathname.startsWith("/api/")) {
-          return NextResponse.json(
-            { success: false, error: "Step-up authentication required.", stepUpRequired: true },
-            { status: 401 }
-          );
-        }
-        // Let the page load so it renders the password/email lock screen directly
-      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
     }
   }
 
@@ -84,17 +86,17 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 3. Security Headers Configuration
+  // 3. Security Headers Configuration with updated CSP rules
   const response = NextResponse.next();
 
-  // Content Security Policy (CSP)
+  // Content Security Policy (CSP) allowing Supabase domains
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' data: https://images.unsplash.com https://*.unsplash.com https://commondatastorage.googleapis.com https://res.cloudinary.com;
+    img-src 'self' data: https://images.unsplash.com https://*.unsplash.com https://commondatastorage.googleapis.com https://res.cloudinary.com https://*.supabase.co;
     media-src 'self' https://commondatastorage.googleapis.com https://instagram.com https://*.instagram.com https://*.cdninstagram.com https://res.cloudinary.com;
-    connect-src 'self' https://api.resend.com https://api.web3forms.com;
+    connect-src 'self' https://*.supabase.co https://api.resend.com https://api.web3forms.com;
     font-src 'self' https://fonts.gstatic.com;
     frame-src 'self' https://challenges.cloudflare.com;
     object-src 'none';
@@ -124,7 +126,7 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes, except gated authentication pages if needed)
+     * - api/auth (Authentication API endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)

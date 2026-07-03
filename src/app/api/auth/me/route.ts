@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/jwt";
-import { serverDb } from "@/lib/serverDb";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy-project.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-anon-key";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function GET(request: Request) {
   try {
@@ -15,32 +18,35 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = verifyJwt(accessToken);
-    if (!payload) {
+    // Verify token using native Supabase Auth
+    const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+    if (error || !user) {
       return NextResponse.json({ success: false, error: "Token invalid or expired" }, { status: 401 });
     }
 
-    // Double check that user still exists
-    const user = await serverDb.getUserById(payload.sub);
-    if (!user) {
-      return NextResponse.json({ success: false, error: "User not found" }, { status: 401 });
-    }
+    // Fetch user profile from public.profiles
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, full_name")
+      .eq("id", user.id)
+      .single();
+
+    const role = profile?.role || "user";
 
     return NextResponse.json({
       success: true,
       user: {
         id: user.id,
-        name: user.name,
-        email: user.emailOrPhone,
-        isAdmin: user.isAdmin,
-        isCreator: user.isCreator,
-        twoFactorEnabled: user.twoFactorEnabled
+        name: profile?.full_name || user.email?.split("@")[0] || "User",
+        email: user.email,
+        isAdmin: role === "admin" || user.email === "theoldverse@gmail.com",
+        isCreator: role === "creator" || role === "admin" || user.email === "theoldverse@gmail.com" || user.email === "pioneer@oldverse.com"
       }
     });
 
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: "Internal server error: " + error.message },
       { status: 500 }
     );
   }

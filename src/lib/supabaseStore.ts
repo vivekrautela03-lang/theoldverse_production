@@ -336,8 +336,14 @@ export const syncWithSupabase = async () => {
 if (isBrowser()) {
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (session) {
+      // Synchronize Supabase tokens to cookies for Middleware validation
+      document.cookie = `session_at=${session.access_token}; path=/; max-age=${session.expires_in}; SameSite=Lax; Secure`;
+      document.cookie = `session_rt=${session.refresh_token}; path=/; max-age=604800; SameSite=Lax; Secure`;
       await syncWithSupabase();
     } else {
+      // Clear cookies
+      document.cookie = "session_at=; path=/; max-age=0";
+      document.cookie = "session_rt=; path=/; max-age=0";
       localStorage.removeItem("oldverse_user");
       localStorage.removeItem(STORAGE_KEYS.WATCHLIST);
       localStorage.removeItem(STORAGE_KEYS.HISTORY);
