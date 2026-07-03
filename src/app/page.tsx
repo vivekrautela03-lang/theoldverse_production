@@ -137,10 +137,10 @@ export default function HomePage() {
     setCurrentSlideIndex(index);
   };
 
-  const handleWatchlistToggle = (e: React.MouseEvent) => {
+  const handleWatchlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!featuredItem) return;
-    const nextVal = mutateStore.toggleWatchlist(featuredItem.id);
+    const nextVal = await mutateStore.toggleWatchlist(featuredItem.id);
     setIsInWatchlist(nextVal);
   };
 

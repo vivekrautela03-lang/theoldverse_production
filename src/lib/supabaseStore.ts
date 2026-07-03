@@ -1,5 +1,5 @@
+import { supabase } from "./supabaseBrowserClient";
 import { mockCreators, mockMediaItems, mockCommunityPosts, mockCastingCalls, Creator, MediaItem, CommunityPost, CastingCall, Review, JobApplication } from "./mockData";
-
 
 const STORAGE_KEYS = {
   CREATORS: "oldverse_creators_v2",
@@ -14,7 +14,9 @@ const STORAGE_KEYS = {
   DOWNLOADS: "oldverse_offline_downloads_v4", // list of offline download items
   REVIEWS: "oldverse_media_reviews_v1",
   JOBS: "oldverse_jobs_v1",
-  JOB_APPLICATIONS: "oldverse_job_applications_v1"
+  JOB_APPLICATIONS: "oldverse_job_applications_v1",
+  CONTINUE_WATCHING: "oldverse_continue_watching_v2",
+  NOTIFICATIONS: "oldverse_notifications_v2"
 };
 
 // Helper to check if window is available (SSR protection)
@@ -35,7 +37,6 @@ export const getStoreData = {
     if (!isBrowser()) return mockMediaItems;
     const stored = localStorage.getItem(STORAGE_KEYS.MEDIA);
     if (!stored) {
-      // Set all initial media items as approved
       const initialApproved = mockMediaItems.map(item => ({ ...item, isApproved: true }));
       localStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(initialApproved));
       return initialApproved;
@@ -103,19 +104,39 @@ export const getStoreData = {
     }
   },
 
-  history: (): { id: string; mediaId: string; title: string; posterUrl: string; date: string }[] => {
+  history: (): { id: string; mediaId: string; title: string; posterUrl: string; date: string; percentage?: number }[] => {
     if (!isBrowser()) return [];
     const stored = localStorage.getItem(STORAGE_KEYS.HISTORY);
     if (!stored) {
       const defaultHistory = [
-        { id: "hist-1", mediaId: "media-love-1", title: "SILENCE GLANCES, GOLDEN MOMENTS", posterUrl: "/silence_glances_golden_moments.jpg", date: "Just now" },
-        { id: "hist-2", mediaId: "media-love-2", title: "DESTINED", posterUrl: "/destined.jpg", date: "Yesterday" }
+        { id: "hist-1", mediaId: "media-love-1", title: "SILENCE GLANCES, GOLDEN MOMENTS", posterUrl: "/silence_glances_golden_moments.jpg", date: "Just now", percentage: 90 },
+        { id: "hist-2", mediaId: "media-love-2", title: "DESTINED", posterUrl: "/destined.jpg", date: "Yesterday", percentage: 40 }
       ];
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(defaultHistory));
       return defaultHistory;
     }
     try {
       return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  },
+
+  continueWatching: (): { id: string; mediaId: string; progressSeconds: number; durationSeconds: number; percentage: number }[] => {
+    if (!isBrowser()) return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.CONTINUE_WATCHING);
+    try {
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  notifications: (): { id: string; title: string; message: string; type: string; isRead: boolean; date: string }[] => {
+    if (!isBrowser()) return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
+    try {
+      return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
@@ -178,16 +199,6 @@ export const getStoreData = {
           text: "A beautiful, moody piece of cinema. The silence says so much more than dialogues could. The music cue at the end is perfect.",
           date: "2 days ago",
           likes: 12
-        },
-        {
-          id: "rev-3",
-          mediaId: "media-love-2",
-          author: "Daniel Craig",
-          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&fit=crop",
-          rating: 4.0,
-          text: "Gorgeous cinematography on the road. Truly captures the nostalgia of returning to a past love.",
-          date: "3 days ago",
-          likes: 8
         }
       ];
       localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(defaultReviews));
@@ -207,14 +218,135 @@ export const getStoreData = {
   jobApplications: (): JobApplication[] => {
     if (!isBrowser()) return [];
     const stored = localStorage.getItem(STORAGE_KEYS.JOB_APPLICATIONS);
-    if (!stored) {
-      const defaultApps: JobApplication[] = [];
-      localStorage.setItem(STORAGE_KEYS.JOB_APPLICATIONS, JSON.stringify(defaultApps));
-      return defaultApps;
-    }
-    return JSON.parse(stored);
+    return stored ? JSON.parse(stored) : [];
   }
 };
+
+export const syncWithSupabase = async () => {
+  if (!isBrowser()) return;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const userId = session.user.id;
+
+    // 1. Sync User Profile details
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (profile) {
+      localStorage.setItem(
+        "oldverse_user",
+        JSON.stringify({
+          id: profile.id,
+          name: profile.full_name || session.user.email?.split("@")[0],
+          email: profile.email,
+          username: profile.username,
+          avatar: profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
+          bio: profile.bio || "Storyteller on TheOldverse",
+          isCreator: profile.role === "creator" || profile.role === "admin",
+          isAdmin: profile.role === "admin",
+          subscriptionPlan: profile.subscription_plan || "free",
+          notificationPreferences: profile.notification_preferences
+        })
+      );
+    }
+
+    // 2. Sync Watchlist
+    const { data: watchlist } = await supabase
+      .from("watchlist")
+      .select("media_id")
+      .eq("user_id", userId);
+    
+    if (watchlist) {
+      localStorage.setItem(
+        STORAGE_KEYS.WATCHLIST,
+        JSON.stringify(watchlist.map(w => w.media_id))
+      );
+    }
+
+    // 3. Sync Watch History
+    const { data: history } = await supabase
+      .from("watch_history")
+      .select("*")
+      .eq("user_id", userId)
+      .order("last_watched_at", { ascending: false });
+
+    if (history) {
+      const mappedHistory = history.map(h => {
+        const item = mockMediaItems.find(m => m.id === h.media_id);
+        return {
+          id: h.id,
+          mediaId: h.media_id,
+          title: item?.title || h.media_id,
+          posterUrl: item?.posterUrl || "/logo.png",
+          date: new Date(h.last_watched_at).toLocaleDateString(),
+          percentage: h.percentage
+        };
+      });
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(mappedHistory));
+    }
+
+    // 4. Sync Continue Watching
+    const { data: continueWatching } = await supabase
+      .from("continue_watching")
+      .select("*")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false });
+
+    if (continueWatching) {
+      const mappedCw = continueWatching.map(cw => ({
+        id: cw.id,
+        mediaId: cw.media_id,
+        progressSeconds: cw.progress_seconds,
+        durationSeconds: cw.duration_seconds,
+        percentage: cw.percentage
+      }));
+      localStorage.setItem(STORAGE_KEYS.CONTINUE_WATCHING, JSON.stringify(mappedCw));
+    }
+
+    // 5. Sync Notifications
+    const { data: notifications } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (notifications) {
+      const mappedNotif = notifications.map(n => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        isRead: n.is_read,
+        date: new Date(n.created_at).toLocaleDateString()
+      }));
+      localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(mappedNotif));
+    }
+
+    window.dispatchEvent(new Event("oldverse_store_update"));
+  } catch (error) {
+    console.error("[Sync] Error syncing with Supabase:", error);
+  }
+};
+
+if (isBrowser()) {
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (session) {
+      await syncWithSupabase();
+    } else {
+      localStorage.removeItem("oldverse_user");
+      localStorage.removeItem(STORAGE_KEYS.WATCHLIST);
+      localStorage.removeItem(STORAGE_KEYS.HISTORY);
+      localStorage.removeItem(STORAGE_KEYS.CONTINUE_WATCHING);
+      localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS);
+    }
+    window.dispatchEvent(new Event("oldverse_store_update"));
+  });
+}
 
 export const mutateStore = {
   followCreator: (creatorId: string): boolean => {
@@ -230,7 +362,6 @@ export const mutateStore = {
     }
     localStorage.setItem(STORAGE_KEYS.FOLLOWED, JSON.stringify(newFollowed));
 
-    // Update creator followers count in creators database
     const creators = getStoreData.creators();
     const updatedCreators = creators.map(creator => {
       if (creator.id === creatorId) {
@@ -244,7 +375,7 @@ export const mutateStore = {
     localStorage.setItem(STORAGE_KEYS.CREATORS, JSON.stringify(updatedCreators));
     
     window.dispatchEvent(new Event("oldverse_store_update"));
-    return !isFollowing; // returns true if followed, false if unfollowed
+    return !isFollowing;
   },
 
   addComment: (mediaId: string, author: string, text: string): void => {
@@ -266,7 +397,6 @@ export const mutateStore = {
     const cName = media.creatorName || "Current User";
     const cId = media.creatorId || (cName === "Current User" ? "creator-current-user" : `creator-custom-${Date.now()}`);
 
-    // If new creator, dynamically register them in local storage creators table
     const creators = getStoreData.creators();
     const creatorExists = creators.some(c => c.id === cId || c.name.toLowerCase() === cName.toLowerCase());
     
@@ -283,7 +413,7 @@ export const mutateStore = {
         categories: [media.category],
         links: {},
         about: `${cName} is a visual creator who publishes original work on The OldVerse.`,
-        verificationRequested: false // field for verification approvals queue
+        verificationRequested: false
       } as any;
       localStorage.setItem(STORAGE_KEYS.CREATORS, JSON.stringify([newCreator, ...creators]));
     }
@@ -298,7 +428,7 @@ export const mutateStore = {
       gallery: [media.posterUrl],
       creatorId: cId,
       creatorName: cName,
-      isApproved: false // Set as pending admin approval!
+      isApproved: false
     } as any;
 
     localStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify([newMedia, ...list]));
@@ -336,7 +466,7 @@ export const mutateStore = {
   },
 
   // USER LISTS MUTATORS
-  toggleWatchlist: (mediaId: string): boolean => {
+  toggleWatchlist: async (mediaId: string): Promise<boolean> => {
     if (!isBrowser()) return false;
     const list = getStoreData.watchlistIds();
     const exists = list.includes(mediaId);
@@ -350,6 +480,26 @@ export const mutateStore = {
 
     localStorage.setItem(STORAGE_KEYS.WATCHLIST, JSON.stringify(newList));
     window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        if (exists) {
+          await supabase
+            .from("watchlist")
+            .delete()
+            .eq("user_id", session.user.id)
+            .eq("media_id", mediaId);
+        } else {
+          await supabase
+            .from("watchlist")
+            .insert({ user_id: session.user.id, media_id: mediaId });
+        }
+      }
+    } catch (err) {
+      console.error("[Watchlist Sync] Failed:", err);
+    }
+
     return !exists;
   },
 
@@ -370,23 +520,175 @@ export const mutateStore = {
     return !exists;
   },
 
-  addToHistory: (mediaId: string, title: string, posterUrl: string): void => {
+  addToHistory: async (mediaId: string, title: string, posterUrl: string, percentage = 100): Promise<void> => {
     if (!isBrowser()) return;
     const history = getStoreData.history();
-    const exists = history.some(h => h.mediaId === mediaId);
-    
-    // Remove if exists to push it to the top
     const filtered = history.filter(h => h.mediaId !== mediaId);
     const newEntry = {
       id: `hist-${Date.now()}`,
       mediaId,
       title,
       posterUrl,
-      date: "Just now"
+      date: "Just now",
+      percentage
     };
 
     localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify([newEntry, ...filtered]));
     window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("watch_history")
+          .upsert({
+            user_id: session.user.id,
+            media_id: mediaId,
+            percentage,
+            last_watched_at: new Date().toISOString()
+          }, { onConflict: "user_id,media_id" });
+      }
+    } catch (err) {
+      console.error("[History Sync] Failed:", err);
+    }
+  },
+
+  updateContinueWatching: async (mediaId: string, progressSeconds: number, durationSeconds: number): Promise<void> => {
+    if (!isBrowser()) return;
+    const cw = getStoreData.continueWatching();
+    const filtered = cw.filter(c => c.mediaId !== mediaId);
+    const percentage = Math.round((progressSeconds / durationSeconds) * 100);
+
+    const newEntry = {
+      id: `cw-${Date.now()}`,
+      mediaId,
+      progressSeconds,
+      durationSeconds,
+      percentage
+    };
+
+    localStorage.setItem(STORAGE_KEYS.CONTINUE_WATCHING, JSON.stringify([newEntry, ...filtered]));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("continue_watching")
+          .upsert({
+            user_id: session.user.id,
+            media_id: mediaId,
+            progress_seconds: progressSeconds,
+            duration_seconds: durationSeconds,
+            percentage,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "user_id,media_id" });
+      }
+    } catch (err) {
+      console.error("[Continue Watching Sync] Failed:", err);
+    }
+  },
+
+  removeContinueWatching: async (mediaId: string): Promise<void> => {
+    if (!isBrowser()) return;
+    const cw = getStoreData.continueWatching();
+    const updated = cw.filter(c => c.mediaId !== mediaId);
+    localStorage.setItem(STORAGE_KEYS.CONTINUE_WATCHING, JSON.stringify(updated));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("continue_watching")
+          .delete()
+          .eq("user_id", session.user.id)
+          .eq("media_id", mediaId);
+      }
+    } catch (err) {
+      console.error("[Continue Watching Remove Sync] Failed:", err);
+    }
+  },
+
+  removeHistoryItem: async (mediaId: string): Promise<void> => {
+    if (!isBrowser()) return;
+    const history = getStoreData.history();
+    const updated = history.filter(h => h.mediaId !== mediaId);
+    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updated));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("watch_history")
+          .delete()
+          .eq("user_id", session.user.id)
+          .eq("media_id", mediaId);
+      }
+    } catch (err) {
+      console.error("[History Remove Sync] Failed:", err);
+    }
+  },
+
+  clearHistory: async (): Promise<void> => {
+    if (!isBrowser()) return;
+    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify([]));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("watch_history")
+          .delete()
+          .eq("user_id", session.user.id);
+      }
+    } catch (err) {
+      console.error("[History Clear Sync] Failed:", err);
+    }
+  },
+
+  markNotificationAsRead: async (notificationId: string): Promise<void> => {
+    if (!isBrowser()) return;
+    const notifs = getStoreData.notifications();
+    const updated = notifs.map(n => n.id === notificationId ? { ...n, isRead: true } : n);
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(updated));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("notifications")
+          .update({ is_read: true })
+          .eq("id", notificationId)
+          .eq("user_id", session.user.id);
+      }
+    } catch (err) {
+      console.error("[Notification Read Sync] Failed:", err);
+    }
+  },
+
+  deleteNotification: async (notificationId: string): Promise<void> => {
+    if (!isBrowser()) return;
+    const notifs = getStoreData.notifications();
+    const updated = notifs.filter(n => n.id !== notificationId);
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(updated));
+    window.dispatchEvent(new Event("oldverse_store_update"));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("notifications")
+          .delete()
+          .eq("id", notificationId)
+          .eq("user_id", session.user.id);
+      }
+    } catch (err) {
+      console.error("[Notification Delete Sync] Failed:", err);
+    }
   },
 
   // ADMIN OPERATIONS
@@ -456,16 +758,13 @@ export const mutateStore = {
     const updatedReviews = [newReview, ...reviews];
     localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(updatedReviews));
 
-    // Recalculate average rating of the media item and update media store
     const media = getStoreData.media();
     const updatedMedia = media.map(m => {
       if (m.id === mediaId) {
-        // Filter reviews for this media item (including the new one)
         const movieReviews = updatedReviews.filter(r => r.mediaId === mediaId);
         const sum = movieReviews.reduce((acc, r) => acc + r.rating, 0);
         const avg = movieReviews.length > 0 ? (sum / movieReviews.length) : rating;
         
-        // Convert to a 10-point scale for main display
         const displayRating = (avg * 2).toFixed(1);
         return { ...m, rating: displayRating };
       }
@@ -516,7 +815,6 @@ export const mutateStore = {
     };
     localStorage.setItem(STORAGE_KEYS.JOB_APPLICATIONS, JSON.stringify([newApp, ...apps]));
     
-    // Mark in standard applications record
     const castingApps = getStoreData.applications();
     castingApps[jobId] = true;
     localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(castingApps));

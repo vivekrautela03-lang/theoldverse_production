@@ -2,66 +2,218 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { User, Film, Clock, Download, CreditCard, Star, Play, Sparkles, Check, Trash2, Share2, FileDown, Briefcase, Award } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { User, Film, Clock, Download, CreditCard, Star, Play, Sparkles, Check, Trash2, Share2, FileDown, Briefcase, Settings, Bell, Lock, Mail, Globe, Moon, Sun, AlertTriangle } from "lucide-react";
 import confetti from "canvas-confetti";
-import { getStoreData, mutateStore } from "@/lib/supabaseStore";
-import { MediaItem, Review, JobApplication } from "@/lib/mockData";
+import { supabase } from "../../lib/supabaseBrowserClient";
+import { getStoreData, mutateStore, syncWithSupabase } from "@/lib/supabaseStore";
+import { MediaItem } from "@/lib/mockData";
 
 export default function UserProfile() {
-  const [activeTab, setActiveTab] = useState<"watchlist" | "history" | "portfolio" | "downloads" | "billing">("watchlist");
-  const [user, setUser] = useState<{ name: string; email: string; isCreator: boolean } | null>(null);
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"watchlist" | "history" | "portfolio" | "downloads" | "billing" | "settings" | "notifications">("watchlist");
   
-  // Lists data
+  // States loaded from local storage synced cache
+  const [user, setUser] = useState<any>(null);
   const [watchlist, setWatchlist] = useState<MediaItem[]>([]);
-  const [history, setHistory] = useState<{ id: string; mediaId: string; title: string; posterUrl: string; date: string }[]>([]);
-  const [downloads, setDownloads] = useState<{ mediaId: string; title: string; size: string; progress: number }[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [downloads, setDownloads] = useState<any[]>([]);
+  const [continueWatching, setContinueWatching] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [billingPlan, setBillingPlan] = useState("Viewer Free Tier");
   
-  // Phase 3 States
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [applications, setApplications] = useState<JobApplication[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  // Settings Form States
+  const [fullNameInput, setFullNameInput] = useState("");
+  const [usernameInput, setUsernameInput] = useState("");
+  const [bioInput, setBioInput] = useState("");
+  const [avatarInput, setAvatarInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
 
-  const loadUserData = () => {
-    // Auth profile
+  // Notification Preferences States
+  const [notifReleases, setNotifReleases] = useState(true);
+  const [notifEpisodes, setNotifEpisodes] = useState(true);
+  const [notifSecurity, setNotifSecurity] = useState(true);
+  const [notifBilling, setNotifBilling] = useState(true);
+
+  // General App states
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [language, setLanguage] = useState("English");
+  const [isClient, setIsClient] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const loadProfileData = () => {
+    // Check if user is authenticated
     const storedUser = localStorage.getItem("oldverse_user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+      setFullNameInput(parsed.name || "");
+      setUsernameInput(parsed.username || "");
+      setBioInput(parsed.bio || "");
+      setAvatarInput(parsed.avatar || "");
+      setEmailInput(parsed.email || "");
+
+      // Load notif preferences
+      const notifs = parsed.notificationPreferences || {};
+      setNotifReleases(notifs.releases !== false);
+      setNotifEpisodes(notifs.episodes !== false);
+      setNotifSecurity(notifs.security !== false);
+      setNotifBilling(notifs.billing !== false);
     } else {
-      setUser({ name: "Visual Pioneer", email: "pioneer@oldverse.com", isCreator: true });
+      setUser(null);
     }
 
-    // Lists
+    // Load static list syncs
     const allMedia = getStoreData.media();
     const watchlistIds = getStoreData.watchlistIds();
-    const filteredWatchlist = allMedia.filter(m => watchlistIds.includes(m.id));
-    setWatchlist(filteredWatchlist);
-
+    setWatchlist(allMedia.filter(m => watchlistIds.includes(m.id)));
     setHistory(getStoreData.history());
     setDownloads(getStoreData.downloads());
-    
-    // Load user's logged reviews and job applications
-    const allReviews = getStoreData.allReviews();
-    setReviews(allReviews.filter(r => r.author === "Visual Pioneer" || r.author === "Current User" || r.author === "Daniel Craig"));
-    setApplications(getStoreData.jobApplications());
+    setContinueWatching(getStoreData.continueWatching());
+    setNotifications(getStoreData.notifications());
 
-    // Billing plan Cache check
     const plan = localStorage.getItem("oldverse_billing_plan") || "Viewer Free Tier";
     setBillingPlan(plan);
   };
 
   useEffect(() => {
     setIsClient(true);
-    loadUserData();
+    loadProfileData();
 
-    window.addEventListener("oldverse_store_update", loadUserData);
-    return () => window.removeEventListener("oldverse_store_update", loadUserData);
+    // Listen for storage / database updates
+    window.addEventListener("oldverse_store_update", loadProfileData);
+    return () => window.removeEventListener("oldverse_store_update", loadProfileData);
   }, []);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: fullNameInput.trim(),
+          username: usernameInput.trim().toLowerCase(),
+          bio: bioInput.trim(),
+          avatar_url: avatarInput.trim()
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        alert("Profile Update Failed: " + error.message);
+      } else {
+        await syncWithSupabase();
+        alert("Your profile has been updated successfully!");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUpdateEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: emailInput.trim()
+      });
+
+      if (error) {
+        alert("Failed to update email: " + error.message);
+      } else {
+        alert("Confirmation links sent! Please check both your current and new email address to verify.");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput.length < 8) {
+      alert("Password must be at least 8 characters long.");
+      return;
+    }
+    if (passwordInput !== confirmPasswordInput) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordInput
+      });
+
+      if (error) {
+        alert("Failed to update password: " + error.message);
+      } else {
+        alert("Your account password has been updated successfully!");
+        setPasswordInput("");
+        setConfirmPasswordInput("");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUpdateNotifPrefs = async () => {
+    if (!user) return;
+    setIsUpdating(true);
+
+    const preferences = {
+      releases: notifReleases,
+      episodes: notifEpisodes,
+      security: notifSecurity,
+      billing: notifBilling
+    };
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          notification_preferences: preferences
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        alert("Failed to update preferences: " + error.message);
+      } else {
+        await syncWithSupabase();
+        alert("Notification preferences saved successfully!");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleUpgradePlan = () => {
     localStorage.setItem("oldverse_billing_plan", "Premium Stage Pass ($9.99/mo)");
     setBillingPlan("Premium Stage Pass ($9.99/mo)");
     
+    // Attempt database status upgrade if logged in
+    if (user) {
+      supabase
+        .from("profiles")
+        .update({ subscription_plan: "premium" })
+        .eq("id", user.id)
+        .then(() => syncWithSupabase());
+    }
+
     confetti({
       particleCount: 120,
       spread: 75,
@@ -71,10 +223,46 @@ export default function UserProfile() {
     alert("Welcome to the Premium Stage Pass! Ads disabled and raw offline downloads unlocked.");
   };
 
-  const handleToggleWatchlist = (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    mutateStore.toggleWatchlist(id);
+  const handleLogoutAllDevices = async () => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "global" });
+      if (error) {
+        alert("Logout failed: " + error.message);
+      } else {
+        alert("Logged out of all active sessions across all devices.");
+        router.push("/auth");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!confirm("CRITICAL WARNING: Are you absolutely sure you want to permanently delete your account? All watchlists, history, and credentials will be deleted forever.")) {
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const res = await fetch("/api/auth/delete-account", { method: "POST" });
+      const data = await res.json();
+      setIsUpdating(false);
+
+      if (data.success) {
+        alert("Your account has been deleted successfully. We hope to see you again!");
+        localStorage.removeItem("oldverse_user");
+        window.dispatchEvent(new Event("oldverse_store_update"));
+        router.push("/");
+      } else {
+        alert(data.error || "Failed to delete account.");
+      }
+    } catch (err: any) {
+      setIsUpdating(false);
+      alert("Exception: " + err.message);
+    }
   };
 
   const handleShareLink = () => {
@@ -104,29 +292,30 @@ export default function UserProfile() {
     );
   }
 
-  // Calculate statistics
-  const totalWatchHours = (history.length * 1.5).toFixed(1);
-
   return (
     <div className="bg-oldverse-bg min-h-screen pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* User Card Header */}
-        {user && (
-          <div className="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-xl border border-white/5 bg-oldverse-card/50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-oldverse-accent/5 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white/10 flex-none bg-[#181818] flex items-center justify-center">
+        <div className="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-xl border border-white/5 bg-oldverse-card/50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-oldverse-accent/5 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white/10 flex-none bg-[#181818] flex items-center justify-center">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
               <User className="h-10 w-10 text-oldverse-secondary" />
-            </div>
+            )}
+          </div>
 
-            <div className="flex-grow text-center sm:text-left space-y-2">
-              <h1 className="font-bebas text-3xl sm:text-4xl text-oldverse-text tracking-wider uppercase leading-none">
-                {user.name}
-              </h1>
-              <p className="text-xs text-oldverse-secondary font-grotesk tracking-wide uppercase">
-                {user.email}
-              </p>
+          <div className="flex-grow text-center sm:text-left space-y-2">
+            <h1 className="font-bebas text-3xl sm:text-4xl text-oldverse-text tracking-wider uppercase leading-none">
+              {user ? user.name : "Guest Session"}
+            </h1>
+            <p className="text-xs text-oldverse-secondary font-grotesk tracking-wide uppercase">
+              {user ? user.email : "Limited access mode"}
+            </p>
+            {user && (
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
                 <span className="text-[9px] uppercase font-bold tracking-widest bg-white/5 border border-white/10 px-2.5 py-0.5 rounded text-oldverse-secondary">
                   Role: {user.isCreator ? "Creator/Director" : "Standard Viewer"}
@@ -135,12 +324,12 @@ export default function UserProfile() {
                   Plan: {billingPlan}
                 </span>
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Tab Selection */}
-        <div className="flex gap-6 border-b border-white/5 text-sm font-grotesk tracking-wide font-medium">
+        <div className="flex flex-wrap gap-4 md:gap-6 border-b border-white/5 text-sm font-grotesk tracking-wide font-medium">
           <button
             onClick={() => setActiveTab("watchlist")}
             className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
@@ -148,7 +337,7 @@ export default function UserProfile() {
             }`}
           >
             <Film className="h-4 w-4" />
-            My Watchlist ({watchlist.length})
+            My List ({watchlist.length})
           </button>
           <button
             onClick={() => setActiveTab("history")}
@@ -186,6 +375,28 @@ export default function UserProfile() {
             <CreditCard className="h-4 w-4" />
             Billing & Subscriptions
           </button>
+          {user && (
+            <>
+              <button
+                onClick={() => setActiveTab("notifications")}
+                className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === "notifications" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
+                }`}
+              >
+                <Bell className="h-4 w-4" />
+                Notifications ({notifications.filter(n => !n.isRead).length})
+              </button>
+              <button
+                onClick={() => setActiveTab("settings")}
+                className={`pb-3 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === "settings" ? "text-oldverse-accent border-b border-oldverse-accent" : "text-oldverse-secondary hover:text-oldverse-text"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                Account Settings
+              </button>
+            </>
+          )}
         </div>
 
         {/* Tab Panels */}
@@ -206,13 +417,19 @@ export default function UserProfile() {
                             alt={item.title}
                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          <button
-                            onClick={(e) => handleToggleWatchlist(e, item.id)}
-                            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 border border-white/10 text-oldverse-error hover:scale-110 transition-transform cursor-pointer z-10"
-                            title="Remove from Watchlist"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          {user && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                mutateStore.toggleWatchlist(item.id);
+                              }}
+                              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 border border-white/10 text-oldverse-error hover:scale-110 transition-transform cursor-pointer z-10"
+                              title="Remove from Watchlist"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                         <div className="p-3 space-y-1">
                           <span className="text-[9px] uppercase font-grotesk font-semibold text-oldverse-accent block">
@@ -258,6 +475,21 @@ export default function UserProfile() {
           {/* WATCH HISTORY */}
           {activeTab === "history" && (
             <div className="max-w-2xl mx-auto space-y-3 animate-fade-in">
+              {history.length > 0 && user && (
+                <div className="flex justify-end pb-2">
+                  <button
+                    onClick={() => {
+                      if (confirm("Clear your entire watch history?")) {
+                        mutateStore.clearHistory();
+                      }
+                    }}
+                    className="text-xs font-grotesk font-semibold uppercase tracking-wider text-oldverse-error hover:text-red-400 transition-colors"
+                  >
+                    Clear History Logs
+                  </button>
+                </div>
+              )}
+
               {history.map((hist) => (
                 <div
                   key={hist.id}
@@ -270,31 +502,34 @@ export default function UserProfile() {
                   />
                   <div className="flex-grow min-w-0">
                     <h4 className="font-grotesk text-sm font-bold text-oldverse-text truncate">{hist.title}</h4>
-                    <span className="text-[10px] text-oldverse-secondary">Last watched: {hist.date}</span>
+                    <span className="text-[10px] text-oldverse-secondary block mb-1">Last watched: {hist.date}</span>
+                    {hist.percentage && (
+                      <div className="flex items-center gap-2">
+                        <div className="h-1 w-20 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-oldverse-accent" style={{ width: `${hist.percentage}%` }} />
+                        </div>
+                        <span className="text-[9px] font-mono text-oldverse-accent">{hist.percentage}% watched</span>
+                      </div>
+                    )}
                   </div>
-                  {(() => {
-                    const mediaItem = getStoreData.media().find(m => m.id === hist.mediaId);
-                    const isInsta = mediaItem?.videoUrl?.includes("instagram.com");
-                    return isInsta ? (
-                      <a
-                        href={mediaItem?.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-grotesk font-bold text-oldverse-text hover:bg-oldverse-accent hover:border-oldverse-accent hover:text-oldverse-bg transition-colors"
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/watch/${hist.mediaId}`}
+                      className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-grotesk font-bold text-oldverse-text hover:bg-oldverse-accent hover:border-oldverse-accent hover:text-oldverse-bg transition-colors"
+                    >
+                      <Play className="h-3 w-3 fill-current" />
+                      Resume
+                    </Link>
+                    {user && (
+                      <button
+                        onClick={() => mutateStore.removeHistoryItem(hist.mediaId)}
+                        className="p-2 text-oldverse-secondary hover:text-oldverse-error transition-colors"
+                        title="Remove Item"
                       >
-                        <Play className="h-3 w-3 fill-current" />
-                        Resume
-                      </a>
-                    ) : (
-                      <Link
-                        href={`/watch/${hist.mediaId}`}
-                        className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-grotesk font-bold text-oldverse-text hover:bg-oldverse-accent hover:border-oldverse-accent hover:text-oldverse-bg transition-colors"
-                      >
-                        <Play className="h-3 w-3 fill-current" />
-                        Resume
-                      </Link>
-                    );
-                  })()}
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               {history.length === 0 && (
@@ -305,13 +540,10 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* CREATIVE RESUME BUILDER */}
+          {/* CREATIVE RESUME */}
           {activeTab === "portfolio" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
-              {/* Resume Card (Left columns) */}
               <div className="lg:col-span-2 bg-oldverse-card/50 border border-white/5 rounded-xl p-6 space-y-6 relative">
-                
-                {/* Brand Banner */}
                 <div className="flex justify-between items-start pb-4 border-b border-white/5">
                   <div>
                     <span className="text-[9px] uppercase font-bold tracking-widest font-grotesk text-oldverse-accent">
@@ -321,8 +553,6 @@ export default function UserProfile() {
                       Visual Resume
                     </h2>
                   </div>
-                  
-                  {/* Actions */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleShareLink}
@@ -341,7 +571,6 @@ export default function UserProfile() {
                   </div>
                 </div>
 
-                {/* Professional Summary */}
                 <div className="space-y-2">
                   <h4 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text tracking-widest">
                     Professional Headline
@@ -350,128 +579,14 @@ export default function UserProfile() {
                     Director / Independent Cinematographer / Visual Foley Architect
                   </p>
                   <p className="text-xs text-oldverse-secondary leading-relaxed font-light font-sans pt-1">
-                    Independent visual artist specializing in high-contrast monochromatic staging, natural light photography grids, and ambient atmospheric soundscapes. Fully vetted on The OldVerse streaming ecosystem.
+                    {user?.bio || "Independent visual artist specializing in high-contrast monochromatic staging, natural light photography grids, and ambient atmospheric soundscapes. Fully vetted on The OldVerse streaming ecosystem."}
                   </p>
-                </div>
-
-                {/* Metric Widgets */}
-                <div className="grid grid-cols-3 gap-4 border-y border-white/5 py-4">
-                  <div className="text-center space-y-0.5">
-                    <span className="block text-[9px] uppercase font-grotesk text-oldverse-secondary">Time Logged</span>
-                    <span className="font-bebas text-xl text-oldverse-text">{totalWatchHours} Hours</span>
-                  </div>
-                  <div className="text-center space-y-0.5">
-                    <span className="block text-[9px] uppercase font-grotesk text-oldverse-secondary">Reviews Written</span>
-                    <span className="font-bebas text-xl text-oldverse-text">{reviews.length} Titles</span>
-                  </div>
-                  <div className="text-center space-y-0.5">
-                    <span className="block text-[9px] uppercase font-grotesk text-oldverse-secondary">Verified Projects</span>
-                    <span className="font-bebas text-xl text-oldverse-accent">1 Show</span>
-                  </div>
-                </div>
-
-                {/* Experience Timeline */}
-                <div className="space-y-4">
-                  <h4 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text tracking-widest">
-                    Ecosystem Projects & Credits
-                  </h4>
-                  
-                  <div className="relative border-l border-white/5 pl-4 ml-2 space-y-4">
-                    <div className="space-y-1 relative">
-                      <div className="absolute -left-6 top-1 h-3 w-3 rounded-full bg-oldverse-accent border-2 border-oldverse-bg" />
-                      <div className="flex justify-between items-baseline">
-                        <h5 className="text-xs font-bold text-oldverse-text">Director & Co-Editor</h5>
-                        <span className="text-[9px] font-mono text-oldverse-secondary">Current Production</span>
-                      </div>
-                      <p className="text-[10px] text-oldverse-accent">"SILENCE GLANCES, GOLDEN MOMENTS" — Original Short Film</p>
-                      <p className="text-[10px] text-oldverse-secondary font-light">Collaborated with Prince and Amarjeet to direct a monochromatic study on unspoken urban relationships.</p>
-                    </div>
-
-                    <div className="space-y-1 relative">
-                      <div className="absolute -left-6 top-1 h-3 w-3 rounded-full bg-white/20 border-2 border-oldverse-bg" />
-                      <div className="flex justify-between items-baseline">
-                        <h5 className="text-xs font-bold text-oldverse-text">Foley Sound Sync Consultant</h5>
-                        <span className="text-[9px] font-mono text-oldverse-secondary">April 2026</span>
-                      </div>
-                      <p className="text-[10px] text-oldverse-secondary">"The Sound of Stone" — VFX/BTS Masterclass</p>
-                      <p className="text-[10px] text-oldverse-secondary font-light">Assisted sound mixing in experimental sub-surface microphone recordings with Vikram Malhotra.</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Logged Diary Entries / Letterboxd reviews */}
-                <div className="space-y-3 pt-2">
-                  <h4 className="font-grotesk text-[10px] uppercase font-bold text-oldverse-text tracking-widest">
-                    Recent Film Diary Logs
-                  </h4>
-                  <div className="space-y-2">
-                    {reviews.slice(0, 2).map(r => (
-                      <div key={r.id} className="p-3 bg-black/20 border border-white/5 rounded-lg text-xs flex justify-between gap-4">
-                        <div className="space-y-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-oldverse-text truncate">{r.mediaId.replace("media-", "Project ID: ")}</span>
-                            <span className="text-[9px] text-oldverse-secondary/50 font-mono">({r.date})</span>
-                          </div>
-                          <p className="text-oldverse-secondary font-light line-clamp-1 italic">"{r.text}"</p>
-                        </div>
-                        <div className="flex-none flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-oldverse-accent text-oldverse-accent" />
-                          <span className="font-bold text-oldverse-text text-[10px]">{r.rating.toFixed(1)}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {reviews.length === 0 && (
-                      <p className="text-[10px] text-oldverse-secondary/40 font-light italic">No review diary entries logged yet.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Applications (Right column) */}
-              <div className="bg-oldverse-card/30 border border-white/5 rounded-xl p-5 space-y-4 self-start">
-                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                  <Briefcase className="h-4 w-4 text-oldverse-accent" />
-                  <h3 className="font-grotesk text-xs uppercase tracking-widest font-bold text-oldverse-text">
-                    Active Applications ({applications.length})
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  {applications.map((app) => (
-                    <div
-                      key={app.id}
-                      className="p-3 rounded-lg border border-white/5 bg-black/20 space-y-2"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="text-xs font-bold text-oldverse-text font-grotesk line-clamp-1">
-                            {app.jobTitle}
-                          </h4>
-                          <span className="text-[9px] text-oldverse-secondary/60">Applied: {app.createdAt}</span>
-                        </div>
-                        <span className={`text-[9px] uppercase font-grotesk font-bold px-1.5 py-0.5 rounded ${
-                          app.status === "pending"
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            : app.status === "approved"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-red-500/10 text-red-400 border border-red-500/20"
-                        }`}>
-                          {app.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {applications.length === 0 && (
-                    <p className="text-xs text-oldverse-secondary/40 text-center py-8 font-light">
-                      No active job applications found. Apply to listings in the Casting Marketplace!
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* OFFLINE DOWNLOADS */}
+          {/* DOWNLOADS */}
           {activeTab === "downloads" && (
             <div className="max-w-2xl mx-auto space-y-3 animate-fade-in">
               {downloads.map((dl, idx) => (
@@ -488,27 +603,6 @@ export default function UserProfile() {
                       <Check className="h-4 w-4 stroke-[3]" />
                       Offline Ready
                     </span>
-                    {(() => {
-                      const mediaItem = getStoreData.media().find(m => m.id === dl.mediaId);
-                      const isInsta = mediaItem?.videoUrl?.includes("instagram.com");
-                      return isInsta ? (
-                        <a
-                          href={mediaItem?.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 rounded-full bg-white/5 border border-white/10 text-oldverse-secondary hover:text-oldverse-accent hover:border-oldverse-accent"
-                        >
-                          <Play className="h-4 w-4 fill-current ml-0.5" />
-                        </a>
-                      ) : (
-                        <Link
-                          href={`/watch/${dl.mediaId}`}
-                          className="p-2 rounded-full bg-white/5 border border-white/10 text-oldverse-secondary hover:text-oldverse-accent hover:border-oldverse-accent"
-                        >
-                          <Play className="h-4 w-4 fill-current ml-0.5" />
-                        </Link>
-                      );
-                    })()}
                   </div>
                 </div>
               ))}
@@ -523,8 +617,6 @@ export default function UserProfile() {
           {/* BILLING AND PLANS */}
           {activeTab === "billing" && (
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 animate-fade-in">
-              
-              {/* Current details */}
               <div className="bg-oldverse-card border border-white/5 rounded-xl p-6 space-y-5 self-start">
                 <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text">
                   Ecosystem Plan Details
@@ -542,41 +634,22 @@ export default function UserProfile() {
                     <span className="text-oldverse-secondary">Next Renewal</span>
                     <span className="font-semibold text-oldverse-text">July 25, 2026</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-oldverse-secondary">Payment Method</span>
-                    <span className="font-semibold text-oldverse-text">•••• •••• •••• 4821</span>
-                  </div>
                 </div>
               </div>
 
-              {/* Upgrade Portal card */}
               <div className="glassmorphism-card rounded-xl p-6 border border-white/10 space-y-5 flex flex-col justify-between">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-oldverse-accent">
                     <Sparkles className="h-5 w-5 text-oldverse-accent" />
                     <span className="text-xs uppercase font-bold tracking-widest font-grotesk">Premium Stage Pass</span>
                   </div>
-                  
                   <div className="flex items-baseline gap-1 pt-1">
                     <span className="font-bebas text-5xl text-oldverse-text">$9.99</span>
                     <span className="text-xs text-oldverse-secondary">/ month</span>
                   </div>
-
                   <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
                     Unlock the ultimate screening experience. Direct revenue shares to creators, ultra HD streaming bitrate, zero promotional banners, and access to all casting hub resources.
                   </p>
-
-                  <ul className="text-xs text-oldverse-text/90 font-light space-y-2 pt-2 border-t border-white/5">
-                    <li className="flex items-center gap-2">
-                      <span className="text-oldverse-success">✓</span> 70% direct royalty payout to creators
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-oldverse-success">✓</span> Offline file downloads to device
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-oldverse-success">✓</span> Early access to featured originals
-                    </li>
-                  </ul>
                 </div>
 
                 {billingPlan.includes("Premium") ? (
@@ -592,6 +665,255 @@ export default function UserProfile() {
                     Upgrade to Stage Pass
                   </button>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* NOTIFICATIONS TAB */}
+          {activeTab === "notifications" && user && (
+            <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text">
+                  Your Activity Inbox
+                </h3>
+                <button
+                  onClick={handleUpdateNotifPrefs}
+                  disabled={isUpdating}
+                  className="text-xs text-oldverse-accent hover:text-amber-400 font-semibold cursor-pointer"
+                >
+                  Configure Channels
+                </button>
+              </div>
+
+              {/* Notification Preferences Sub-panel */}
+              <div className="p-4 bg-oldverse-card/50 border border-white/5 rounded-xl grid grid-cols-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-oldverse-secondary">New Releases</span>
+                  <input
+                    type="checkbox"
+                    checked={notifReleases}
+                    onChange={(e) => setNotifReleases(e.target.checked)}
+                    className="h-4 w-4 rounded bg-white/5 border-white/10 text-oldverse-accent focus:ring-0"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-oldverse-secondary">New Episodes</span>
+                  <input
+                    type="checkbox"
+                    checked={notifEpisodes}
+                    onChange={(e) => setNotifEpisodes(e.target.checked)}
+                    className="h-4 w-4 rounded bg-white/5 border-white/10 text-oldverse-accent focus:ring-0"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-oldverse-secondary">Security Alerts</span>
+                  <input
+                    type="checkbox"
+                    checked={notifSecurity}
+                    onChange={(e) => setNotifSecurity(e.target.checked)}
+                    className="h-4 w-4 rounded bg-white/5 border-white/10 text-oldverse-accent focus:ring-0"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-oldverse-secondary">Billing Updates</span>
+                  <input
+                    type="checkbox"
+                    checked={notifBilling}
+                    onChange={(e) => setNotifBilling(e.target.checked)}
+                    className="h-4 w-4 rounded bg-white/5 border-white/10 text-oldverse-accent focus:ring-0"
+                  />
+                </div>
+              </div>
+
+              {/* List */}
+              <div className="space-y-3">
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-4 rounded-xl border flex justify-between gap-4 transition-all ${
+                      n.isRead 
+                        ? "border-white/5 bg-oldverse-card/30 opacity-70"
+                        : "border-oldverse-accent/20 bg-oldverse-accent/3"
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        {!n.isRead && <div className="h-1.5 w-1.5 rounded-full bg-oldverse-accent" />}
+                        <h4 className="text-xs font-bold text-oldverse-text font-grotesk">{n.title}</h4>
+                      </div>
+                      <p className="text-xs text-oldverse-secondary leading-relaxed font-light">{n.message}</p>
+                      <span className="text-[9px] text-white/30 block pt-1">{n.date}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {!n.isRead && (
+                        <button
+                          onClick={() => mutateStore.markNotificationAsRead(n.id)}
+                          className="text-[10px] text-oldverse-accent hover:underline uppercase font-bold"
+                        >
+                          Mark Read
+                        </button>
+                      )}
+                      <button
+                        onClick={() => mutateStore.deleteNotification(n.id)}
+                        className="text-oldverse-secondary hover:text-oldverse-error transition-colors p-1"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {notifications.length === 0 && (
+                  <p className="text-xs text-oldverse-secondary/40 text-center py-12">No notifications found.</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ACCOUNT SETTINGS TAB */}
+          {activeTab === "settings" && user && (
+            <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 animate-fade-in">
+              {/* Profile details */}
+              <form onSubmit={handleUpdateProfile} className="space-y-5 bg-oldverse-card border border-white/5 rounded-xl p-6">
+                <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text pb-2 border-b border-white/5">
+                  Update Profile Details
+                </h3>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-oldverse-secondary">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={fullNameInput}
+                    onChange={(e) => setFullNameInput(e.target.value)}
+                    className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-oldverse-secondary">Unique Username</label>
+                  <input
+                    type="text"
+                    required
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-oldverse-secondary">Profile Bio</label>
+                  <textarea
+                    rows={3}
+                    value={bioInput}
+                    onChange={(e) => setBioInput(e.target.value)}
+                    className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent resize-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-oldverse-secondary">Avatar URL</label>
+                  <input
+                    type="text"
+                    value={avatarInput}
+                    onChange={(e) => setAvatarInput(e.target.value)}
+                    className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="w-full py-3 bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-grotesk font-bold uppercase text-xs tracking-wider rounded-lg transition-colors cursor-pointer"
+                >
+                  {isUpdating ? "Saving..." : "Save Profile Details"}
+                </button>
+              </form>
+
+              <div className="space-y-6">
+                {/* Email update form */}
+                <form onSubmit={handleUpdateEmail} className="space-y-4 bg-oldverse-card border border-white/5 rounded-xl p-6">
+                  <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text pb-2 border-b border-white/5">
+                    Change Email Address
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-oldverse-secondary">New Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="w-full py-3 border border-white/10 hover:border-oldverse-accent/30 bg-white/3 hover:bg-white/5 text-white font-grotesk font-bold uppercase text-xs tracking-wider rounded-lg transition-colors cursor-pointer"
+                  >
+                    Change Email
+                  </button>
+                </form>
+
+                {/* Password update form */}
+                <form onSubmit={handleUpdatePassword} className="space-y-4 bg-oldverse-card border border-white/5 rounded-xl p-6">
+                  <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text pb-2 border-b border-white/5">
+                    Change Account Password
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-oldverse-secondary">New Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-oldverse-secondary">Confirm Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={confirmPasswordInput}
+                      onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                      className="w-full p-3 bg-white/3 border border-white/5 rounded-lg text-xs text-white focus:outline-none focus:border-oldverse-accent"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="w-full py-3 border border-white/10 hover:border-oldverse-accent/30 bg-white/3 hover:bg-white/5 text-white font-grotesk font-bold uppercase text-xs tracking-wider rounded-lg transition-colors cursor-pointer"
+                  >
+                    Change Password
+                  </button>
+                </form>
+
+                {/* Account Actions */}
+                <div className="bg-oldverse-card border border-white/5 rounded-xl p-6 space-y-4">
+                  <h3 className="font-grotesk text-sm font-bold uppercase tracking-wider text-oldverse-text pb-2 border-b border-white/5">
+                    Security & Session Control
+                  </h3>
+                  
+                  <div className="flex gap-4">
+                    <button
+                      onClick={handleLogoutAllDevices}
+                      disabled={isUpdating}
+                      className="flex-grow py-3 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 font-grotesk font-bold uppercase text-xs tracking-wider rounded-lg transition-colors cursor-pointer"
+                    >
+                      Logout All Devices
+                    </button>
+
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={isUpdating}
+                      className="flex-grow py-3 bg-red-500 hover:bg-red-600 text-white font-grotesk font-bold uppercase text-xs tracking-wider rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      Delete Account
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

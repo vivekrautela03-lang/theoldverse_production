@@ -38,10 +38,10 @@ function MovieCard({ item, isActive, onActivate, onDeactivate }: MovieCardProps)
     return () => window.removeEventListener("oldverse_store_update", handleUpdate);
   }, [item.id]);
 
-  const handleWatchlistToggle = (e: React.MouseEvent) => {
+  const handleWatchlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const nextVal = mutateStore.toggleWatchlist(item.id);
+    const nextVal = await mutateStore.toggleWatchlist(item.id);
     setIsInWatchlist(nextVal);
   };
 
