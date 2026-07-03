@@ -85,6 +85,27 @@ ${escapedMessage}
 ----------------------------------------
 Sent via The OldVerse Contact Portal.`;
 
+    // 0. Save submission to Supabase contact_messages table as primary persistent storage
+    let dbSaved = false;
+    try {
+      const { supabaseAdmin } = await import("@/lib/supabaseClient");
+      const { error: dbError } = await supabaseAdmin
+        .from("contact_messages")
+        .insert({
+          name: escapedName,
+          email: escapedEmail,
+          subject: escapedSubject,
+          message: escapedMessage
+        });
+      if (dbError) {
+        console.warn("[Contact API] Failed to save to Supabase Database:", dbError.message);
+      } else {
+        dbSaved = true;
+      }
+    } catch (dbErr: any) {
+      console.warn("[Contact API] Supabase Database exception:", dbErr.message);
+    }
+
     const errors: string[] = [];
 
     // 1. Try FormSubmit.co as the primary direct forwarding mechanism (highly reliable out-of-the-box)
@@ -148,7 +169,7 @@ Sent via The OldVerse Contact Portal.`;
           return NextResponse.json({
             success: true,
             mode: "resend",
-            message: "Your message has been sent successfully via Resend!",
+            message: "Your message has been sent successfully!",
           });
         } else {
           const errMsg = data.message || "Failed to deliver message via Resend.";
@@ -195,7 +216,7 @@ Sent via The OldVerse Contact Portal.`;
           return NextResponse.json({
             success: true,
             mode: "web3forms",
-            message: "Your message has been sent successfully via Web3Forms!",
+            message: "Your message has been sent successfully!",
           });
         } else {
           const errMsg = data.message || "Failed to deliver message via Web3Forms.";
@@ -208,7 +229,7 @@ Sent via The OldVerse Contact Portal.`;
       }
     }
 
-    // 4. Fallback: Simulated Mode (Log to console / write local debug log)
+    // 4. Fallback: Local Debug logging
     console.log("\n==================================================");
     console.log("✉️  [SIMULATED EMAIL DELIVERY] - THE OLDVERSE");
     console.log(`To: ${recipientEmail}`);
@@ -235,19 +256,18 @@ Sent via The OldVerse Contact Portal.`;
 
     await serverDb.addAuditLog("CONTACT_SENT_SIMULATED", ip, userAgent, `Contact form logged locally for: ${escapedEmail}`);
 
-    if (process.env.RESEND_API_KEY || process.env.WEB3FORMS_ACCESS_KEY) {
+    if (dbSaved) {
       return NextResponse.json({
         success: true,
-        mode: "simulated",
-        message: `API delivery failed (attempted via ${process.env.RESEND_API_KEY ? 'Resend' : ''}${process.env.RESEND_API_KEY && process.env.WEB3FORMS_ACCESS_KEY ? ' & ' : ''}${process.env.WEB3FORMS_ACCESS_KEY ? 'Web3Forms' : ''}). Fell back to simulated local delivery.`,
-        warnings: errors,
+        mode: "database",
+        message: "Your message has been received successfully and saved in our database. Email notification is pending activation.",
       });
     }
 
     return NextResponse.json({
       success: true,
       mode: "simulated",
-      message: `Simulated transmission to ${recipientEmail} successful! Check terminal console logs for details.`,
+      message: `Message logged successfully (simulated delivery to ${recipientEmail}).`,
     });
 
   } catch (error: any) {
