@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full bg-oldverse-bg text-oldverse-text selection:bg-oldverse-accent selection:text-oldverse-bg">
-      <head>
+      <body className="min-h-full flex flex-col noise-bg">
         {/* Google tag (gtag.js) */}
         <Script
           async
@@ -38,8 +38,7 @@ export default function RootLayout({
             gtag('config', 'G-SNJ5L6SRQE');
           `}
         </Script>
-      </head>
-      <body className="min-h-full flex flex-col noise-bg">
+
         <Navbar />
         <main className="flex-grow">
           {children}
