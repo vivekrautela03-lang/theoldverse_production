@@ -89,14 +89,14 @@ export async function middleware(request: NextRequest) {
   // 3. Security Headers Configuration with updated CSP rules
   const response = NextResponse.next();
 
-  // Content Security Policy (CSP) allowing Supabase domains
+  // Content Security Policy (CSP) allowing Supabase and Google Analytics domains
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com;
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' data: https://images.unsplash.com https://*.unsplash.com https://commondatastorage.googleapis.com https://res.cloudinary.com https://*.supabase.co;
+    img-src 'self' data: https://images.unsplash.com https://*.unsplash.com https://commondatastorage.googleapis.com https://res.cloudinary.com https://*.supabase.co https://www.google-analytics.com;
     media-src 'self' https://commondatastorage.googleapis.com https://instagram.com https://*.instagram.com https://*.cdninstagram.com https://res.cloudinary.com;
-    connect-src 'self' https://*.supabase.co https://api.resend.com https://api.web3forms.com;
+    connect-src 'self' https://*.supabase.co https://api.resend.com https://api.web3forms.com https://*.google-analytics.com;
     font-src 'self' https://fonts.gstatic.com;
     frame-src 'self' https://challenges.cloudflare.com;
     object-src 'none';
