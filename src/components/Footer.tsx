@@ -69,6 +69,9 @@ export default function Footer() {
                 <Link href="/about" className="hover:text-oldverse-accent transition-colors">About the Studio</Link>
               </li>
               <li>
+                <Link href="/resources" className="hover:text-oldverse-accent transition-colors">Career Guides & Resources</Link>
+              </li>
+              <li>
                 <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Contact Details</Link>
               </li>
               <li>

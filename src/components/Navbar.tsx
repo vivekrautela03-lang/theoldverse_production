@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Home, Menu, X, Info, Phone, Mail, Clapperboard, LogOut, User, Landmark, Plus, Settings, Languages, Clock, Baby, Tv, Smartphone, HelpCircle, Cast } from "lucide-react";
+import { Search, Home, Menu, X, Info, Phone, Mail, Clapperboard, LogOut, User, Landmark, Plus, Settings, Languages, Clock, Baby, Tv, Smartphone, HelpCircle, Cast, BookOpen } from "lucide-react";
 
 export default function Navbar() {
   const [desktopDrawerOpen, setDesktopDrawerOpen] = useState(false);
@@ -129,6 +129,7 @@ export default function Navbar() {
     { name: "Home", href: "/", icon: Home },
     { name: "Projects", href: "/projects", icon: Clapperboard },
     { name: "About Us", href: "/about", icon: Info },
+    { name: "Resources", href: "/resources", icon: BookOpen },
     { name: "Contact", href: "/contact", icon: Mail }
   ];
 
