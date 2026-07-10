@@ -129,7 +129,6 @@ export default function Navbar() {
     { name: "Home", href: "/", icon: Home },
     { name: "Projects", href: "/projects", icon: Clapperboard },
     { name: "About Us", href: "/about", icon: Info },
-    { name: "Resources", href: "/resources", icon: BookOpen },
     { name: "Contact", href: "/contact", icon: Mail }
   ];
 
