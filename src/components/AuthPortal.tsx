@@ -390,11 +390,11 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
         </div>
 
         {/* RIGHT SIDE PANEL: Actions */}
-        <div className="w-full md:w-7/12 bg-[#0e0f12] p-8 md:p-12 relative flex flex-col justify-center font-sans">
+        <div className="w-full md:w-7/12 bg-[#0B0E13] p-8 md:p-12 relative flex flex-col justify-center font-sans">
           {/* Skip for now button in top-right */}
           <a 
             href="/"
-            className="absolute top-6 right-8 text-xs font-semibold text-white/40 hover:text-white transition-colors uppercase tracking-wider font-grotesk"
+            className="absolute top-6 right-8 text-xs font-semibold text-white/40 hover:text-[#CFE8FF] transition-colors uppercase tracking-wider font-grotesk"
           >
             Skip for now
           </a>
@@ -404,7 +404,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
             <div className="space-y-6 animate-fade-in">
               <button
                 onClick={() => setMode("credentials_input")}
-                className="flex items-center gap-1.5 text-xs text-[#F5A623] hover:text-[#F5A623]/85 font-semibold cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-[#8DBEFF] hover:text-[#CFE8FF] font-semibold cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Login
@@ -412,13 +412,13 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
 
               <div className="space-y-1.5">
                 <h3 className="font-bebas text-3xl tracking-wider text-white uppercase">Forgot Password</h3>
-                <p className="text-xs text-oldverse-secondary font-light">
+                <p className="text-xs text-[#B8C2CC] font-light">
                   Enter your registered email address. We will send you a password recovery link.
                 </p>
               </div>
 
               <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                   <Mail className="h-4 w-4 text-white/30 mr-3" />
                   <input
                     type="email"
@@ -433,7 +433,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-extrabold text-xs tracking-widest uppercase transition-all shadow-lg cursor-pointer flex items-center justify-center"
+                  className="w-full py-3.5 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-extrabold text-xs tracking-widest uppercase transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03] cursor-pointer flex items-center justify-center font-grotesk"
                 >
                   {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Send Recovery Email"}
                 </button>
@@ -446,13 +446,13 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
             <div className="space-y-6 animate-fade-in">
               <div className="space-y-1.5">
                 <h3 className="font-bebas text-3xl tracking-wider text-white uppercase">Reset Password</h3>
-                <p className="text-xs text-oldverse-secondary font-light">
+                <p className="text-xs text-[#B8C2CC] font-light">
                   Choose a new strong password for your account.
                 </p>
               </div>
 
               <form onSubmit={handleResetPassword} className="space-y-4">
-                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                   <Lock className="h-4 w-4 text-white/30 mr-3" />
                   <input
                     type="password"
@@ -464,7 +464,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                   />
                 </div>
 
-                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                   <Lock className="h-4 w-4 text-white/30 mr-3" />
                   <input
                     type="password"
@@ -479,7 +479,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-extrabold text-xs tracking-widest uppercase transition-all shadow-lg cursor-pointer flex items-center justify-center"
+                  className="w-full py-3.5 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-extrabold text-xs tracking-widest uppercase transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03] cursor-pointer flex items-center justify-center font-grotesk"
                 >
                   {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Update Password"}
                 </button>
@@ -495,7 +495,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                   setMode("credentials_input");
                   setOtpCode("");
                 }}
-                className="flex items-center gap-1.5 text-xs text-[#F5A623] hover:text-[#F5A623]/85 font-semibold cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-[#8DBEFF] hover:text-[#CFE8FF] font-semibold cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Change Email / Back
@@ -503,19 +503,19 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
 
               <div className="space-y-1.5">
                 <h3 className="font-bebas text-3xl tracking-wider text-white uppercase">Verify Identity</h3>
-                <p className="text-xs text-oldverse-secondary font-light">
+                <p className="text-xs text-[#B8C2CC] font-light">
                   A verification code or magic link has been sent to your email. Enter the code below:
                 </p>
               </div>
 
               {toastMessage && (
-                <div className="p-3 bg-oldverse-accent/5 border border-oldverse-accent/15 rounded-xl text-center">
-                  <p className="text-[10px] text-oldverse-accent font-grotesk tracking-wide">{toastMessage}</p>
+                <div className="p-3 bg-[#8DBEFF]/10 border border-[#8DBEFF]/20 rounded-xl text-center">
+                  <p className="text-[10px] text-[#8DBEFF] font-grotesk tracking-wide">{toastMessage}</p>
                 </div>
               )}
 
               <form onSubmit={handleOtpVerify} className="space-y-4">
-                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                   <KeyRound className="h-4 w-4 text-white/30 mr-3" />
                   <input
                     type="text"
@@ -531,7 +531,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-extrabold text-xs tracking-widest uppercase transition-all shadow-lg cursor-pointer flex items-center justify-center"
+                  className="w-full py-3.5 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-extrabold text-xs tracking-widest uppercase transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03] cursor-pointer flex items-center justify-center font-grotesk"
                 >
                   {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Verify & Enter"}
                 </button>
@@ -542,7 +542,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
           {/* WELCOME LOADER VIEW */}
           {mode === "welcome" && (
             <div className="space-y-8 text-center py-6 animate-fade-in">
-              <div className="h-16 w-16 bg-[#F5A623]/15 border border-[#F5A623]/30 rounded-full flex items-center justify-center mx-auto text-[#F5A623] shadow-xl shadow-[#F5A623]/5">
+              <div className="h-16 w-16 bg-[#8DBEFF]/15 border border-[#8DBEFF]/30 rounded-full flex items-center justify-center mx-auto text-[#8DBEFF] shadow-xl shadow-[#8DBEFF]/10">
                 <UserCheck className="h-7 w-7" />
               </div>
               
@@ -550,13 +550,13 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 <h3 className="font-bebas text-4xl tracking-wider text-white uppercase leading-none">
                   Welcome to TheOldverse
                 </h3>
-                <p className="text-xs text-oldverse-secondary max-w-sm mx-auto font-light leading-relaxed">
+                <p className="text-xs text-[#B8C2CC] max-w-sm mx-auto font-light leading-relaxed">
                   Authentication verified. Syncing profile, watchlists, and streaming configurations...
                 </p>
               </div>
 
               <div className="h-1 w-24 bg-white/15 rounded-full overflow-hidden mx-auto">
-                <div className="h-full bg-[#F5A623] rounded-full animate-pulse w-2/3" />
+                <div className="h-full bg-[#8DBEFF] rounded-full animate-pulse w-2/3" />
               </div>
             </div>
           )}
@@ -565,8 +565,8 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
           {mode === "credentials_input" && (
             <div className="space-y-6 animate-fade-in">
               {toastMessage && (
-                <div className="p-3 bg-oldverse-accent/5 border border-oldverse-accent/15 rounded-xl text-center">
-                  <p className="text-[10px] text-oldverse-accent font-grotesk tracking-wide">{toastMessage}</p>
+                <div className="p-3 bg-[#8DBEFF]/10 border border-[#8DBEFF]/20 rounded-xl text-center">
+                  <p className="text-[10px] text-[#8DBEFF] font-grotesk tracking-wide">{toastMessage}</p>
                 </div>
               )}
 
@@ -580,7 +580,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                     setCaptchaVerified(false);
                   }}
                   className={`pb-3 pr-6 transition-all border-b cursor-pointer ${
-                    !isRegister ? "text-[#F5A623] border-[#F5A623]" : "text-white/40 border-transparent hover:text-white/60"
+                    !isRegister ? "text-[#8DBEFF] border-[#8DBEFF]" : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 >
                   Login Session
@@ -593,7 +593,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                     setCaptchaVerified(false);
                   }}
                   className={`pb-3 px-6 transition-all border-b cursor-pointer ${
-                    isRegister ? "text-[#F5A623] border-[#F5A623]" : "text-white/40 border-transparent hover:text-white/60"
+                    isRegister ? "text-[#8DBEFF] border-[#8DBEFF]" : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 >
                   Create Account
@@ -606,14 +606,14 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                   <button
                     type="button"
                     onClick={() => setAuthMethod("password")}
-                    className={`cursor-pointer ${authMethod === "password" ? "text-[#F5A623]" : "text-white/30"}`}
+                    className={`cursor-pointer ${authMethod === "password" ? "text-[#8DBEFF]" : "text-white/30"}`}
                   >
                     Password Sign-In
                   </button>
                   <button
                     type="button"
                     onClick={() => setAuthMethod("otp" as any)}
-                    className={`cursor-pointer ${authMethod === ("otp" as any) ? "text-[#F5A623]" : "text-white/30"}`}
+                    className={`cursor-pointer ${authMethod === ("otp" as any) ? "text-[#8DBEFF]" : "text-white/30"}`}
                   >
                     Passwordless OTP
                   </button>
@@ -622,7 +622,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 <div className="space-y-3.5">
                   {/* Name field (Registration only) */}
                   {isRegister && (
-                    <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                    <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                       <Mail className="h-4 w-4 text-white/30 mr-3" />
                       <input
                         type="text"
@@ -636,7 +636,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                   )}
 
                   {/* Email Input */}
-                  <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                  <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                     <Mail className="h-4 w-4 text-white/30 mr-3" />
                     <input
                       type="email"
@@ -651,7 +651,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                   {/* Password fields */}
                   {authMethod === "password" && (
                     <div className="space-y-3.5">
-                      <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                      <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                         <Lock className="h-4 w-4 text-white/30 mr-3" />
                         <input
                           type="password"
@@ -664,7 +664,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                       </div>
 
                       {isRegister && (
-                        <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-white/10 transition-colors">
+                        <div className="flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-[#8DBEFF] focus-within:ring-1 focus-within:ring-[#8DBEFF]/50 transition-colors">
                           <Lock className="h-4 w-4 text-white/30 mr-3" />
                           <input
                             type="password"
@@ -705,7 +705,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                           checked={captchaVerified}
                           disabled={captchaVerified || captchaLoading}
                           onChange={simulateCaptcha}
-                          className="h-4.5 w-4.5 rounded border-white/20 bg-white/5 text-[#F5A623] focus:ring-0 cursor-pointer disabled:cursor-not-allowed"
+                          className="h-4.5 w-4.5 rounded border-white/20 bg-white/5 text-[#8DBEFF] focus:ring-0 cursor-pointer disabled:cursor-not-allowed"
                         />
                         <label htmlFor="captcha-check" className="text-[11px] text-white/70 select-none cursor-pointer">
                           {captchaLoading ? "Verifying security token..." : "I am not a robot"}
@@ -713,7 +713,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                       </div>
                       <div className="flex items-center gap-1.5 text-white/20">
                         {captchaLoading ? (
-                          <RefreshCw className="h-4 w-4 animate-spin text-[#F5A623]" />
+                          <RefreshCw className="h-4 w-4 animate-spin text-[#8DBEFF]" />
                         ) : (
                           <ShieldCheck className="h-4 w-4" />
                         )}
@@ -726,7 +726,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-lg bg-[#F5A623] hover:bg-[#F5A623]/85 text-black font-extrabold text-sm tracking-wide transition-all shadow-lg shadow-[#F5A623]/15 cursor-pointer flex items-center justify-center gap-2 uppercase font-grotesk"
+                  className="w-full py-3.5 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-extrabold text-xs tracking-widest uppercase transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03] cursor-pointer flex items-center justify-center gap-2 font-grotesk"
                 >
                   {isLoading ? (
                     <div className="h-4 w-4 border-t-2 border-b-2 border-black rounded-full animate-spin"></div>

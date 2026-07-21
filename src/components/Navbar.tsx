@@ -148,7 +148,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-black/10 backdrop-blur-md border-b border-white/5 font-sans">
+    <nav className="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-[#050608]/80 backdrop-blur-[18px] border-b border-white/5 font-sans">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {pathname === "/auth" ? (
           /* Simplified Auth Navbar (Image 1) */
@@ -156,7 +156,7 @@ export default function Navbar() {
             {/* Search Icon (Left) */}
             <Link
               href="/search"
-              className="p-1.5 text-white/90 hover:text-white transition-transform hover:scale-105"
+              className="p-1.5 text-white hover:text-[#8DBEFF] transition-transform hover:scale-105"
               aria-label="Search"
             >
               <Search className="h-5.5 w-5.5" />
@@ -173,7 +173,7 @@ export default function Navbar() {
                 e.stopPropagation();
                 setDesktopDrawerOpen(!desktopDrawerOpen);
               }}
-              className="p-1.5 text-white/90 hover:text-white focus:outline-none transition-transform hover:scale-105 cursor-pointer"
+              className="p-1.5 text-white hover:text-[#8DBEFF] focus:outline-none transition-transform hover:scale-105 cursor-pointer"
               aria-label="Menu"
             >
               <Menu className="h-5.5 w-5.5" />
@@ -193,7 +193,7 @@ export default function Navbar() {
               
               <div className="h-5 w-[1px] bg-white/20" />
               
-              <span className="font-grotesk font-bold text-sm sm:text-base tracking-widest text-white uppercase group-hover:text-oldverse-accent transition-colors duration-200">
+              <span className="font-grotesk font-bold text-sm sm:text-base tracking-widest text-white uppercase group-hover:text-[#CFE8FF] transition-colors duration-200">
                 THE OLDVERSE
               </span>
             </Link>
@@ -203,7 +203,7 @@ export default function Navbar() {
               {/* Search Trigger */}
               <Link
                 href="/search"
-                className="p-1.5 text-white/90 hover:text-white transition-transform hover:scale-105"
+                className="p-1.5 text-white hover:text-[#8DBEFF] transition-transform hover:scale-105"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
@@ -213,7 +213,7 @@ export default function Navbar() {
               {!user && (
                 <Link
                   href="/auth"
-                  className="font-grotesk font-extrabold text-sm sm:text-base text-white hover:text-oldverse-accent transition-colors duration-250 px-1 uppercase tracking-wider"
+                  className="font-grotesk font-extrabold text-sm sm:text-base text-white hover:text-[#CFE8FF] transition-colors duration-250 px-1 uppercase tracking-wider"
                 >
                   Login
                 </Link>
@@ -225,7 +225,7 @@ export default function Navbar() {
                   e.stopPropagation();
                   setDesktopDrawerOpen(!desktopDrawerOpen);
                 }}
-                className="p-1.5 text-white/90 hover:text-white focus:outline-none transition-transform hover:scale-105 cursor-pointer"
+                className="p-1.5 text-white hover:text-[#8DBEFF] focus:outline-none transition-transform hover:scale-105 cursor-pointer"
                 aria-label="Menu"
               >
                 <Menu className="h-5.5 w-5.5" />
@@ -236,9 +236,9 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Bottom Row: Centered Tab Links with Icons (Orange Active Indicator) - Only show if not on Auth page */}
+      {/* Bottom Row: Centered Tab Links with Icons (Ice Blue Active Indicator) - Only show if not on Auth page */}
       {pathname !== "/auth" && (
-        <div className="border-t border-white/5 py-2 bg-black/5">
+        <div className="border-t border-white/5 py-2 bg-[#050608]/90">
           <div className="max-w-8xl mx-auto px-4">
             <div className="flex items-center justify-center gap-6 sm:gap-10 md:gap-16 text-[10px] sm:text-xs">
               {navLinks.map((link) => {
@@ -249,13 +249,13 @@ export default function Navbar() {
                     key={link.name}
                     href={link.href}
                     className={`flex items-center gap-1.5 py-1 px-1 relative transition-colors font-grotesk font-semibold uppercase tracking-wider group ${
-                      active ? "text-oldverse-accent" : "text-white/70 hover:text-white"
+                      active ? "text-[#8DBEFF]" : "text-white/80 hover:text-[#CFE8FF]"
                     }`}
                   >
-                    <LinkIcon className={`h-3.5 w-3.5 transition-transform group-hover:scale-105 ${active ? "text-oldverse-accent animate-pulse" : "text-white/70 group-hover:text-white"}`} />
+                    <LinkIcon className={`h-3.5 w-3.5 transition-transform group-hover:scale-105 ${active ? "text-[#8DBEFF]" : "text-white group-hover:text-[#8DBEFF]"}`} />
                     <span>{link.name}</span>
                     {active && (
-                      <span className="absolute -bottom-[9px] left-0 w-full h-[2px] bg-oldverse-accent rounded-full" />
+                      <span className="absolute -bottom-[9px] left-0 w-full h-[2px] bg-[#8DBEFF] rounded-full transition-all duration-300" />
                     )}
                   </Link>
                 );

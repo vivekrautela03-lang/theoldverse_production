@@ -228,8 +228,8 @@ export default function HomePage() {
               />
             )}
             {/* Subtle bottom and side gradient for text legibility without dimming video/poster */}
-            <div className="absolute inset-0 bg-gradient-to-t from-oldverse-bg via-transparent to-transparent z-10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-oldverse-bg/60 via-transparent to-transparent z-10" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,8,0.92),rgba(5,6,8,0.65),transparent)] z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050608] via-transparent to-transparent z-10" />
           </motion.div>
         </AnimatePresence>
 
@@ -249,28 +249,28 @@ export default function HomePage() {
                   className="space-y-3.5"
                 >
                   {/* Languages | Genres Metadata */}
-                  <p className="text-xs font-semibold text-oldverse-accent tracking-wide font-grotesk">
-                    Hindi &bull; {featuredItem.category === "Music" ? "Music, Romance, Serene" : featuredItem.category === "Series" ? "Romance, Sci-Fi, Drama" : "Original, Spotlight"}
+                  <p className="text-xs font-semibold text-[#8DBEFF] tracking-widest uppercase font-grotesk">
+                    HINDI &bull; {featuredItem.category === "Music" ? "MUSIC, ROMANCE, SERENE" : featuredItem.category === "Series" ? "ROMANCE, SCI-FI, DRAMA" : "ORIGINAL, SPOTLIGHT"}
                   </p>
 
                   {/* Title */}
                   {featuredItem.id.startsWith("media-love") ? (
                     <div className="space-y-1">
-                      <span className="text-[10px] sm:text-xs font-grotesk font-bold tracking-widest text-oldverse-accent uppercase">
+                      <span className="text-[10px] sm:text-xs font-grotesk font-bold tracking-widest text-[#8DBEFF] uppercase">
                         Now Screening / Music Clip
                       </span>
-                      <h3 className="font-bebas text-3xl sm:text-4xl md:text-5xl tracking-wide text-oldverse-text uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                      <h3 className="font-bebas text-3xl sm:text-4xl md:text-5xl tracking-wide text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                         {featuredItem.title}
                       </h3>
                     </div>
                   ) : (
-                    <h2 className="font-bebas text-4xl sm:text-5xl md:text-7xl tracking-wider text-oldverse-text leading-none uppercase filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                    <h2 className="font-bebas text-4xl sm:text-5xl md:text-7xl tracking-wider text-white leading-none uppercase filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
                       {featuredItem.title}
                     </h2>
                   )}
 
                   {/* Synopsis */}
-                  <p className="text-white/60 text-xs sm:text-sm font-light leading-relaxed max-w-xl filter drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] line-clamp-3">
+                  <p className="text-[#B8C2CC] text-xs sm:text-sm font-light leading-relaxed max-w-xl filter drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] line-clamp-3">
                     {featuredItem.description}
                   </p>
 
@@ -279,7 +279,7 @@ export default function HomePage() {
                     <span className="text-[10px] text-white/40 font-grotesk uppercase tracking-wider">Created By</span>
                     <Link 
                       href={`/creator/${featuredItem.creatorId}`}
-                      className="text-xs font-grotesk font-bold text-oldverse-text hover:text-oldverse-accent transition-colors"
+                      className="text-xs font-grotesk font-bold text-white hover:text-[#CFE8FF] transition-colors"
                     >
                       Shivanshi & Vivek Rautela
                     </Link>
@@ -294,7 +294,7 @@ export default function HomePage() {
                     href={featuredItem.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#F5A623] hover:bg-[#FF8C32] text-black font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-grotesk font-bold text-sm tracking-wide transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03]"
                   >
                     <Play className="h-4 w-4 fill-current" />
                     Play
@@ -302,7 +302,7 @@ export default function HomePage() {
                 ) : (
                   <Link
                     href={`/watch/${featuredItem.id}`}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#F5A623] hover:bg-[#FF8C32] text-black font-grotesk font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-102"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-grotesk font-bold text-sm tracking-wide transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03]"
                   >
                     <Play className="h-4 w-4 fill-current" />
                     Play
@@ -314,7 +314,7 @@ export default function HomePage() {
                     href={featuredItem.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white font-grotesk font-bold text-sm tracking-wide transition-all hover:scale-102"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-[14px] border border-[rgba(141,190,255,0.35)] bg-transparent hover:bg-[rgba(141,190,255,0.08)] hover:border-[#8DBEFF] text-white font-grotesk font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.03]"
                   >
                     <Info className="h-4 w-4" />
                     More Info
@@ -322,7 +322,7 @@ export default function HomePage() {
                 ) : (
                   <Link
                     href={`/watch/${featuredItem.id}#description`}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white font-grotesk font-bold text-sm tracking-wide transition-all hover:scale-102"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-[14px] border border-[rgba(141,190,255,0.35)] bg-transparent hover:bg-[rgba(141,190,255,0.08)] hover:border-[#8DBEFF] text-white font-grotesk font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.03]"
                   >
                     <Info className="h-4 w-4" />
                     More Info
@@ -332,9 +332,9 @@ export default function HomePage() {
                 {/* Add to My List Button */}
                 <button
                   onClick={handleWatchlistToggle}
-                  className="flex items-center gap-2 px-3 py-2 text-white/80 hover:text-white transition-colors text-sm font-semibold hover:scale-102 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 text-white/80 hover:text-[#CFE8FF] transition-colors text-sm font-semibold hover:scale-[1.03] cursor-pointer"
                 >
-                  {isInWatchlist ? <Check className="h-4.5 w-4.5 text-oldverse-accent" /> : <Plus className="h-4.5 w-4.5" />}
+                  {isInWatchlist ? <Check className="h-4.5 w-4.5 text-[#8DBEFF]" /> : <Plus className="h-4.5 w-4.5" />}
                   <span>{isInWatchlist ? "In My List" : "Add to My List"}</span>
                 </button>
               </div>
@@ -345,7 +345,7 @@ export default function HomePage() {
               {/* Prev Button */}
               <button
                 onClick={() => setCurrentSlideIndex((prevIdx) => (prevIdx - 1 + slides.length) % slides.length)}
-                className="p-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white transition-all cursor-pointer hover:scale-105"
+                className="p-2.5 rounded-[14px] border border-[rgba(141,190,255,0.25)] bg-[#0B0E13]/80 hover:bg-[#8DBEFF]/10 hover:border-[#8DBEFF] text-white transition-all cursor-pointer hover:scale-105"
                 aria-label="Previous Slide"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -354,7 +354,7 @@ export default function HomePage() {
               {/* Next Button */}
               <button
                 onClick={() => setCurrentSlideIndex((prevIdx) => (prevIdx + 1) % slides.length)}
-                className="p-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white transition-all cursor-pointer hover:scale-105"
+                className="p-2.5 rounded-[14px] border border-[rgba(141,190,255,0.25)] bg-[#0B0E13]/80 hover:bg-[#8DBEFF]/10 hover:border-[#8DBEFF] text-white transition-all cursor-pointer hover:scale-105"
                 aria-label="Next Slide"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -364,7 +364,7 @@ export default function HomePage() {
               {featuredItem.videoUrl && (
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="p-2.5 rounded-lg border border-white/5 bg-white/10 hover:bg-white/15 text-white transition-all cursor-pointer hover:scale-105 ml-2"
+                  className="p-2.5 rounded-[14px] border border-[rgba(141,190,255,0.25)] bg-[#0B0E13]/80 hover:bg-[#8DBEFF]/10 hover:border-[#8DBEFF] text-white transition-all cursor-pointer hover:scale-105 ml-2"
                   aria-label="Toggle Sound"
                 >
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -381,7 +381,7 @@ export default function HomePage() {
                 key={idx}
                 onClick={() => handleSlideSelect(idx)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  currentSlideIndex === idx ? "w-6 bg-white" : "w-1.5 bg-white/30 hover:bg-white/50"
+                  currentSlideIndex === idx ? "w-6 bg-[#8DBEFF]" : "w-1.5 bg-white/30 hover:bg-white/50"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />

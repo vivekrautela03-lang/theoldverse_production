@@ -8,26 +8,26 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#080808] border-t border-white/5 pt-16 pb-8 relative z-10 overflow-hidden font-grotesk text-oldverse-secondary">
+    <footer className="bg-[#050608] border-t border-white/5 pt-16 pb-8 relative z-10 overflow-hidden font-grotesk text-[#B8C2CC]">
       {/* Background glow effects */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-oldverse-accent/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#8DBEFF]/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Section 2: Collaborate / Work With Us */}
         <div className="space-y-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-oldverse-accent uppercase tracking-widest block">Collaborate</span>
-            <h2 className="font-bebas text-4xl sm:text-5xl text-oldverse-text tracking-wider uppercase">Work With Us</h2>
+            <span className="text-[10px] font-bold text-[#8DBEFF] uppercase tracking-widest block">Collaborate</span>
+            <h2 className="font-bebas text-4xl sm:text-5xl text-white tracking-wider uppercase">Work With Us</h2>
           </div>
           <div className="bg-white/[0.02] border border-white/5 p-8 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <p className="text-sm font-light text-oldverse-secondary max-w-xl">
+            <p className="text-sm font-light text-[#B8C2CC] max-w-xl">
               We are always looking for actors, writers, editors and creative minds.
             </p>
             <a
               href="https://wa.me/919068850966"
               target="_blank"
               rel="noreferrer"
-              className="px-6 py-2.5 bg-white text-black font-semibold text-xs rounded-full uppercase tracking-wider hover:bg-white/90 transition text-center whitespace-nowrap"
+              className="px-6 py-2.5 bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-bold text-xs rounded-[14px] uppercase tracking-wider transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03] text-center whitespace-nowrap"
             >
               Join The OldVerse
             </a>

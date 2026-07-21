@@ -67,7 +67,7 @@ export default function SearchPage() {
               placeholder="Search movies, series, creators, genres..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-4 py-4 rounded-xl bg-oldverse-card border border-white/5 text-lg font-grotesk tracking-wide text-oldverse-text placeholder-white/30 focus:outline-none focus:border-oldverse-accent focus:ring-1 focus:ring-oldverse-accent transition-all duration-300 shadow-2xl"
+              className="w-full pl-14 pr-4 py-4 rounded-xl bg-[#0B0E13] border border-[rgba(141,190,255,0.15)] text-lg font-grotesk tracking-wide text-white placeholder-white/30 focus:outline-none focus:border-[#8DBEFF] focus:ring-1 focus:ring-[#8DBEFF]/50 focus:shadow-[0_0_20px_rgba(141,190,255,0.2)] transition-all duration-300"
             />
           </div>
 
