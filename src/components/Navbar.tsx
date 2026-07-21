@@ -186,7 +186,7 @@ export default function Navbar() {
             {/* Logo & Filmstrip Group */}
             <Link href="/" className="flex items-center select-none group gap-3.5">
               <img
-                src="/favicon.png?v=3"
+                src="/favicon.png?v=4"
                 alt="THE OLDVERSE Logo"
                 className="h-6 w-6 object-contain group-hover:scale-105 transition-transform duration-200"
               />

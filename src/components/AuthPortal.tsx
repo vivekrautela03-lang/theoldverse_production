@@ -353,7 +353,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
             {/* Filmstrip Logo */}
             <div className="flex items-center gap-3">
               <img
-                src="/favicon.png?v=3"
+                src="/favicon.png?v=4"
                 alt="The OldVerse Logo"
                 className="h-7 w-7 object-contain"
               />

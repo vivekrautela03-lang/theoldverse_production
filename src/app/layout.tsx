@@ -10,9 +10,9 @@ export const metadata: Metadata = {
   description: "A premium cinematic streaming platform and creator ecosystem for independent filmmakers, visual artists, writers, and storytellers.",
   keywords: "streaming, independent film, creators, director portfolio, behind the scenes, casting calls, cinematic platform",
   icons: {
-    icon: "/favicon.png?v=3",
-    shortcut: "/favicon.png?v=3",
-    apple: "/favicon.png?v=3"
+    icon: "/favicon.png?v=4",
+    shortcut: "/favicon.png?v=4",
+    apple: "/favicon.png?v=4"
   },
   openGraph: {
     title: "THE OLDVERSE | Every Story Deserves A Stage",
