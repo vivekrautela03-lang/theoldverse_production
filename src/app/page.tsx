@@ -216,7 +216,7 @@ export default function HomePage() {
                 onEnded={() => {
                   setCurrentSlideIndex((prevIndex) => (prevIndex + 1) % slides.length);
                 }}
-                className="w-full h-full object-cover filter brightness-[0.45] contrast-[1.05]"
+                className="w-full h-full object-cover"
                 src={featuredItem.videoUrl}
                 poster={featuredItem.bannerUrl}
               />
@@ -224,12 +224,12 @@ export default function HomePage() {
               <img
                 src={featuredItem.bannerUrl}
                 alt={featuredItem.title}
-                className="w-full h-full object-cover filter brightness-[0.35] contrast-[1.05]"
+                className="w-full h-full object-cover"
               />
             )}
-            {/* Black radial vignette gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-oldverse-bg via-transparent to-black/40 z-10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-oldverse-bg/85 via-transparent to-transparent z-10" />
+            {/* Subtle bottom and side gradient for text legibility without dimming video/poster */}
+            <div className="absolute inset-0 bg-gradient-to-t from-oldverse-bg via-transparent to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-oldverse-bg/60 via-transparent to-transparent z-10" />
           </motion.div>
         </AnimatePresence>
 

@@ -83,7 +83,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
         <img
           src={creator.banner}
           alt={creator.name}
-          className="w-full h-full object-cover filter brightness-[0.5] contrast-[1.05]"
+          className="w-full h-full object-cover"
         />
         {/* Shadow overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-oldverse-bg via-transparent to-black/20" />
