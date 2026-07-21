@@ -10,6 +10,17 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   const checkLogin = async () => {
+    const hasSessionCookie = typeof document !== "undefined" && document.cookie.split(";").some(item => item.trim().startsWith("session_at="));
+    if (!hasSessionCookie) {
+      setIsLoggedIn(false);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("oldverse_user");
+        window.dispatchEvent(new Event("oldverse_store_update"));
+        router.push("/auth");
+      }
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/me");
       if (res.ok) {

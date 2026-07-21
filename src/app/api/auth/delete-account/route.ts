@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/jwt";
 import { supabaseAdmin } from "@/lib/supabaseClient";
 
 export async function POST(request: Request) {
@@ -15,12 +14,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = verifyJwt(accessToken);
-    if (!payload || !payload.sub) {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy-project.supabase.co";
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-anon-key";
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user) {
       return NextResponse.json({ success: false, error: "Session invalid or expired" }, { status: 401 });
     }
 
-    const userId = payload.sub;
+    const userId = user.id;
 
     // Securely delete user using Supabase Admin Client
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);

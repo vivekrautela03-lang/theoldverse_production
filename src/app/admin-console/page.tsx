@@ -24,11 +24,25 @@ interface UserRecord {
 }
 
 export default function AdminConsolePage() {
-  const [activeTab, setActiveTab] = useState<"users" | "otp" | "logs">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "otp" | "logs" | "security">("users");
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [otpTarget, setOtpTarget] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
+
+  // Active Defense System State variables
+  const [securityLogs, setSecurityLogs] = useState<any[]>([]);
+  const [blockedIps, setBlockedIps] = useState<any[]>([]);
+  const [securitySearch, setSecuritySearch] = useState("");
+  const [securityStats, setSecurityStats] = useState({
+    totalBlocked: 0,
+    totalAttacks: 0,
+    sqlAttacks: 0,
+    xssAttacks: 0,
+    honeypotHits: 0
+  });
+  const [manualBlockIp, setManualBlockIp] = useState("");
+  const [manualBlockReason, setManualBlockReason] = useState("");
   
   // Step-Up Security state variables
   const [sudoRequired, setSudoRequired] = useState(true);
@@ -74,11 +88,38 @@ export default function AdminConsolePage() {
     return false;
   };
 
+  const fetchSecurityData = async () => {
+    try {
+      const response = await fetch("/api/admin/security");
+      if (response.status === 401) {
+        setSudoRequired(true);
+        return false;
+      }
+      const data = await response.json();
+      if (data.success) {
+        setSecurityLogs(data.logs || []);
+        setBlockedIps(data.blockedIps || []);
+        setSecurityStats(data.stats || {
+          totalBlocked: 0,
+          totalAttacks: 0,
+          sqlAttacks: 0,
+          xssAttacks: 0,
+          honeypotHits: 0
+        });
+        return true;
+      }
+    } catch (err) {
+      console.error("Failed to fetch security data", err);
+    }
+    return false;
+  };
+
   const loadData = async () => {
     setLoading(true);
     const successUsers = await fetchUsers();
     const successLogs = await fetchLogs();
-    if (successUsers && successLogs) {
+    const successSec = await fetchSecurityData();
+    if (successUsers && successLogs && successSec) {
       setSudoRequired(false);
     }
     setLoading(false);
@@ -91,8 +132,9 @@ export default function AdminConsolePage() {
       setLoading(true);
       const successUsers = await fetchUsers();
       const successLogs = await fetchLogs();
+      const successSec = await fetchSecurityData();
       if (isMounted) {
-        if (successUsers && successLogs) {
+        if (successUsers && successLogs && successSec) {
           setSudoRequired(false);
         }
         setLoading(false);
@@ -189,6 +231,88 @@ export default function AdminConsolePage() {
       setActionMessage({ type: "error", text: "Network error occurred." });
     }
   };
+
+  const handleBlockIp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualBlockIp.trim()) return;
+
+    try {
+      const response = await fetch("/api/admin/security", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "block", ip: manualBlockIp, reason: manualBlockReason || "Manual block by Administrator" })
+      });
+      if (response.status === 401) {
+        setSudoRequired(true);
+        return;
+      }
+      const data = await response.json();
+      if (data.success) {
+        setActionMessage({ type: "success", text: `Successfully blocked IP: ${manualBlockIp}` });
+        setManualBlockIp("");
+        setManualBlockReason("");
+        fetchSecurityData();
+      } else {
+        setActionMessage({ type: "error", text: data.error || "Failed to block IP." });
+      }
+    } catch {
+      setActionMessage({ type: "error", text: "Network error occurred." });
+    }
+  };
+
+  const handleUnblockIp = async (ipToUnblock: string) => {
+    try {
+      const response = await fetch("/api/admin/security", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "unblock", ip: ipToUnblock })
+      });
+      if (response.status === 401) {
+        setSudoRequired(true);
+        return;
+      }
+      const data = await response.json();
+      if (data.success) {
+        setActionMessage({ type: "success", text: `Successfully unblocked IP: ${ipToUnblock}` });
+        fetchSecurityData();
+      } else {
+        setActionMessage({ type: "error", text: data.error || "Failed to unblock IP." });
+      }
+    } catch {
+      setActionMessage({ type: "error", text: "Network error occurred." });
+    }
+  };
+
+  const handleClearSecurityLogs = async () => {
+    if (!confirm("Are you sure you want to permanently clear all security logs?")) return;
+
+    try {
+      const response = await fetch("/api/admin/security", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "clear-logs" })
+      });
+      if (response.status === 401) {
+        setSudoRequired(true);
+        return;
+      }
+      const data = await response.json();
+      if (data.success) {
+        setActionMessage({ type: "success", text: "Security logs cleared successfully." });
+        fetchSecurityData();
+      } else {
+        setActionMessage({ type: "error", text: data.error || "Failed to clear logs." });
+      }
+    } catch {
+      setActionMessage({ type: "error", text: "Network error occurred." });
+    }
+  };
+
+  const filteredSecurityLogs = securityLogs.filter(l => 
+    l.attack_type?.toLowerCase().includes(securitySearch.toLowerCase()) ||
+    l.details?.toLowerCase().includes(securitySearch.toLowerCase()) ||
+    l.ip?.includes(securitySearch)
+  );
 
   const filteredUsers = users.filter(u => 
     u.name.toLowerCase().includes(userQuery.toLowerCase()) ||
@@ -355,6 +479,17 @@ export default function AdminConsolePage() {
             >
               <Database className="h-4.5 w-4.5" />
               <span>Security Audits</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("security")}
+              className={`flex items-center gap-3 p-4 rounded-xl font-grotesk text-xs font-bold uppercase tracking-wider transition-all text-left ${
+                activeTab === "security" 
+                  ? "bg-oldverse-accent text-oldverse-bg font-black" 
+                  : "bg-oldverse-card/50 border border-white/5 text-oldverse-secondary hover:text-oldverse-text hover:bg-white/5"
+              }`}
+            >
+              <ShieldAlert className="h-4.5 w-4.5" />
+              <span>Active Defense</span>
             </button>
           </div>
 
@@ -554,6 +689,181 @@ export default function AdminConsolePage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {/* 4. Active Defense Security Dashboard Panel */}
+            {activeTab === "security" && (
+              <div className="space-y-6 animate-fade-in font-mono text-oldverse-text">
+                
+                {/* Panel Title */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-bebas text-2xl tracking-wider text-oldverse-text uppercase flex items-center gap-2">
+                      <ShieldAlert className="h-5 w-5 text-oldverse-accent animate-pulse" /> Active Defense Dashboard
+                    </h3>
+                    <p className="text-[10px] text-oldverse-secondary font-light">Real-time firewall, honeypot traps, and web application security monitoring.</p>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={fetchSecurityData}
+                      className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className="h-3 w-3" /> Refresh
+                    </button>
+                    <button
+                      onClick={handleClearSecurityLogs}
+                      className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 rounded-lg text-[10px] font-bold uppercase tracking-wider text-red-400 transition-colors cursor-pointer"
+                    >
+                      Clear Logs
+                    </button>
+                  </div>
+                </div>
+
+                {/* Statistics Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-[#121620]/30 border border-white/5 rounded-xl p-4 space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider text-oldverse-secondary">Blocked IPs</span>
+                    <p className="text-2xl font-bold font-grotesk text-oldverse-accent">{securityStats.totalBlocked}</p>
+                  </div>
+                  <div className="bg-[#121620]/30 border border-white/5 rounded-xl p-4 space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider text-oldverse-secondary">SQL Injection Blocks</span>
+                    <p className="text-2xl font-bold font-grotesk text-red-400">{securityStats.sqlAttacks}</p>
+                  </div>
+                  <div className="bg-[#121620]/30 border border-white/5 rounded-xl p-4 space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider text-oldverse-secondary">XSS Blocks</span>
+                    <p className="text-2xl font-bold font-grotesk text-yellow-400">{securityStats.xssAttacks}</p>
+                  </div>
+                  <div className="bg-[#121620]/30 border border-white/5 rounded-xl p-4 space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider text-oldverse-secondary">Honeypot Trap Hits</span>
+                    <p className="text-2xl font-bold font-grotesk text-blue-400">{securityStats.honeypotHits}</p>
+                  </div>
+                </div>
+
+                {/* Form to Manually Block IP */}
+                <div className="bg-[#121620]/20 border border-white/5 rounded-xl p-5 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-oldverse-text">Manual IP Blacklisting</h4>
+                  <form onSubmit={handleBlockIp} className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="text"
+                      placeholder="e.g. 198.51.100.42"
+                      value={manualBlockIp}
+                      onChange={(e) => setManualBlockIp(e.target.value)}
+                      className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-xs text-oldverse-text placeholder-white/30 focus:outline-none focus:border-oldverse-accent transition-colors"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Reason for block"
+                      value={manualBlockReason}
+                      onChange={(e) => setManualBlockReason(e.target.value)}
+                      className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-xs text-oldverse-text placeholder-white/30 focus:outline-none focus:border-oldverse-accent transition-colors"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-oldverse-accent hover:bg-oldverse-accent-secondary text-oldverse-bg text-xs font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
+                    >
+                      Block IP
+                    </button>
+                  </form>
+                </div>
+
+                {/* Blocked IPs Directory */}
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-oldverse-text">Active Blacklisted IPs</h4>
+                  <div className="border border-white/5 rounded-xl overflow-hidden bg-black/20 max-h-[200px] overflow-y-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-white/5 text-oldverse-secondary uppercase font-grotesk tracking-widest text-[9px] sticky top-0 backdrop-blur-md">
+                          <th className="p-3">IP Address</th>
+                          <th className="p-3">Reason</th>
+                          <th className="p-3">Blocked Until</th>
+                          <th className="p-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 font-light text-[10px]">
+                        {blockedIps.map((b) => (
+                          <tr key={b.ip} className="hover:bg-white/2 transition-colors">
+                            <td className="p-3 font-bold text-white">{b.ip}</td>
+                            <td className="p-3 text-oldverse-secondary">{b.reason || "No reason provided"}</td>
+                            <td className="p-3 text-oldverse-secondary">{new Date(b.blocked_until).toLocaleString()}</td>
+                            <td className="p-3 text-right">
+                              <button
+                                onClick={() => handleUnblockIp(b.ip)}
+                                className="px-2.5 py-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 rounded text-[9px] uppercase font-bold transition-colors cursor-pointer"
+                              >
+                                Unblock
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {blockedIps.length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="p-6 text-center text-oldverse-secondary font-light">No blacklisted IPs are active in the database.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Firewall Attack Logs */}
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-oldverse-text">Intrusion Detection Logs</h4>
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-oldverse-secondary" />
+                      <input
+                        type="text"
+                        placeholder="Search logs..."
+                        value={securitySearch}
+                        onChange={(e) => setSecuritySearch(e.target.value)}
+                        className="pl-8 pr-3 py-1 bg-black/40 border border-white/10 rounded-lg text-[10px] text-oldverse-text placeholder-white/30 focus:outline-none focus:border-oldverse-accent transition-colors w-48"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border border-white/5 rounded-xl overflow-hidden bg-black/20 max-h-[350px] overflow-y-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-white/5 text-oldverse-secondary uppercase font-grotesk tracking-widest text-[9px] sticky top-0 backdrop-blur-md">
+                          <th className="p-3">Time</th>
+                          <th className="p-3">IP</th>
+                          <th className="p-3">Violation</th>
+                          <th className="p-3">Score</th>
+                          <th className="p-3">Action</th>
+                          <th className="p-3">Payload details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 font-light text-[10px]">
+                        {filteredSecurityLogs.map((l) => (
+                          <tr key={l.id} className="hover:bg-white/2 transition-colors">
+                            <td className="p-3 text-oldverse-secondary whitespace-nowrap">{new Date(l.timestamp).toLocaleTimeString()}</td>
+                            <td className="p-3 font-semibold text-white whitespace-nowrap">{l.ip}</td>
+                            <td className="p-3 whitespace-nowrap">
+                              <span className="px-2 py-0.5 rounded text-[9px] uppercase font-bold border bg-red-500/10 border-red-500/20 text-red-400">
+                                {l.attack_type}
+                              </span>
+                            </td>
+                            <td className="p-3 text-oldverse-secondary font-bold">{l.risk_score}</td>
+                            <td className="p-3 text-oldverse-secondary font-semibold">{l.action_taken}</td>
+                            <td className="p-3 text-oldverse-secondary leading-relaxed max-w-[200px] truncate" title={l.details}>
+                              {l.details}
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredSecurityLogs.length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="p-8 text-center text-oldverse-secondary font-light">No security events found matching filter.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
               </div>
             )}
 

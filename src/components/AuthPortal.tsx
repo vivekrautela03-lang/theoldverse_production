@@ -352,17 +352,11 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
           <div className="space-y-6 relative z-10">
             {/* Filmstrip Logo */}
             <div className="flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-[#F5A623]">
-                <rect width="18" height="18" x="3" y="3" rx="2" />
-                <path d="M7 3v18" />
-                <path d="M17 3v18" />
-                <path d="M3 7h4" />
-                <path d="M3 12h4" />
-                <path d="M3 17h4" />
-                <path d="M17 7h4" />
-                <path d="M17 12h4" />
-                <path d="M17 17h4" />
-              </svg>
+              <img
+                src="/favicon.png?v=3"
+                alt="The OldVerse Logo"
+                className="h-7 w-7 object-contain"
+              />
               <span className="font-grotesk font-extrabold text-base tracking-widest text-white uppercase">The OldVerse</span>
             </div>
             

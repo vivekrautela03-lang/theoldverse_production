@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/jwt";
 import { serverDb } from "@/lib/serverDb";
 import { generateTotpSecret } from "@/lib/authCrypto";
 
@@ -16,12 +15,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = verifyJwt(accessToken);
-    if (!payload) {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy-project.supabase.co";
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-anon-key";
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !authUser) {
       return NextResponse.json({ success: false, error: "Token invalid or expired" }, { status: 401 });
     }
 
-    const user = await serverDb.getUserById(payload.sub);
+    const user = await serverDb.getUserById(authUser.id);
     if (!user) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 401 });
     }

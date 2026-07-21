@@ -110,6 +110,33 @@ class ServerDb {
 
   public async getUsers(): Promise<UserSchema[]> {
     await this.ensureSeeded();
+    
+    // 1. Fetch all profiles from public.profiles to catch all registered users
+    const { data: profiles } = await supabaseAdmin.from("profiles").select("*");
+    
+    // 2. Fetch all users currently in users_db
+    const { data: dbUsers } = await supabaseAdmin.from("users_db").select("*");
+    const dbUserIds = new Set((dbUsers || []).map(u => u.id));
+    
+    // 3. Find any profiles not yet in users_db and sync them
+    if (profiles && profiles.length > 0) {
+      const missingProfiles = profiles.filter(p => !dbUserIds.has(p.id));
+      if (missingProfiles.length > 0) {
+        const shadowInsertions = missingProfiles.map(profile => ({
+          id: profile.id,
+          name: profile.full_name || profile.username || "User",
+          email_or_phone: profile.email || "",
+          password_hash: "supabase_auth",
+          salt: "supabase_auth",
+          is_admin: profile.role === "admin" || profile.email === "theoldverse@gmail.com",
+          is_creator: profile.role === "creator" || profile.role === "admin" || profile.email === "theoldverse@gmail.com" || profile.email === "pioneer@oldverse.com",
+          two_factor_enabled: false,
+          failed_logins: 0
+        }));
+        await supabaseAdmin.from("users_db").insert(shadowInsertions);
+      }
+    }
+    
     const { data } = await supabaseAdmin.from("users_db").select("*");
     return (data || []).map(u => ({
       id: u.id,
@@ -135,19 +162,55 @@ class ServerDb {
       .eq("email_or_phone", target)
       .maybeSingle();
     
-    if (!data) return undefined;
+    if (data) {
+      return {
+        id: data.id,
+        name: data.name,
+        emailOrPhone: data.email_or_phone,
+        passwordHash: data.password_hash,
+        salt: data.salt,
+        isAdmin: data.is_admin,
+        isCreator: data.is_creator,
+        twoFactorSecret: data.two_factor_secret || undefined,
+        twoFactorEnabled: data.two_factor_enabled,
+        failedLogins: data.failed_logins,
+        lockedUntil: data.locked_until || undefined
+      };
+    }
+
+    // Try lazy syncing from profiles
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .eq("email", target)
+      .maybeSingle();
+
+    if (!profile) return undefined;
+
+    const shadowUser = {
+      id: profile.id,
+      name: profile.full_name || profile.username || "User",
+      email_or_phone: profile.email || "",
+      password_hash: "supabase_auth",
+      salt: "supabase_auth",
+      is_admin: profile.role === "admin" || profile.email === "theoldverse@gmail.com",
+      is_creator: profile.role === "creator" || profile.role === "admin" || profile.email === "theoldverse@gmail.com" || profile.email === "pioneer@oldverse.com",
+      two_factor_enabled: false,
+      failed_logins: 0
+    };
+
+    await supabaseAdmin.from("users_db").insert(shadowUser);
+
     return {
-      id: data.id,
-      name: data.name,
-      emailOrPhone: data.email_or_phone,
-      passwordHash: data.password_hash,
-      salt: data.salt,
-      isAdmin: data.is_admin,
-      isCreator: data.is_creator,
-      twoFactorSecret: data.two_factor_secret || undefined,
-      twoFactorEnabled: data.two_factor_enabled,
-      failedLogins: data.failed_logins,
-      lockedUntil: data.locked_until || undefined
+      id: shadowUser.id,
+      name: shadowUser.name,
+      emailOrPhone: shadowUser.email_or_phone,
+      passwordHash: shadowUser.password_hash,
+      salt: shadowUser.salt,
+      isAdmin: shadowUser.is_admin,
+      isCreator: shadowUser.is_creator,
+      twoFactorEnabled: shadowUser.two_factor_enabled,
+      failedLogins: shadowUser.failed_logins
     };
   }
 
@@ -159,19 +222,55 @@ class ServerDb {
       .eq("id", userId)
       .maybeSingle();
 
-    if (!data) return undefined;
+    if (data) {
+      return {
+        id: data.id,
+        name: data.name,
+        emailOrPhone: data.email_or_phone,
+        passwordHash: data.password_hash,
+        salt: data.salt,
+        isAdmin: data.is_admin,
+        isCreator: data.is_creator,
+        twoFactorSecret: data.two_factor_secret || undefined,
+        twoFactorEnabled: data.two_factor_enabled,
+        failedLogins: data.failed_logins,
+        lockedUntil: data.locked_until || undefined
+      };
+    }
+
+    // Try lazy syncing from profiles
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (!profile) return undefined;
+
+    const shadowUser = {
+      id: profile.id,
+      name: profile.full_name || profile.username || "User",
+      email_or_phone: profile.email || "",
+      password_hash: "supabase_auth",
+      salt: "supabase_auth",
+      is_admin: profile.role === "admin" || profile.email === "theoldverse@gmail.com",
+      is_creator: profile.role === "creator" || profile.role === "admin" || profile.email === "theoldverse@gmail.com" || profile.email === "pioneer@oldverse.com",
+      two_factor_enabled: false,
+      failed_logins: 0
+    };
+
+    await supabaseAdmin.from("users_db").insert(shadowUser);
+
     return {
-      id: data.id,
-      name: data.name,
-      emailOrPhone: data.email_or_phone,
-      passwordHash: data.password_hash,
-      salt: data.salt,
-      isAdmin: data.is_admin,
-      isCreator: data.is_creator,
-      twoFactorSecret: data.two_factor_secret || undefined,
-      twoFactorEnabled: data.two_factor_enabled,
-      failedLogins: data.failed_logins,
-      lockedUntil: data.locked_until || undefined
+      id: shadowUser.id,
+      name: shadowUser.name,
+      emailOrPhone: shadowUser.email_or_phone,
+      passwordHash: shadowUser.password_hash,
+      salt: shadowUser.salt,
+      isAdmin: shadowUser.is_admin,
+      isCreator: shadowUser.is_creator,
+      twoFactorEnabled: shadowUser.two_factor_enabled,
+      failedLogins: shadowUser.failed_logins
     };
   }
 
@@ -238,7 +337,32 @@ class ServerDb {
       .update(mappedUpdates)
       .eq("id", userId);
     
-    return !error;
+    if (error) return false;
+
+    // Push role updates to profiles table if admin/creator is updated
+    if (updates.isAdmin !== undefined || updates.isCreator !== undefined) {
+      const { data: userRecord } = await supabaseAdmin
+        .from("users_db")
+        .select("is_admin, is_creator")
+        .eq("id", userId)
+        .single();
+      
+      if (userRecord) {
+        let roleText = "user";
+        if (userRecord.is_admin) {
+          roleText = "admin";
+        } else if (userRecord.is_creator) {
+          roleText = "creator";
+        }
+
+        await supabaseAdmin
+          .from("profiles")
+          .update({ role: roleText })
+          .eq("id", userId);
+      }
+    }
+    
+    return true;
   }
 
   // --- Sessions Table ---

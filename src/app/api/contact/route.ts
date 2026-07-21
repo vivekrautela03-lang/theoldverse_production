@@ -14,9 +14,16 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
+import { verifyCsrf } from "@/lib/security";
+
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
   const userAgent = request.headers.get("user-agent") || "";
+
+  // Verify CSRF Origin/Referer
+  if (request instanceof Request && !verifyCsrf(request as any)) {
+    return NextResponse.json({ success: false, error: "CSRF verification failed." }, { status: 403 });
+  }
 
   try {
     // 1. Rate Limiting: 5 contact requests per 10 minutes per IP (bypassed in development mode for developer testing)

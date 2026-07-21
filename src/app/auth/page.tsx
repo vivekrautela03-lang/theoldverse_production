@@ -22,6 +22,12 @@ function AuthPageContent() {
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
+      const hasSessionCookie = typeof document !== "undefined" && document.cookie.split(";").some(item => item.trim().startsWith("session_at="));
+      if (!hasSessionCookie) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch("/api/auth/me");
         if (res.ok) {

@@ -1,10 +1,45 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/serverDb";
 import crypto from "crypto";
+import { sanitizeInput } from "@/lib/security";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const cookies = request.headers.get("cookie") || "";
+    const getCookie = (name: string) => {
+      const match = cookies.match(new RegExp("(^| )" + name + "=([^;]+)"));
+      return match ? match[2] : null;
+    };
+    
+    const accessToken = getCookie("session_at");
+    if (!accessToken) {
+      return NextResponse.json({ success: false, error: "Unauthorized access." }, { status: 401 });
+    }
+
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy-project.supabase.co";
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-anon-key";
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: "Unauthorized access." }, { status: 401 });
+    }
+
+    // Verify admin role in database profiles table
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const role = profile?.role || "user";
+    if (role !== "admin" && user.email !== "theoldverse@gmail.com") {
+      return NextResponse.json({ success: false, error: "Access Denied: Administrative role required." }, { status: 403 });
+    }
+
+    const rawBody = await request.json();
+    const body = sanitizeInput(rawBody);
     const { action, targetId, emailOrPhone, roleUpdates, otpLength = 6 } = body;
 
     if (action === "get-users") {
