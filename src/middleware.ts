@@ -65,17 +65,41 @@ export async function middleware(request: NextRequest) {
   const userAgent = request.headers.get("user-agent") || "";
   const { search } = request.nextUrl;
 
-  // CORS check for API routes
+  // CORS & Preflight handling for API routes
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+
   if (pathname.startsWith("/api/")) {
-    const origin = request.headers.get("origin");
+    // 0. Handle OPTIONS Preflight Requests
+    if (request.method === "OPTIONS") {
+      const preflightRes = new NextResponse(null, { status: 200 });
+      if (origin) {
+        preflightRes.headers.set("Access-Control-Allow-Origin", origin);
+        preflightRes.headers.set("Access-Control-Allow-Credentials", "true");
+        preflightRes.headers.set("Vary", "Origin");
+      } else {
+        preflightRes.headers.set("Access-Control-Allow-Origin", "*");
+      }
+      preflightRes.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+      preflightRes.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRF-Token, X-Requested-With");
+      preflightRes.headers.set("Access-Control-Max-Age", "86400");
+      return preflightRes;
+    }
+
+    // Validate Origin if present
     if (origin) {
-      const allowedOrigins = [
-        "https://www.theoldverse-productions.in",
-        "https://theoldverse-productions.in",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-      ];
-      if (!allowedOrigins.includes(origin)) {
+      const originHost = origin.replace(/^https?:\/\//, "");
+      const isAllowedOrigin =
+        !host ||
+        originHost === host ||
+        originHost.endsWith("theoldverse-productions.in") ||
+        originHost.endsWith("theoldverse.com") ||
+        originHost.endsWith(".vercel.app") ||
+        originHost.includes("localhost") ||
+        originHost.includes("127.0.0.1");
+
+      if (!isAllowedOrigin) {
+        console.warn(`[CORS Blocked] Origin: ${origin} | Host: ${host}`);
         return new NextResponse(
           JSON.stringify({ error: "Access Denied: CORS Policy Violation." }),
           { status: 403, headers: { "Content-Type": "application/json" } }
@@ -343,11 +367,11 @@ export async function middleware(request: NextRequest) {
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
 
-  // 4. Cache-Control for Protected / Sensitive Pages (Prevent browser caching)
-  if (isPrivateKey) {
-    response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
-    response.headers.set("Pragma", "no-cache");
-    response.headers.set("Expires", "0");
+  // 5. CORS headers for API responses
+  if (origin && pathname.startsWith("/api/")) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+    response.headers.set("Vary", "Origin");
   }
 
   return response;
