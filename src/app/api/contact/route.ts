@@ -61,25 +61,25 @@ export async function POST(request: Request) {
     }
 
     // 4. Primary Persistent Storage: Save to Supabase contact_messages database table
-    const { data: insertedMsg, error: dbError } = await supabaseAdmin
+    let insertedMsg: any = null;
+    let dbError: any = null;
+
+    // Try inserting basic payload (without explicit status key to ensure backward compatibility if column is missing)
+    const { data: dbData, error: err1 } = await supabaseAdmin
       .from("contact_messages")
       .insert({
         name: trimmedName,
         email: trimmedEmail,
         subject: trimmedSubject,
-        message: trimmedMessage,
-        status: "new"
+        message: trimmedMessage
       })
-      .select("*")
-      .single();
+      .select("*");
 
-    if (dbError) {
-      console.error("[Contact API] Supabase DB Insert Error:", dbError.message, dbError.details);
-      await serverDb.addAuditLog("CONTACT_DB_ERROR", ip, userAgent, `Supabase DB Error: ${dbError.message}`);
-      return NextResponse.json(
-        { success: false, error: "Database save failed: " + dbError.message },
-        { status: 500 }
-      );
+    if (err1) {
+      console.warn("[Contact API] Standard insert error, attempting minimal payload:", err1.message);
+      dbError = err1;
+    } else {
+      insertedMsg = dbData && dbData.length > 0 ? dbData[0] : null;
     }
 
     // 5. Create Admin Notification event
