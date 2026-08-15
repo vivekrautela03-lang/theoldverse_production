@@ -95,13 +95,44 @@ export async function POST(request: Request) {
       // Non-blocking notification logging
     }
 
-    // 6. Optional Email Notification Forwarding (Resend, Web3Forms, or FormSubmit)
+    // 6. Web3Forms Direct Email Dispatch (Primary Email Forwarder to theoldverse@gmail.com)
     const recipientEmail = "theoldverse@gmail.com";
     const emailSubject = `[The OldVerse Contact] ${trimmedSubject}`;
+    const web3Key = process.env.WEB3FORMS_ACCESS_KEY || "b8fa7dda-d970-47a1-839d-f204f9eefa66";
     let emailDispatched = false;
 
-    // Resend Email API
-    if (process.env.RESEND_API_KEY) {
+    if (web3Key) {
+      try {
+        const web3Res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            access_key: web3Key,
+            name: trimmedName,
+            email: trimmedEmail,
+            subject: emailSubject,
+            message: `From: ${trimmedName} (${trimmedEmail})\nSubject: ${trimmedSubject}\n\nMessage:\n${trimmedMessage}`,
+            from_name: "TheOldverse Website Contact"
+          })
+        });
+
+        const web3Data = await web3Res.json();
+        if (web3Res.ok && web3Data.success) {
+          emailDispatched = true;
+          console.log("[Contact API] Web3Forms email forwarded successfully to theoldverse@gmail.com");
+        } else {
+          console.warn("[Contact API] Web3Forms returned status:", web3Data);
+        }
+      } catch (err: any) {
+        console.warn("[Contact API] Web3Forms dispatch failed:", err.message);
+      }
+    }
+
+    // Backup: Resend Email API
+    if (!emailDispatched && process.env.RESEND_API_KEY) {
       try {
         const resendRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -120,44 +151,6 @@ export async function POST(request: Request) {
         if (resendRes.ok) emailDispatched = true;
       } catch (err: any) {
         console.warn("[Contact API] Resend email dispatch failed:", err.message);
-      }
-    }
-
-    // Web3Forms API
-    if (!emailDispatched && process.env.WEB3FORMS_ACCESS_KEY) {
-      try {
-        const web3Res = await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            access_key: process.env.WEB3FORMS_ACCESS_KEY,
-            name: trimmedName,
-            email: trimmedEmail,
-            subject: emailSubject,
-            message: trimmedMessage
-          })
-        });
-        if (web3Res.ok) emailDispatched = true;
-      } catch (err: any) {
-        console.warn("[Contact API] Web3Forms dispatch failed:", err.message);
-      }
-    }
-
-    // FormSubmit.co API fallback
-    if (!emailDispatched) {
-      try {
-        await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: trimmedName,
-            email: trimmedEmail,
-            subject: emailSubject,
-            message: trimmedMessage
-          })
-        });
-      } catch {
-        // Non-blocking fallback
       }
     }
 
