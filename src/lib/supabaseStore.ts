@@ -327,6 +327,43 @@ export const syncWithSupabase = async () => {
       localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(mappedNotif));
     }
 
+    // 6. Sync Published Projects from CMS database to Public Media Store
+    const { data: dbProjects } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (dbProjects && dbProjects.length > 0) {
+      const currentMedia = getStoreData.media();
+      const mappedDbProjects: MediaItem[] = dbProjects.map((p) => ({
+        id: p.id,
+        title: p.title,
+        type: p.category === "Series" ? "series" : "movie",
+        category: p.category,
+        description: p.short_description || p.full_description,
+        duration: "1 Season",
+        rating: "4.8",
+        posterUrl: p.poster_url,
+        bannerUrl: p.banner_url || p.poster_url,
+        videoUrl: p.trailer_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+        isTrending: p.is_featured,
+        isOriginal: p.is_featured,
+        isApproved: true,
+        releaseDate: p.release_date || "2026",
+        creatorId: "c1",
+        creatorName: "TheOldverse Studio",
+        cast: [],
+        crew: p.credits || [{ role: "Director", name: "TheOldverse Studio" }],
+        gallery: p.gallery_urls || []
+      }));
+
+      // Combine DB projects with existing default mock items (without duplicates)
+      const existingMap = new Map(currentMedia.map((m) => [m.id, m]));
+      mappedDbProjects.forEach((item) => existingMap.set(item.id, item));
+      localStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(Array.from(existingMap.values())));
+    }
+
     window.dispatchEvent(new Event("oldverse_store_update"));
   } catch (error) {
     console.error("[Sync] Error syncing with Supabase:", error);

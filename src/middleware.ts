@@ -144,17 +144,16 @@ export async function middleware(request: NextRequest) {
     );
   };
 
-  // 3. Honeypot check
+  // 3. Honeypot check for malicious scanner traps (excluding legitimate /admin management routes)
   const honeypots = [
     "/wp-admin",
     "/wp-login.php",
     "/xmlrpc.php",
     "/.env",
     "/.git",
-    "/admin/config",
-    "/admin/settings",
-    "/api/admin/config",
-    "/api/admin/settings"
+    "/phpmyadmin",
+    "/admin.php",
+    "/actuator/health"
   ];
   const isHoneypot = honeypots.some(h => decodedPath.startsWith(h));
 
@@ -213,8 +212,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Gating Logic
-  const isAdminPath = pathname.startsWith("/admin-console") || pathname.startsWith("/api/admin");
+  const isAdminPath = pathname.startsWith("/admin") || pathname.startsWith("/admin-console") || pathname.startsWith("/api/admin");
   const isCreatorPath = pathname.startsWith("/dashboard") || pathname.startsWith("/upload");
+  const isAdminLogin = pathname === "/admin/login" || pathname === "/admin/login/";
 
   // Fetch dbRole only if visiting restricted paths
   let dbRole = "user";
@@ -231,19 +231,41 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 1. Admin Paths gating
+  // Handle /admin root redirect
+  if (pathname === "/admin" || pathname === "/admin/") {
+    const url = request.nextUrl.clone();
+    if (payload && (payload.email === "theoldverse@gmail.com" || ["admin", "editor", "viewer"].includes(dbRole))) {
+      url.pathname = "/admin/dashboard";
+    } else {
+      url.pathname = "/admin/login";
+    }
+    return NextResponse.redirect(url);
+  }
+
+  // Handle /admin/login page
+  if (isAdminLogin) {
+    if (payload && (payload.email === "theoldverse@gmail.com" || ["admin", "editor", "viewer"].includes(dbRole))) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/dashboard";
+      return NextResponse.redirect(url);
+    }
+    // Allow unauthenticated / unauthorized users to access /admin/login
+    return NextResponse.next();
+  }
+
+  // 1. Admin Paths gating (excluding /admin/login handled above)
   if (isAdminPath) {
-    const isSystemAdmin = payload?.email === "theoldverse@gmail.com" || dbRole === "admin";
+    const isAuthorizedAdmin = payload?.email === "theoldverse@gmail.com" || ["admin", "editor", "viewer"].includes(dbRole);
     if (!payload) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
       }
       const url = request.nextUrl.clone();
-      url.pathname = "/auth";
+      url.pathname = "/admin/login";
       url.searchParams.set("redirect", pathname);
       return NextResponse.redirect(url);
     }
-    if (!isSystemAdmin) {
+    if (!isAuthorizedAdmin) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
       }
