@@ -85,15 +85,24 @@ export default function AboutPage() {
               <div className="space-y-3">
                 <div>
                   <h3 className="font-grotesk text-xl font-bold text-oldverse-text">
-                    Shivanshi Rauthan
+                    <Link href="/founders/shivanshi-rauthan" className="hover:text-[#8DBEFF] transition-colors">
+                      Shivanshi Rauthan
+                    </Link>
                   </h3>
                   <p className="text-xs text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk">
-                    Director • Producer • Creative Lead
+                    Co-Founder • Director • Producer • Creative Lead
                   </p>
                 </div>
                 <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                  As the co-founder of The OldVerse, Shivanshi Rauthan leads the creative vision behind every project. Her passion for filmmaking, storytelling, and visual direction ensures that each production reflects originality, emotion, and artistic excellence.
+                  As the co-founder of TheOldverse Productions, Shivanshi Rauthan leads the creative vision behind every project. Her passion for filmmaking, storytelling, and visual direction ensures that each production reflects originality, emotion, and artistic excellence.
                 </p>
+                <Link
+                  href="/founders/shivanshi-rauthan"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#8DBEFF] font-bold uppercase tracking-wider hover:underline pt-1"
+                >
+                  <span>View Official Profile</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             </div>
 
@@ -101,23 +110,32 @@ export default function AboutPage() {
             <div className="glassmorphism p-6 sm:p-8 rounded-2xl border border-white/5 flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
               <div className="h-28 w-28 rounded-full overflow-hidden border-2 border-white/10 shadow-lg flex-shrink-0 bg-oldverse-card">
                 <img
-                  src="/vivek_rautela.jpg"
-                  alt="Vivek Rautela"
+                  src="/images/founders/vivek-rautela-founder-theoldverse-productions.webp"
+                  alt="Vivek Rautela, Founder, Writer, Director and Producer of TheOldverse Productions"
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="space-y-3">
                 <div>
                   <h3 className="font-grotesk text-xl font-bold text-oldverse-text">
-                    Vivek Rautela
+                    <Link href="/founders/vivek-rautela" className="hover:text-[#8DBEFF] transition-colors">
+                      Vivek Rautela
+                    </Link>
                   </h3>
                   <p className="text-xs text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk">
-                    Director • Producer • Script Writer
+                    Founder • Writer • Director • Producer
                   </p>
                 </div>
                 <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                  Vivek Rautela is the co-founder of The OldVerse and the creative mind behind its stories. As a director, producer, and script writer, he focuses on building powerful narratives that connect with audiences and transform ideas into unforgettable cinematic experiences.
+                  Vivek Rautela is the Founder of TheOldverse Productions and the creative mind behind its stories. As a director, producer, and writer, he focuses on building powerful narratives that connect with audiences and transform ideas into unforgettable cinematic experiences.
                 </p>
+                <Link
+                  href="/founders/vivek-rautela"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#8DBEFF] font-bold uppercase tracking-wider hover:underline pt-1"
+                >
+                  <span>View Official Profile</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             </div>
           </div>
@@ -139,13 +157,15 @@ export default function AboutPage() {
               <div className="space-y-2 flex-grow flex flex-col justify-between">
                 <div>
                   <h3 className="font-grotesk text-sm font-bold text-oldverse-text">
-                    Shivanshi Rauthan
+                    <Link href="/founders/shivanshi-rauthan" className="hover:text-[#8DBEFF]">
+                      Shivanshi Rauthan
+                    </Link>
                   </h3>
                   <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
-                    Director • Producer • Creative Team
+                    Co-Founder • Director • Creative Lead
                   </p>
                   <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                    Leading the creative direction of The OldVerse, Shivanshi transforms ideas into visually compelling and emotionally engaging cinematic experiences.
+                    Leading the creative direction of TheOldverse, Shivanshi transforms ideas into visually compelling and emotionally engaging cinematic experiences.
                   </p>
                 </div>
               </div>
@@ -155,18 +175,20 @@ export default function AboutPage() {
             <div className="glassmorphism-card p-5 rounded-xl border border-white/5 flex flex-col items-center text-center space-y-4">
               <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-white/10 shadow-md bg-oldverse-card flex-shrink-0">
                 <img
-                  src="/vivek_rautela.jpg"
-                  alt="Vivek Rautela"
+                  src="/images/founders/vivek-rautela-founder-theoldverse-productions.webp"
+                  alt="Vivek Rautela, Founder, Writer, Director and Producer of TheOldverse Productions"
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="space-y-2 flex-grow flex flex-col justify-between">
                 <div>
                   <h3 className="font-grotesk text-sm font-bold text-oldverse-text">
-                    Vivek Rautela
+                    <Link href="/founders/vivek-rautela" className="hover:text-[#8DBEFF]">
+                      Vivek Rautela
+                    </Link>
                   </h3>
                   <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
-                    Director • Producer • Script Writer
+                    Founder • Writer • Director • Producer
                   </p>
                   <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
                     Vivek develops original stories, screenplays, and directs projects with a vision to create films that leave a lasting impact.

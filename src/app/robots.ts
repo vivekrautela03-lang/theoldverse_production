@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       disallow: [
+        "/admin/",
         "/admin-console/",
         "/api/",
         "/dashboard/",
@@ -13,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         "/profile/",
       ],
     },
-    sitemap: "https://theoldverse.com/sitemap.xml",
+    sitemap: "https://theoldverse-productions.in/sitemap.xml",
   };
 }
