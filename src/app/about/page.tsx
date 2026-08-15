@@ -112,6 +112,8 @@ export default function AboutPage() {
                 <img
                   src="/images/founders/vivek-rautela-founder-theoldverse-productions.webp"
                   alt="Vivek Rautela, Founder, Writer, Director and Producer of TheOldverse Productions"
+                  width={1200}
+                  height={675}
                   className="h-full w-full object-cover"
                 />
               </div>
