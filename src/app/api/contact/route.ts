@@ -1,32 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { serverDb } from "@/lib/serverDb";
-
-// Escaping function to mitigate XSS in email contents
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 import { verifyCsrf } from "@/lib/security";
+import { supabaseAdmin } from "@/lib/supabaseClient";
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
   const userAgent = request.headers.get("user-agent") || "";
 
-  // Verify CSRF Origin/Referer
+  // 1. CSRF Verification
   if (request instanceof Request && !verifyCsrf(request as any)) {
     return NextResponse.json({ success: false, error: "CSRF verification failed." }, { status: 403 });
   }
 
   try {
-    // 1. Rate Limiting: 5 contact requests per 10 minutes per IP (bypassed in development mode for developer testing)
+    // 2. Rate Limiting: 5 submissions per 10 minutes per IP (bypassed in dev mode)
     const isProd = process.env.NODE_ENV === "production";
     const rateLimit = isProd
       ? await serverDb.checkRateLimit(`contact_rate_${ip}`, 5, 10 * 60 * 1000)
@@ -47,6 +34,7 @@ export async function POST(request: Request) {
 
     const { name, email, subject, message } = await request.json();
 
+    // 3. Field validation
     if (!name || !email || !message) {
       return NextResponse.json(
         { success: false, error: "Name, email, and message are required fields." },
@@ -54,11 +42,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Input Validation
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    const trimmedSubject = (subject || "General Inquiry").trim();
-    const trimmedMessage = message.trim();
+    const trimmedName = String(name).trim();
+    const trimmedEmail = String(email).trim();
+    const trimmedSubject = String(subject || "General Inquiry").trim();
+    const trimmedMessage = String(message).trim();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
@@ -69,216 +56,131 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Name must be between 2 and 100 characters." }, { status: 400 });
     }
 
-    if (trimmedMessage.length < 10 || trimmedMessage.length > 5000) {
-      return NextResponse.json({ success: false, error: "Message must be between 10 and 5000 characters." }, { status: 400 });
+    if (trimmedMessage.length < 5 || trimmedMessage.length > 5000) {
+      return NextResponse.json({ success: false, error: "Message must be between 5 and 5000 characters." }, { status: 400 });
     }
 
-    // Escape HTML inputs to prevent injection and XSS
-    const escapedName = escapeHtml(trimmedName);
-    const escapedEmail = escapeHtml(trimmedEmail);
-    const escapedSubject = escapeHtml(trimmedSubject);
-    const escapedMessage = escapeHtml(trimmedMessage);
+    // 4. Primary Persistent Storage: Save to Supabase contact_messages database table
+    const { data: insertedMsg, error: dbError } = await supabaseAdmin
+      .from("contact_messages")
+      .insert({
+        name: trimmedName,
+        email: trimmedEmail,
+        subject: trimmedSubject,
+        message: trimmedMessage,
+        status: "new"
+      })
+      .select("*")
+      .single();
 
-    const recipientEmail = "theoldverse@gmail.com";
-    const emailSubject = `[The OldVerse Contact] ${escapedSubject}`;
-    const emailBody = `New contact form submission:
-----------------------------------------
-Name: ${escapedName}
-Email: ${escapedEmail}
-Subject: ${escapedSubject}
-----------------------------------------
-Message:
-${escapedMessage}
-----------------------------------------
-Sent via The OldVerse Contact Portal.`;
-
-    // 0. Save submission to Supabase contact_messages table as primary persistent storage
-    let dbSaved = false;
-    try {
-      const { supabaseAdmin } = await import("@/lib/supabaseClient");
-      const { error: dbError } = await supabaseAdmin
-        .from("contact_messages")
-        .insert({
-          name: escapedName,
-          email: escapedEmail,
-          subject: escapedSubject,
-          message: escapedMessage
-        });
-      if (dbError) {
-        console.warn("[Contact API] Failed to save to Supabase Database:", dbError.message);
-      } else {
-        dbSaved = true;
-      }
-    } catch (dbErr: any) {
-      console.warn("[Contact API] Supabase Database exception:", dbErr.message);
+    if (dbError) {
+      console.error("[Contact API] Supabase DB Insert Error:", dbError.message, dbError.details);
+      await serverDb.addAuditLog("CONTACT_DB_ERROR", ip, userAgent, `Supabase DB Error: ${dbError.message}`);
+      return NextResponse.json(
+        { success: false, error: "Database save failed: " + dbError.message },
+        { status: 500 }
+      );
     }
 
-    const errors: string[] = [];
-
-    // 1. Try FormSubmit.co as the primary direct forwarding mechanism (highly reliable out-of-the-box)
-    console.log("[Contact API] Attempting delivery via FormSubmit...");
+    // 5. Create Admin Notification event
     try {
-      const fsResponse = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Referer": "https://theoldverse.com/",
-          "User-Agent": userAgent || "Mozilla/5.0",
-        },
-        body: JSON.stringify({
-          name: escapedName,
-          email: escapedEmail,
-          subject: emailSubject,
-          message: escapedMessage,
-        }),
+      await supabaseAdmin.from("admin_notifications").insert({
+        title: "New Contact Message",
+        message: `${trimmedName} sent an inquiry regarding "${trimmedSubject}"`,
+        type: "message",
+        link: "/admin/messages",
+        is_read: false
       });
-
-      const fsData = await fsResponse.json();
-      if (fsResponse.ok && (fsData.success === "true" || fsData.success === true)) {
-        await serverDb.addAuditLog("CONTACT_SENT_FORMSUBMIT", ip, userAgent, `Contact form sent via FormSubmit for: ${escapedEmail}`);
-        return NextResponse.json({
-          success: true,
-          mode: "formsubmit",
-          message: "Your message has been sent successfully!",
-        });
-      } else {
-        console.warn("[Contact API] FormSubmit returned error:", fsData);
-        errors.push(`FormSubmit Error: ${fsData.message || "Failed to submit form"}`);
-      }
-    } catch (err: any) {
-      console.warn("[Contact API] FormSubmit dispatch exception:", err.message);
-      errors.push(`FormSubmit Exception: ${err.message}`);
+    } catch {
+      // Non-blocking notification logging
     }
 
-    // 2. Try Resend as a fallback if FormSubmit fails
+    // 6. Optional Email Notification Forwarding (Resend, Web3Forms, or FormSubmit)
+    const recipientEmail = "theoldverse@gmail.com";
+    const emailSubject = `[The OldVerse Contact] ${trimmedSubject}`;
+    let emailDispatched = false;
+
+    // Resend Email API
     if (process.env.RESEND_API_KEY) {
-      console.log("[Contact API] Attempting delivery via Resend...");
       try {
-        const response = await fetch("https://api.resend.com/emails", {
+        const resendRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`
           },
           body: JSON.stringify({
-            from: "onboarding@resend.dev", // standard sandbox sender, or verified domain
+            from: "onboarding@resend.dev",
             to: recipientEmail,
             subject: emailSubject,
-            text: emailBody,
-            reply_to: escapedEmail,
-          }),
+            text: `Name: ${trimmedName}\nEmail: ${trimmedEmail}\nSubject: ${trimmedSubject}\n\nMessage:\n${trimmedMessage}`,
+            reply_to: trimmedEmail
+          })
         });
-
-        const data = await response.json();
-        if (response.ok) {
-          await serverDb.addAuditLog("CONTACT_SENT_RESEND", ip, userAgent, `Contact form sent via Resend for: ${escapedEmail}`);
-          return NextResponse.json({
-            success: true,
-            mode: "resend",
-            message: "Your message has been sent successfully!",
-          });
-        } else {
-          const errMsg = data.message || "Failed to deliver message via Resend.";
-          console.warn("[Contact API] Resend returned error status:", data);
-          errors.push(`Resend Error: ${errMsg}`);
-        }
+        if (resendRes.ok) emailDispatched = true;
       } catch (err: any) {
-        console.warn("[Contact API] Resend dispatch failed:", err.message);
-        errors.push(`Resend Dispatch Exception: ${err.message}`);
+        console.warn("[Contact API] Resend email dispatch failed:", err.message);
       }
     }
 
-    // 3. Try Web3Forms (if Resend wasn't configured or failed)
-    if (process.env.WEB3FORMS_ACCESS_KEY) {
-      console.log("[Contact API] Attempting delivery via Web3Forms...");
+    // Web3Forms API
+    if (!emailDispatched && process.env.WEB3FORMS_ACCESS_KEY) {
       try {
-        const response = await fetch("https://api.web3forms.com/submit", {
+        const web3Res = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             access_key: process.env.WEB3FORMS_ACCESS_KEY,
-            name: escapedName,
-            email: escapedEmail,
+            name: trimmedName,
+            email: trimmedEmail,
             subject: emailSubject,
-            message: escapedMessage,
-            from_name: "The OldVerse Portal",
-          }),
+            message: trimmedMessage
+          })
         });
-
-        const text = await response.text();
-        let data: any = {};
-        try {
-          data = JSON.parse(text);
-        } catch (parseErr) {
-          throw new Error("Non-JSON response received.");
-        }
-
-        if (response.ok && data.success) {
-          await serverDb.addAuditLog("CONTACT_SENT_WEB3FORMS", ip, userAgent, `Contact form sent via Web3Forms for: ${escapedEmail}`);
-          return NextResponse.json({
-            success: true,
-            mode: "web3forms",
-            message: "Your message has been sent successfully!",
-          });
-        } else {
-          const errMsg = data.message || "Failed to deliver message via Web3Forms.";
-          console.warn("[Contact API] Web3Forms returned error status:", data);
-          errors.push(`HTML Error: ${errMsg}`);
-        }
+        if (web3Res.ok) emailDispatched = true;
       } catch (err: any) {
         console.warn("[Contact API] Web3Forms dispatch failed:", err.message);
-        errors.push(`Web3Forms Exception: ${err.message}`);
       }
     }
 
-    // 4. Fallback: Local Debug logging
-    console.log("\n==================================================");
-    console.log("✉️  [SIMULATED EMAIL DELIVERY] - THE OLDVERSE");
-    console.log(`To: ${recipientEmail}`);
-    console.log(`Subject: ${emailSubject}`);
-    console.log(`From Name: ${escapedName}`);
-    console.log(`From Email: ${escapedEmail}`);
-    if (errors.length > 0) {
-      console.log(`Warning - Delivery attempted but failed with:`);
-      errors.forEach((err) => console.log(`  * ${err}`));
-    }
-    console.log("--------------------------------------------------");
-    console.log(escapedMessage);
-    console.log("==================================================\n");
-
-    // Write to local debug log safely
-    try {
-      const logDir = path.join(process.cwd(), ".next");
-      const logFilePath = path.join(logDir, "contact_submissions_debug.log");
-      const logEntry = `[${new Date().toISOString()}] Name: ${escapedName} | Email: ${escapedEmail} | Subject: ${escapedSubject} | Message: ${escapedMessage}\n`;
-      fs.appendFileSync(logFilePath, logEntry, "utf8");
-    } catch (fsErr) {
-      // Ignore write failures
+    // FormSubmit.co API fallback
+    if (!emailDispatched) {
+      try {
+        await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: trimmedName,
+            email: trimmedEmail,
+            subject: emailSubject,
+            message: trimmedMessage
+          })
+        });
+      } catch {
+        // Non-blocking fallback
+      }
     }
 
-    await serverDb.addAuditLog("CONTACT_SENT_SIMULATED", ip, userAgent, `Contact form logged locally for: ${escapedEmail}`);
-
-    if (dbSaved) {
-      return NextResponse.json({
-        success: true,
-        mode: "database",
-        message: "Your message has been received successfully and saved in our database. Email notification is pending activation.",
-      });
-    }
+    await serverDb.addAuditLog(
+      "CONTACT_SUBMISSION_SUCCESS",
+      ip,
+      userAgent,
+      `Contact message ID ${insertedMsg?.id} submitted by ${trimmedEmail}`
+    );
 
     return NextResponse.json({
       success: true,
-      mode: "simulated",
-      message: `Message logged successfully (simulated delivery to ${recipientEmail}).`,
+      id: insertedMsg?.id,
+      message: "Thanks for reaching out. We'll get back to you soon.",
+      emailForwarded: emailDispatched
     });
 
   } catch (error: any) {
-    await serverDb.addAuditLog("CONTACT_ERROR", ip, userAgent, `Contact form exception: ${error.message}`);
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+    console.error("[Contact API] Unexpected Exception:", error.message);
+    await serverDb.addAuditLog("CONTACT_EXCEPTION", ip, userAgent, `Exception: ${error.message}`);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }
