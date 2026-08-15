@@ -23,11 +23,11 @@ export async function GET() {
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSystemAdmin = user.email === "theoldverse@gmail.com";
-    const role = isSystemAdmin ? "admin" : (profile?.role || "user");
+    const role = profile?.role || "customer";
+    const status = profile?.status || "active";
 
-    if (!isSystemAdmin && !["admin", "editor", "viewer"].includes(role)) {
-      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    if (status !== "active" || !["owner", "admin", "editor"].includes(role)) {
+      return NextResponse.json({ success: false, error: "Access Denied: Customer accounts or inactive accounts cannot access Admin Panel." }, { status: 403 });
     }
 
     return NextResponse.json({
@@ -38,6 +38,7 @@ export async function GET() {
         name: profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Admin",
         avatar: profile?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
         role: role,
+        status: status,
         createdAt: profile?.created_at || user.created_at
       }
     });

@@ -125,7 +125,7 @@ function AdminLayoutContent({ children }: AdminLayoutContentProps) {
     router.push("/admin/login");
   };
 
-  const navItems = [
+  const allNavItems = [
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { label: "Projects", href: "/admin/projects", icon: Film },
     { label: "Productions", href: "/admin/productions", icon: Video },
@@ -146,8 +146,13 @@ function AdminLayoutContent({ children }: AdminLayoutContentProps) {
       badge: newApplications > 0 ? newApplications : undefined
     },
     { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-    { label: "Settings", href: "/admin/settings", icon: Settings }
+    { label: "Settings", href: "/admin/settings", icon: Settings, adminOnly: true }
   ];
+
+  const navItems = allNavItems.filter(item => {
+    if (item.adminOnly && user?.role === "editor") return false;
+    return true;
+  });
 
   const getBreadcrumb = () => {
     const segments = pathname.split("/").filter(Boolean);

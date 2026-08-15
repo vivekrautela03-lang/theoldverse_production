@@ -216,25 +216,31 @@ export async function middleware(request: NextRequest) {
   const isCreatorPath = pathname.startsWith("/dashboard") || pathname.startsWith("/upload");
   const isAdminLogin = pathname === "/admin/login" || pathname === "/admin/login/";
 
-  // Fetch dbRole only if visiting restricted paths
-  let dbRole = "user";
+  // Fetch profile status and role strictly from PostgreSQL database (never trust token metadata alone)
+  let dbRole = "customer";
+  let dbStatus = "active";
   if (payload && (isAdminPath || isCreatorPath)) {
     try {
-      const { data: profile } = await supabase
+      const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("role")
+        .select("role, status")
         .eq("id", payload.sub)
-        .single();
-      dbRole = profile?.role || "user";
+        .maybeSingle();
+      if (profile) {
+        dbRole = profile.role || "customer";
+        dbStatus = profile.status || "active";
+      }
     } catch (e) {
       console.error("[Middleware] DB Role check failed:", e);
     }
   }
 
+  const isStaff = dbStatus === "active" && ["owner", "admin", "editor"].includes(dbRole);
+
   // Handle /admin root redirect
   if (pathname === "/admin" || pathname === "/admin/") {
     const url = request.nextUrl.clone();
-    if (payload && (payload.email === "theoldverse@gmail.com" || ["admin", "editor", "viewer"].includes(dbRole))) {
+    if (payload && isStaff) {
       url.pathname = "/admin/dashboard";
     } else {
       url.pathname = "/admin/login";
@@ -244,7 +250,7 @@ export async function middleware(request: NextRequest) {
 
   // Handle /admin/login page
   if (isAdminLogin) {
-    if (payload && (payload.email === "theoldverse@gmail.com" || ["admin", "editor", "viewer"].includes(dbRole))) {
+    if (payload && isStaff) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/dashboard";
       return NextResponse.redirect(url);
@@ -253,9 +259,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 1. Admin Paths gating (excluding /admin/login handled above)
+  // 1. Admin Paths gating
   if (isAdminPath) {
-    const isAuthorizedAdmin = payload?.email === "theoldverse@gmail.com" || ["admin", "editor", "viewer"].includes(dbRole);
     if (!payload) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -265,12 +270,23 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set("redirect", pathname);
       return NextResponse.redirect(url);
     }
-    if (!isAuthorizedAdmin) {
+
+    if (!isStaff) {
       if (pathname.startsWith("/api/")) {
-        return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+        return NextResponse.json({ success: false, error: "Forbidden: Customer accounts do not have admin access." }, { status: 403 });
       }
       const url = request.nextUrl.clone();
       url.pathname = "/access-denied";
+      return NextResponse.redirect(url);
+    }
+
+    // Sub-route restriction: Editor cannot manage security or admin users
+    if (dbRole === "editor" && (pathname.startsWith("/admin/settings/users") || pathname.startsWith("/api/admin/users"))) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ success: false, error: "Forbidden: Editors cannot manage admin users." }, { status: 403 });
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/dashboard";
       return NextResponse.redirect(url);
     }
   }
