@@ -878,3 +878,17 @@ export const mutateStore = {
     window.dispatchEvent(new Event("oldverse_store_update"));
   }
 };
+
+export const syncLiveProjects = async (): Promise<void> => {
+  if (typeof window === "undefined") return;
+  try {
+    const res = await fetch("/api/projects");
+    const data = await res.json();
+    if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
+      localStorage.setItem("oldverse_media_v22", JSON.stringify(data.projects));
+      window.dispatchEvent(new Event("oldverse_store_update"));
+    }
+  } catch {
+    // Ignore background sync errors
+  }
+};

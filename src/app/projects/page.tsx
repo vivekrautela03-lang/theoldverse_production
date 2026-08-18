@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Star, Film, Sparkles } from "lucide-react";
-import { getStoreData } from "@/lib/supabaseStore";
+import { getStoreData, syncLiveProjects } from "@/lib/supabaseStore";
 import { MediaItem } from "@/lib/mockData";
 
 const categories = [
@@ -39,6 +39,7 @@ function BrowseContent() {
   useEffect(() => {
     setIsClient(true);
     loadBrowseData();
+    syncLiveProjects();
 
     window.addEventListener("oldverse_store_update", loadBrowseData);
     return () => window.removeEventListener("oldverse_store_update", loadBrowseData);

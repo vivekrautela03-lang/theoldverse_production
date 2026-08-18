@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Volume2, VolumeX, Info, Star, Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import MovieRow from "@/components/MovieRow";
 import dynamic from "next/dynamic";
-import { getStoreData, mutateStore } from "@/lib/supabaseStore";
+import { getStoreData, mutateStore, syncLiveProjects } from "@/lib/supabaseStore";
 import { MediaItem, Creator } from "@/lib/mockData";
 
 const AuthPortal = dynamic(() => import("@/components/AuthPortal"), {
@@ -95,8 +95,8 @@ export default function HomePage() {
   useEffect(() => {
     setIsClient(true);
     loadData();
+    syncLiveProjects();
 
-    // Listen to local store mutations
     window.addEventListener("oldverse_store_update", loadData);
     return () => window.removeEventListener("oldverse_store_update", loadData);
   }, []);

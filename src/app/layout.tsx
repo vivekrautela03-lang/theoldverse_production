@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import Script from "next/script";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "THE OLDVERSE | Every Story Deserves A Stage",
@@ -44,6 +45,7 @@ export default function RootLayout({
           `}
         </Script>
 
+        <AnalyticsTracker />
         <Navbar />
         <main className="flex-grow">
           {children}
