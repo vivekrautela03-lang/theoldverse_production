@@ -127,6 +127,7 @@ function AdminLayoutContent({ children }: AdminLayoutContentProps) {
 
   const allNavItems = [
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Live Visual Editor", href: "/admin/live", icon: Sparkles },
     { label: "Projects", href: "/admin/projects", icon: Film },
     { label: "Productions", href: "/admin/productions", icon: Video },
     { label: "Team", href: "/admin/team", icon: Users },

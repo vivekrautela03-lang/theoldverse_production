@@ -116,11 +116,18 @@ export default function AdminDashboardPage() {
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </button>
               <Link
-                href="/admin/projects/new"
+                href="/admin/live"
                 className="px-5 py-3 rounded-[14px] bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_0_25px_rgba(141,190,255,0.18)] hover:scale-[1.03] flex items-center gap-2"
               >
-                <Plus className="h-4 w-4" />
-                Add New Project
+                <Sparkles className="h-4 w-4" />
+                <span>Open Live Visual Editor</span>
+              </Link>
+              <Link
+                href="/admin/projects/new"
+                className="px-4 py-3 rounded-[14px] bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4 text-[#8DBEFF]" />
+                <span>Add Project</span>
               </Link>
             </div>
           </div>
