@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Phone, Send, Lock, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -42,6 +42,16 @@ function YoutubeIcon({ className = "h-5 w-5" }: { className?: string }) {
 }
 
 export default function ContactPage() {
+  const [contactInfo, setContactInfo] = useState({
+    email: "theoldverse@gmail.com",
+    phone: "+91 90688 50966",
+    location: "Dehradun, Uttarakhand, India",
+    instagram: "@theoldverse_",
+    instagramUrl: "https://instagram.com/theoldverse_",
+    youtube: "@The_oldverse",
+    youtubeUrl: "https://youtube.com/@The_oldverse"
+  });
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -53,6 +63,20 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/content?section=contact")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.content) {
+          setContactInfo((prev) => ({
+            ...prev,
+            ...data.content
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,8 +183,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-0.5">Email</span>
-                      <a href="mailto:theoldverse@gmail.com" className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
-                        theoldverse@gmail.com
+                      <a href={`mailto:${contactInfo.email}`} className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
+                        {contactInfo.email}
                       </a>
                     </div>
                   </li>
@@ -171,8 +195,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-0.5">Phone</span>
-                      <a href="tel:+919068850966" className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
-                        +91 90688 50966
+                      <a href={`tel:${contactInfo.phone}`} className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
+                        {contactInfo.phone}
                       </a>
                     </div>
                   </li>
@@ -183,8 +207,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-0.5">Instagram</span>
-                      <a href="https://instagram.com/theoldverse_" target="_blank" rel="noreferrer" className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
-                        @theoldverse_
+                      <a href={contactInfo.instagramUrl || "https://instagram.com/theoldverse_"} target="_blank" rel="noreferrer" className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
+                        {contactInfo.instagram}
                       </a>
                     </div>
                   </li>
@@ -195,8 +219,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-0.5">YouTube</span>
-                      <a href="https://youtube.com/@The_oldverse" target="_blank" rel="noreferrer" className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
-                        @The_oldverse
+                      <a href={contactInfo.youtubeUrl || "https://youtube.com/@The_oldverse"} target="_blank" rel="noreferrer" className="text-xs font-semibold text-white hover:text-[#8DBEFF] transition-colors">
+                        {contactInfo.youtube}
                       </a>
                     </div>
                   </li>
@@ -208,7 +232,7 @@ export default function ContactPage() {
                   “Great stories begin with a simple conversation.”
                 </p>
                 <p className="text-xs font-bold text-[#8DBEFF]">
-                  Dehradun, Uttarakhand, India
+                  {contactInfo.location}
                 </p>
               </div>
 

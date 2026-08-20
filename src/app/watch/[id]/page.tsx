@@ -44,9 +44,23 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
     }
   }, [reviews, mediaItem]);
 
-  const loadMediaDetails = () => {
-    const allMedia = getStoreData.media();
-    const found = allMedia.find(item => item.id === id);
+  const loadMediaDetails = async () => {
+    let allMedia = getStoreData.media();
+    let found = allMedia.find(item => item.id === id);
+
+    if (!found) {
+      try {
+        const res = await fetch("/api/projects");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.projects)) {
+          allMedia = data.projects;
+          found = allMedia.find(item => item.id === id);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+
     if (found) {
       setMediaItem(found);
       
