@@ -12,7 +12,6 @@ export async function GET(request: Request) {
       .from("projects")
       .select("*")
       .eq("is_published", true)
-      .order("display_order", { ascending: true })
       .order("created_at", { ascending: false });
 
     if (featured === "true") {
@@ -26,7 +25,7 @@ export async function GET(request: Request) {
     const { data: dbProjects, error } = await query;
 
     if (error || !dbProjects || dbProjects.length === 0) {
-      // Fallback to mock catalog if database table is empty
+      // Fallback to mock catalog if database table is empty or error
       let items = mockMediaItems;
       if (featured === "true") {
         items = items.filter(item => (item as any).isFeatured || item.isHeroSlide);
@@ -41,14 +40,14 @@ export async function GET(request: Request) {
     const formattedProjects = dbProjects.map((p) => ({
       id: p.id,
       title: p.title,
-      description: p.description || "",
-      category: p.category || "General",
+      description: p.short_description || p.full_description || p.description || "",
+      category: p.category || "Film",
       rating: p.rating ? String(p.rating) : "9.0",
-      year: p.year ? String(p.year) : "2026",
+      year: p.release_date || (p.year ? String(p.year) : "2026"),
       duration: p.duration || "1h 45m",
       posterUrl: p.poster_url || "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600&fit=crop",
       bannerUrl: p.banner_url || p.poster_url || "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1200&fit=crop",
-      videoUrl: p.video_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      videoUrl: p.trailer_url || p.video_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
       director: p.director || "TheOldverse Studio",
       creatorId: "theoldverse-studio",
       creatorName: "TheOldverse Productions",
@@ -56,11 +55,11 @@ export async function GET(request: Request) {
       views: p.views ? `${p.views}` : "1.2K",
       likes: p.likes ? `${p.likes}` : "950",
       isOriginal: p.is_original ?? true,
-      isHeroSlide: p.is_hero_slide ?? false,
+      isHeroSlide: p.is_featured || p.is_hero_slide || false,
       isFeatured: p.is_featured ?? false,
       isApproved: true,
-      synopsis: p.synopsis || p.description,
-      cast: p.cast || ["TheOldverse Ensemble"],
+      synopsis: p.full_description || p.short_description || p.description || "",
+      cast: p.credits || p.cast || ["TheOldverse Ensemble"],
       crew: p.crew || [{ role: "Director", name: p.director || "Vivek Rautela" }]
     }));
 

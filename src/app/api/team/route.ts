@@ -15,7 +15,9 @@ export async function GET() {
       const defaultRoster = [
         {
           id: "vivek-rautela",
+          name: "Vivek Rautela",
           full_name: "Vivek Rautela",
+          position: "Founder · Writer · Director · Producer",
           role: "Founder · Writer · Director · Producer",
           avatar_url: "/images/founders/vivek-rautela-founder-theoldverse-productions.webp",
           bio: "Founder of TheOldverse Productions. Director, producer, and scriptwriter focused on building powerful cinematic stories.",
@@ -24,7 +26,9 @@ export async function GET() {
         },
         {
           id: "shivanshi-rauthan",
+          name: "Shivanshi Rauthan",
           full_name: "Shivanshi Rauthan",
+          position: "Co-Founder · Director · Producer · Creative Lead",
           role: "Co-Founder · Director · Producer · Creative Lead",
           avatar_url: "",
           bio: "Co-Founder of TheOldverse Productions leading visual direction and creative production across films and digital media.",
@@ -34,7 +38,24 @@ export async function GET() {
       return NextResponse.json({ success: true, team: defaultRoster, source: "fallback" });
     }
 
-    return NextResponse.json({ success: true, team: teamMembers, source: "database" });
+    // Format DB fields to fit all frontend component conventions
+    const formattedTeam = teamMembers.map((m) => ({
+      id: m.id,
+      name: m.name || m.full_name || "Team Member",
+      full_name: m.name || m.full_name || "Team Member",
+      position: m.position || m.role || "Team Member",
+      role: m.position || m.role || "Team Member",
+      bio: m.bio || "",
+      avatar_url: m.avatar_url || "",
+      instagram_url: m.instagram_url || "",
+      linkedin_url: m.linkedin_url || "",
+      email: m.email || "",
+      display_order: m.display_order ?? 0,
+      is_visible: m.is_visible ?? true,
+      profile_link: m.instagram_url || m.linkedin_url || ""
+    }));
+
+    return NextResponse.json({ success: true, team: formattedTeam, source: "database" });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
