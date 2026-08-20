@@ -75,6 +75,17 @@ export default function AdminDashboardPage() {
     { title: "Estimated Page Views", value: (stats.estimatedPageViews || 14280).toLocaleString(), sub: "Real-time Metrics", icon: Activity, color: "text-[#8DBEFF]" }
   ];
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/auth/me")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setCurrentUser(data.user);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <AdminLayout>
       <div className="space-y-8 font-grotesk">
@@ -114,6 +125,86 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* OWNER & ADMIN EXTRA CONTROL PANEL */}
+        {(currentUser?.role === "owner" || currentUser?.role === "admin" || !currentUser) && (
+          <div className="bg-[#0B0E13] border border-[rgba(141,190,255,0.25)] rounded-2xl p-6 space-y-4 relative overflow-hidden shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-[#8DBEFF]/10 border border-[#8DBEFF]/30 flex items-center justify-center text-[#8DBEFF]">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-[#8DBEFF] uppercase font-bold tracking-widest">
+                      OWNER & ADMIN CONTROL PANEL
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#8DBEFF]/20 text-[#8DBEFF] text-[9px] font-extrabold uppercase tracking-wider border border-[#8DBEFF]/40 font-mono">
+                      {currentUser?.role?.toUpperCase() || "OWNER"} ACCESS ACTIVE
+                    </span>
+                  </div>
+                  <h3 className="font-bebas text-2xl text-white tracking-wider uppercase mt-0.5">
+                    System Governance & Management Controls
+                  </h3>
+                </div>
+              </div>
+
+              <Link
+                href="/admin/settings/users"
+                className="px-4 py-2.5 rounded-xl bg-[#8DBEFF] hover:bg-[#CFE8FF] text-[#050608] font-extrabold text-xs uppercase tracking-wider transition-all duration-300 shadow-md flex items-center gap-2 self-start sm:self-auto"
+              >
+                <Users className="h-4 w-4" />
+                <span>Manage Users & Roles</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <Link
+                href="/admin/settings/users"
+                className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8DBEFF]/40 transition-all flex items-center gap-3 group"
+              >
+                <ShieldCheck className="h-4 w-4 text-[#8DBEFF] group-hover:scale-110 transition-transform" />
+                <div>
+                  <span className="font-bold text-white block">Role Hierarchy</span>
+                  <span className="text-[10px] text-[#B8C2CC]">Owner, Admin, Editor Access</span>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/content"
+                className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8DBEFF]/40 transition-all flex items-center gap-3 group"
+              >
+                <Globe className="h-4 w-4 text-[#8DBEFF] group-hover:scale-110 transition-transform" />
+                <div>
+                  <span className="font-bold text-white block">CMS Website Copy</span>
+                  <span className="text-[10px] text-[#B8C2CC]">Hero, About, Contact Details</span>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/projects"
+                className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8DBEFF]/40 transition-all flex items-center gap-3 group"
+              >
+                <Film className="h-4 w-4 text-[#8DBEFF] group-hover:scale-110 transition-transform" />
+                <div>
+                  <span className="font-bold text-white block">Film Catalog</span>
+                  <span className="text-[10px] text-[#B8C2CC]">Publish & Feature Projects</span>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/applications"
+                className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8DBEFF]/40 transition-all flex items-center gap-3 group"
+              >
+                <UserCheck className="h-4 w-4 text-[#8DBEFF] group-hover:scale-110 transition-transform" />
+                <div>
+                  <span className="font-bold text-white block">Applications</span>
+                  <span className="text-[10px] text-[#B8C2CC]">Candidate Submission Queue</span>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* OVERVIEW STAT CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

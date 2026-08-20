@@ -146,11 +146,21 @@ function AdminLayoutContent({ children }: AdminLayoutContentProps) {
       badge: newApplications > 0 ? newApplications : undefined
     },
     { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    {
+      label: "User Management",
+      href: "/admin/settings/users",
+      icon: Shield,
+      ownerOrAdminOnly: true
+    },
     { label: "Settings", href: "/admin/settings", icon: Settings, adminOnly: true }
   ];
 
+  const isOwnerOrAdmin = user?.role === "owner" || user?.role === "admin";
+  const isOwner = user?.role === "owner";
+
   const navItems = allNavItems.filter(item => {
-    if (item.adminOnly && user?.role === "editor") return false;
+    if ((item as any).ownerOrAdminOnly && !isOwnerOrAdmin) return false;
+    if ((item as any).adminOnly && user?.role === "editor") return false;
     return true;
   });
 
@@ -502,6 +512,17 @@ function AdminLayoutContent({ children }: AdminLayoutContentProps) {
                         {user?.role || "admin"} Role
                       </span>
                     </div>
+
+                    {isOwnerOrAdmin && (
+                      <Link
+                        href="/admin/settings/users"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 p-2 rounded-xl bg-[#8DBEFF]/10 hover:bg-[#8DBEFF]/20 border border-[#8DBEFF]/30 transition-colors text-[#8DBEFF] font-bold"
+                      >
+                        <Shield className="h-4 w-4 text-[#8DBEFF]" />
+                        <span>Owner / Admin User Roles</span>
+                      </Link>
+                    )}
 
                     <Link
                       href="/admin/settings"
