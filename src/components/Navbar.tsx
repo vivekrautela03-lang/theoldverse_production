@@ -238,11 +238,11 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Bottom Row: Centered Tab Links with Icons (Ice Blue Active Indicator) - Only show if not on Auth page */}
+      {/* Bottom Row: Horizontally Scrollable Tab Links with Icons */}
       {pathname !== "/auth" && (
-        <div className="border-t border-white/5 py-2 bg-[#050608]/90">
-          <div className="max-w-8xl mx-auto px-4">
-            <div className="flex items-center justify-center gap-6 sm:gap-10 md:gap-16 text-[10px] sm:text-xs">
+        <div className="border-t border-white/5 py-2 bg-[#050608]/95 backdrop-blur-md">
+          <div className="max-w-8xl mx-auto px-4 relative">
+            <div className="flex items-center justify-start sm:justify-center gap-5 sm:gap-8 md:gap-12 text-xs sm:text-xs overflow-x-auto scrollbar-none whitespace-nowrap px-2 py-0.5 scroll-smooth">
               {navLinks.map((link) => {
                 const LinkIcon = link.icon;
                 const active = isActive(link.href);
@@ -250,14 +250,14 @@ export default function Navbar() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`flex items-center gap-1.5 py-1 px-1 relative transition-colors font-grotesk font-semibold uppercase tracking-wider group ${
-                      active ? "text-[#8DBEFF]" : "text-white/80 hover:text-[#CFE8FF]"
+                    className={`flex items-center gap-1.5 py-1 px-2.5 rounded-lg relative transition-all font-grotesk font-semibold uppercase tracking-wider flex-shrink-0 group ${
+                      active ? "text-[#8DBEFF] bg-[#8DBEFF]/10" : "text-white/80 hover:text-[#CFE8FF] hover:bg-white/5"
                     }`}
                   >
-                    <LinkIcon className={`h-3.5 w-3.5 transition-transform group-hover:scale-105 ${active ? "text-[#8DBEFF]" : "text-white group-hover:text-[#8DBEFF]"}`} />
+                    <LinkIcon className={`h-3.5 w-3.5 transition-transform group-hover:scale-110 ${active ? "text-[#8DBEFF]" : "text-white group-hover:text-[#8DBEFF]"}`} />
                     <span>{link.name}</span>
                     {active && (
-                      <span className="absolute -bottom-[9px] left-0 w-full h-[2px] bg-[#8DBEFF] rounded-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#8DBEFF] rounded-full transition-all duration-300" />
                     )}
                   </Link>
                 );
