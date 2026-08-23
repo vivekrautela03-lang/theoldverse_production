@@ -278,10 +278,10 @@ export default function AboutPage() {
                         </Link>
                       </h3>
                       <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
-                        Director & Creative Producer
+                        Editor & Screenplay Writer
                       </p>
                       <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                        Director and creative producer focusing on narrative film development and visual production.
+                        Editor and screenplay writer crafting narrative screenplays, video edits, and visual storytelling.
                       </p>
                     </div>
                   </div>
@@ -299,10 +299,10 @@ export default function AboutPage() {
                         </Link>
                       </h3>
                       <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
-                        Cinematographer & Post-Production Lead
+                        Camera Team Head & Cinematographer
                       </p>
                       <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                        Lead cinematographer and post-production specialist crafting high-impact visual aesthetics.
+                        Camera team head and cinematographer leading camera operations, lighting design, and visual aesthetics.
                       </p>
                     </div>
                   </div>

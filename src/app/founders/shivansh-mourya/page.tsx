@@ -1,17 +1,17 @@
 import React from "react";
 import Metadata from "next";
 import Link from "next/link";
-import { Film, MapPin, GraduationCap, Calendar, Award, ArrowRight, ShieldCheck, User } from "lucide-react";
+import { Film, MapPin, GraduationCap, Calendar, Award, ArrowRight, ShieldCheck, User, Edit3 } from "lucide-react";
 
 export const metadata = {
-  title: "Shivansh Mourya — Director & Creative Producer | TheOldverse Productions",
-  description: "Shivansh Mourya is a Director and Creative Producer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
+  title: "Shivansh Mourya — Editor & Screenplay Writer | TheOldverse Productions",
+  description: "Shivansh Mourya is an Editor and Screenplay Writer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
   alternates: {
     canonical: "https://theoldverse-productions.in/founders/shivansh-mourya",
   },
   openGraph: {
-    title: "Shivansh Mourya — Director & Creative Producer | TheOldverse Productions",
-    description: "Shivansh Mourya is a Director and Creative Producer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
+    title: "Shivansh Mourya — Editor & Screenplay Writer | TheOldverse Productions",
+    description: "Shivansh Mourya is an Editor and Screenplay Writer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
     url: "https://theoldverse-productions.in/founders/shivansh-mourya",
     siteName: "TheOldverse Productions",
     locale: "en_IN",
@@ -32,16 +32,16 @@ export default function ShivanshMouryaProfilePage() {
         "@type": "ProfilePage",
         "@id": "https://theoldverse-productions.in/founders/shivansh-mourya#webpage",
         "url": "https://theoldverse-productions.in/founders/shivansh-mourya",
-        "name": "Shivansh Mourya — Director & Creative Producer | TheOldverse Productions",
-        "description": "Official profile of Shivansh Mourya, Director and Creative Producer at TheOldverse Productions.",
+        "name": "Shivansh Mourya — Editor & Screenplay Writer | TheOldverse Productions",
+        "description": "Official profile of Shivansh Mourya, Editor and Screenplay Writer at TheOldverse Productions.",
         "mainEntity": {
           "@type": "Person",
           "@id": "https://theoldverse-productions.in/founders/shivansh-mourya#person",
           "name": "Shivansh Mourya",
           "givenName": "Shivansh",
           "familyName": "Mourya",
-          "jobTitle": "Director & Creative Producer",
-          "description": "Shivansh Mourya is a Director and Creative Producer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
+          "jobTitle": "Editor & Screenplay Writer",
+          "description": "Shivansh Mourya is an Editor and Screenplay Writer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
           "url": "https://theoldverse-productions.in/founders/shivansh-mourya",
           "worksFor": {
             "@type": "Organization",
@@ -103,7 +103,7 @@ export default function ShivanshMouryaProfilePage() {
             <div className="relative group rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-black max-w-sm w-full aspect-[4/5] flex items-center justify-center">
               <div className="h-full w-full bg-white/5 flex flex-col items-center justify-center text-center p-6 space-y-3">
                 <div className="h-24 w-24 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-[#8DBEFF] shadow-xl">
-                  <User className="h-12 w-12" />
+                  <Edit3 className="h-12 w-12" />
                 </div>
                 <span className="text-xs font-mono text-[#8DBEFF] uppercase font-bold tracking-widest bg-black/60 px-3 py-1 rounded-full border border-white/10">
                   STUDIO TEAM MEMBER
@@ -123,7 +123,7 @@ export default function ShivanshMouryaProfilePage() {
                 Shivansh Mourya
               </h1>
               <p className="text-sm sm:text-base font-semibold text-[#8DBEFF] mt-2">
-                Director & Creative Producer
+                Editor & Screenplay Writer
               </p>
               <p className="text-xs text-[#B8C2CC] uppercase tracking-wider font-mono mt-0.5">
                 TheOldverse Productions
@@ -131,11 +131,11 @@ export default function ShivanshMouryaProfilePage() {
             </div>
 
             <p className="text-xs sm:text-sm text-[#B8C2CC] font-light leading-relaxed">
-              <strong className="text-white font-semibold">Shivansh Mourya</strong> is a Director and Creative Producer at <strong className="text-white font-semibold">TheOldverse Productions</strong>, an independent creative studio based in Dehradun, Uttarakhand.
+              <strong className="text-white font-semibold">Shivansh Mourya</strong> is an Editor and Screenplay Writer at <strong className="text-white font-semibold">TheOldverse Productions</strong>, an independent creative studio based in Dehradun, Uttarakhand.
             </p>
 
             <p className="text-xs sm:text-sm text-[#B8C2CC] font-light leading-relaxed">
-              Shivansh drives the development of compelling film narratives, visual storytelling, and creative production pipelines. He collaborates closely with directors, writers, and crew to transform high-concept ideas into finished cinematic productions.
+              Shivansh is responsible for crafting narrative screenplays, video editing, pacing, and visual storytelling. He works on turning original concepts into refined scripts and polished cinematic edits.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 text-xs pt-2">
@@ -144,7 +144,7 @@ export default function ShivanshMouryaProfilePage() {
                   <Film className="h-3.5 w-3.5 text-[#8DBEFF]" />
                   <span>Primary Role</span>
                 </div>
-                <p className="font-bold text-white">Director & Producer</p>
+                <p className="font-bold text-white">Editor & Screenplay</p>
               </div>
 
               <div className="bg-white/[0.03] border border-white/5 p-3 rounded-xl space-y-1">

@@ -4,14 +4,14 @@ import Link from "next/link";
 import { Film, MapPin, GraduationCap, Calendar, Award, ArrowRight, ShieldCheck, User, Camera } from "lucide-react";
 
 export const metadata = {
-  title: "Ujjawal Gurung — Cinematographer & Post-Production Lead | TheOldverse Productions",
-  description: "Ujjawal Gurung is the Lead Cinematographer and Post-Production Specialist at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
+  title: "Ujjawal Gurung — Camera Team Head & Cinematographer | TheOldverse Productions",
+  description: "Ujjawal Gurung is the Camera Team Head and Lead Cinematographer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
   alternates: {
     canonical: "https://theoldverse-productions.in/founders/ujjawal-gurung",
   },
   openGraph: {
-    title: "Ujjawal Gurung — Cinematographer & Post-Production Lead | TheOldverse Productions",
-    description: "Ujjawal Gurung is the Lead Cinematographer and Post-Production Specialist at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
+    title: "Ujjawal Gurung — Camera Team Head & Cinematographer | TheOldverse Productions",
+    description: "Ujjawal Gurung is the Camera Team Head and Lead Cinematographer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
     url: "https://theoldverse-productions.in/founders/ujjawal-gurung",
     siteName: "TheOldverse Productions",
     locale: "en_IN",
@@ -32,16 +32,16 @@ export default function UjjawalGurungProfilePage() {
         "@type": "ProfilePage",
         "@id": "https://theoldverse-productions.in/founders/ujjawal-gurung#webpage",
         "url": "https://theoldverse-productions.in/founders/ujjawal-gurung",
-        "name": "Ujjawal Gurung — Cinematographer & Post-Production Lead | TheOldverse Productions",
-        "description": "Official profile of Ujjawal Gurung, Lead Cinematographer and Post-Production Specialist at TheOldverse Productions.",
+        "name": "Ujjawal Gurung — Camera Team Head & Cinematographer | TheOldverse Productions",
+        "description": "Official profile of Ujjawal Gurung, Camera Team Head and Lead Cinematographer at TheOldverse Productions.",
         "mainEntity": {
           "@type": "Person",
           "@id": "https://theoldverse-productions.in/founders/ujjawal-gurung#person",
           "name": "Ujjawal Gurung",
           "givenName": "Ujjawal",
           "familyName": "Gurung",
-          "jobTitle": "Cinematographer & Post-Production Lead",
-          "description": "Ujjawal Gurung is the Lead Cinematographer and Post-Production Specialist at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
+          "jobTitle": "Camera Team Head & Cinematographer",
+          "description": "Ujjawal Gurung is the Camera Team Head and Lead Cinematographer at TheOldverse Productions, an independent film production studio based in Dehradun, Uttarakhand.",
           "url": "https://theoldverse-productions.in/founders/ujjawal-gurung",
           "worksFor": {
             "@type": "Organization",
@@ -123,7 +123,7 @@ export default function UjjawalGurungProfilePage() {
                 Ujjawal Gurung
               </h1>
               <p className="text-sm sm:text-base font-semibold text-[#8DBEFF] mt-2">
-                Cinematographer & Post-Production Lead
+                Camera Team Head & Cinematographer
               </p>
               <p className="text-xs text-[#B8C2CC] uppercase tracking-wider font-mono mt-0.5">
                 TheOldverse Productions
@@ -131,11 +131,11 @@ export default function UjjawalGurungProfilePage() {
             </div>
 
             <p className="text-xs sm:text-sm text-[#B8C2CC] font-light leading-relaxed">
-              <strong className="text-white font-semibold">Ujjawal Gurung</strong> is the Lead Cinematographer and Post-Production Specialist at <strong className="text-white font-semibold">TheOldverse Productions</strong>, an independent creative studio based in Dehradun, Uttarakhand.
+              <strong className="text-white font-semibold">Ujjawal Gurung</strong> is the Camera Team Head and Lead Cinematographer at <strong className="text-white font-semibold">TheOldverse Productions</strong>, an independent creative studio based in Dehradun, Uttarakhand.
             </p>
 
             <p className="text-xs sm:text-sm text-[#B8C2CC] font-light leading-relaxed">
-              Ujjawal oversees camera operations, lighting design, color grading, and video editing across the studio’s film catalog. His expertise in visual composition and post-production ensures high production value and cinematic polish on every frame.
+              Ujjawal leads the camera department, camera rig setup, lighting arrangements, visual framing, and cinematography. He ensures that every shot adheres to high cinematic standards and atmospheric visual aesthetics.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 text-xs pt-2">
@@ -144,7 +144,7 @@ export default function UjjawalGurungProfilePage() {
                   <Camera className="h-3.5 w-3.5 text-[#8DBEFF]" />
                   <span>Primary Role</span>
                 </div>
-                <p className="font-bold text-white">Cinematography & Editing</p>
+                <p className="font-bold text-white">Camera Head & Cinematography</p>
               </div>
 
               <div className="bg-white/[0.03] border border-white/5 p-3 rounded-xl space-y-1">
