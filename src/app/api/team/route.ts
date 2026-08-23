@@ -33,6 +33,36 @@ export const defaultStudioTeam = [
     is_visible: true
   },
   {
+    id: "shivansh-mourya",
+    name: "Shivansh Mourya",
+    full_name: "Shivansh Mourya",
+    position: "Director & Creative Producer",
+    role: "Director & Creative Producer",
+    avatar_url: "",
+    bio: "Director and creative producer at TheOldverse Productions focusing on narrative film development and visual production.",
+    instagram_url: "https://instagram.com/theoldverse_",
+    linkedin_url: "",
+    email: "theoldverse@gmail.com",
+    profile_link: "/founders/shivansh-mourya",
+    display_order: 3,
+    is_visible: true
+  },
+  {
+    id: "ujjawal-gurung",
+    name: "Ujjawal Gurung",
+    full_name: "Ujjawal Gurung",
+    position: "Cinematographer & Post-Production Lead",
+    role: "Cinematographer & Post-Production Lead",
+    avatar_url: "",
+    bio: "Lead cinematographer and post-production specialist at TheOldverse Productions crafting high-impact visual aesthetics.",
+    instagram_url: "https://instagram.com/theoldverse_",
+    linkedin_url: "",
+    email: "theoldverse@gmail.com",
+    profile_link: "/founders/ujjawal-gurung",
+    display_order: 4,
+    is_visible: true
+  },
+  {
     id: "elena-rostova",
     name: "Elena Rostova",
     full_name: "Elena Rostova",
@@ -44,7 +74,7 @@ export const defaultStudioTeam = [
     linkedin_url: "",
     email: "elena@theoldverse.com",
     profile_link: "/creator/creator-1",
-    display_order: 3,
+    display_order: 5,
     is_visible: true
   },
   {
@@ -59,7 +89,7 @@ export const defaultStudioTeam = [
     linkedin_url: "",
     email: "marcus@theoldverse.com",
     profile_link: "/creator/creator-2",
-    display_order: 4,
+    display_order: 6,
     is_visible: true
   },
   {
@@ -74,7 +104,7 @@ export const defaultStudioTeam = [
     linkedin_url: "",
     email: "sarah@theoldverse.com",
     profile_link: "/creator/creator-3",
-    display_order: 5,
+    display_order: 7,
     is_visible: true
   },
   {
@@ -89,7 +119,7 @@ export const defaultStudioTeam = [
     linkedin_url: "",
     email: "vikram@theoldverse.com",
     profile_link: "/creator/creator-4",
-    display_order: 6,
+    display_order: 8,
     is_visible: true
   }
 ];
@@ -124,7 +154,7 @@ export async function GET() {
       profile_link: m.instagram_url || m.linkedin_url || ""
     }));
 
-    // Merge default roster with DB members to guarantee founders & creators are always active
+    // Merge default roster with DB members to guarantee Shivansh Mourya, Ujjawal Gurung, Vivek, and Shivanshi are always active
     const dbNames = new Set(formattedDbTeam.map(t => t.name.toLowerCase()));
     const missingDefaults = defaultStudioTeam.filter(d => !dbNames.has(d.name.toLowerCase()));
 

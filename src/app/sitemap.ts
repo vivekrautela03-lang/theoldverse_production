@@ -21,6 +21,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/founders/shivansh-mourya`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/founders/ujjawal-gurung`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
     }
   ];
 
