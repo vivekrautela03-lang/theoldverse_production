@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Star, Film, Sparkles } from "lucide-react";
 import { getStoreData, syncLiveProjects } from "@/lib/supabaseStore";
 import { MediaItem } from "@/lib/mockData";
+import { ProjectsGridSkeleton, PageSkeletonLayout } from "@/components/Skeletons";
 
 const categories = [
   "All",
@@ -52,45 +53,32 @@ function BrowseContent() {
     }
   }, [catParam]);
 
-  if (!isClient) {
-    return (
-      <div className="min-h-screen bg-oldverse-bg flex items-center justify-center">
-        <div className="h-12 w-12 border-t-2 border-b-2 border-oldverse-accent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Filter logic
-  const filteredItems = mediaItems.filter((item) => {
-    if (activeCategory === "All") return true;
-    if (activeCategory === "Originals") return item.isOriginal;
-    // Check match
-    return item.category.toLowerCase() === activeCategory.toLowerCase();
-  });
+  const filteredItems = activeCategory === "All"
+    ? mediaItems
+    : mediaItems.filter(item => item.category === activeCategory);
 
   return (
-    <div className="bg-oldverse-bg min-h-screen pt-24 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
-        {/* Projects Header */}
-        <div className="pb-6 border-b border-white/5 space-y-4">
-          <div>
-            <h1 className="font-bebas text-4xl sm:text-6xl text-oldverse-text tracking-wider uppercase leading-none">
-              Explore Projects
-            </h1>
-            <p className="text-oldverse-secondary text-xs font-grotesk tracking-wide uppercase">
-              Curated entries across cinematic genres and visual mediums
-            </p>
-          </div>
+    <div className="bg-oldverse-bg min-h-screen pt-28 pb-16 font-grotesk">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 space-y-2">
+        <div className="flex items-center gap-2 text-xs font-mono font-bold text-oldverse-accent uppercase tracking-widest">
+          <Sparkles className="h-4 w-4" />
+          <span>PRODUCTION CATALOG</span>
         </div>
+        <h1 className="font-bebas text-4xl sm:text-5xl tracking-wider text-oldverse-text uppercase">
+          Explore Projects
+        </h1>
+        <p className="text-xs text-oldverse-secondary max-w-xl font-light">
+          Browse original short films, trailers, feature productions, music videos, and independent creative works.
+        </p>
 
-        {/* Category Scroller */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar py-2">
+        {/* Category Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto py-4 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`flex-none px-4 py-1.5 rounded-full border text-xs font-grotesk font-semibold tracking-wide uppercase transition-all duration-300 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 border cursor-pointer ${
                 activeCategory === cat
                   ? "bg-oldverse-accent border-oldverse-accent text-oldverse-bg shadow-md shadow-oldverse-accent/15"
                   : "border-white/5 text-oldverse-secondary bg-white/3 hover:bg-white/5 hover:text-oldverse-text"
@@ -104,7 +92,9 @@ function BrowseContent() {
 
       {/* Media grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {filteredItems.length > 0 ? (
+        {!isClient ? (
+          <ProjectsGridSkeleton count={8} />
+        ) : filteredItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {filteredItems.map((show) => {
               const isInsta = show.videoUrl?.includes("instagram.com");
@@ -181,11 +171,7 @@ function BrowseContent() {
 
 export default function ProjectsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-oldverse-bg flex items-center justify-center">
-        <div className="h-12 w-12 border-t-2 border-b-2 border-oldverse-accent rounded-full animate-spin"></div>
-      </div>
-    }>
+    <Suspense fallback={<PageSkeletonLayout />}>
       <BrowseContent />
     </Suspense>
   );
