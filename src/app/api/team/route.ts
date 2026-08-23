@@ -43,7 +43,7 @@ export const defaultStudioTeam = [
     instagram_url: "https://instagram.com/theoldverse_",
     linkedin_url: "",
     email: "theoldverse@gmail.com",
-    profile_link: "/founders/shivansh-mourya",
+    profile_link: "/team/shivansh-mourya",
     display_order: 3,
     is_visible: true
   },
@@ -58,7 +58,7 @@ export const defaultStudioTeam = [
     instagram_url: "https://instagram.com/theoldverse_",
     linkedin_url: "",
     email: "theoldverse@gmail.com",
-    profile_link: "/founders/ujjawal-gurung",
+    profile_link: "/team/ujjawal-gurung",
     display_order: 4,
     is_visible: true
   }

@@ -29,14 +29,14 @@ const teamMembers = [
     name: "Shivansh Mourya",
     role: "Editor & Screenplay Writer",
     bio: "Editor and screenplay writer at TheOldverse Productions crafting narrative screenplays, video edits, and visual storytelling.",
-    url: "/founders/shivansh-mourya",
+    url: "/team/shivansh-mourya",
     image: ""
   },
   {
     name: "Ujjawal Gurung",
     role: "Camera Team Head & Cinematographer",
     bio: "Camera team head and cinematographer at TheOldverse Productions leading camera operations, lighting design, and visual aesthetics.",
-    url: "/founders/ujjawal-gurung",
+    url: "/team/ujjawal-gurung",
     image: ""
   }
 ];

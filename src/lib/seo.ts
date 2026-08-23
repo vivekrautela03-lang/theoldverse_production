@@ -33,7 +33,9 @@ export const SITE_CONFIG = {
       name: "Shivanshi Rauthan",
       role: "Co-Founder · Director · Producer · Creative Lead",
       url: "https://theoldverse-productions.in/founders/shivanshi-rauthan"
-    },
+    }
+  ],
+  keyTeam: [
     {
       name: "Shivansh Mourya",
       role: "Editor & Screenplay Writer",
@@ -135,6 +137,12 @@ export function getOrganizationSchema() {
       name: f.name,
       jobTitle: f.role,
       url: f.url
+    })),
+    member: SITE_CONFIG.keyTeam.map((t) => ({
+      "@type": "Person",
+      name: t.name,
+      jobTitle: t.role,
+      url: t.url
     }))
   };
 }

@@ -5,7 +5,7 @@ import { ARTICLES_REGISTRY } from "@/data/resources";
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://theoldverse-productions.in";
 
-  // Founder profile paths
+  // Founder profile paths (Vivek Rautela & Shivanshi Rauthan)
   const founderPaths: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/founders/vivek-rautela`,
@@ -21,18 +21,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
       priority: 0.9,
-    },
+    }
+  ];
+
+  // Studio Team profile paths (Shivansh Mourya & Ujjawal Gurung)
+  const teamPaths: MetadataRoute.Sitemap = [
     {
-      url: `${baseUrl}/founders/shivansh-mourya`,
+      url: `${baseUrl}/team/shivansh-mourya`,
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
-      priority: 0.9,
+      priority: 0.8,
     },
     {
-      url: `${baseUrl}/founders/ujjawal-gurung`,
+      url: `${baseUrl}/team/ujjawal-gurung`,
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
-      priority: 0.9,
+      priority: 0.8,
     }
   ];
 
@@ -80,5 +84,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticPaths, ...founderPaths, ...mediaPaths, ...resourcePaths];
+  return [...staticPaths, ...founderPaths, ...teamPaths, ...mediaPaths, ...resourcePaths];
 }
