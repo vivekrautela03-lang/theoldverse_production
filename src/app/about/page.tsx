@@ -222,6 +222,31 @@ export default function AboutPage() {
               <>
                 <div className="glassmorphism-card p-5 rounded-xl border border-white/5 flex flex-col items-center text-center space-y-4">
                   <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-white/10 shadow-md bg-oldverse-card flex-shrink-0">
+                    <img
+                      src="/images/founders/vivek-rautela-founder-theoldverse-productions.webp"
+                      alt="Vivek Rautela"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-grotesk text-sm font-bold text-oldverse-text">
+                        <Link href="/founders/vivek-rautela" className="hover:text-[#8DBEFF]">
+                          Vivek Rautela
+                        </Link>
+                      </h3>
+                      <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
+                        Founder • Writer • Director • Producer
+                      </p>
+                      <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
+                        Vivek develops original stories, screenplays, and directs projects with a vision to create films that leave a lasting impact.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glassmorphism-card p-5 rounded-xl border border-white/5 flex flex-col items-center text-center space-y-4">
+                  <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-white/10 shadow-md bg-oldverse-card flex-shrink-0">
                     <DefaultAvatar />
                   </div>
                   <div className="space-y-2 flex-grow flex flex-col justify-between">
@@ -243,24 +268,41 @@ export default function AboutPage() {
 
                 <div className="glassmorphism-card p-5 rounded-xl border border-white/5 flex flex-col items-center text-center space-y-4">
                   <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-white/10 shadow-md bg-oldverse-card flex-shrink-0">
-                    <img
-                      src="/images/founders/vivek-rautela-founder-theoldverse-productions.webp"
-                      alt="Vivek Rautela, Founder, Writer, Director and Producer of TheOldverse Productions"
-                      className="h-full w-full object-cover"
-                    />
+                    <DefaultAvatar />
                   </div>
                   <div className="space-y-2 flex-grow flex flex-col justify-between">
                     <div>
                       <h3 className="font-grotesk text-sm font-bold text-oldverse-text">
-                        <Link href="/founders/vivek-rautela" className="hover:text-[#8DBEFF]">
-                          Vivek Rautela
+                        <Link href="/founders/shivansh-mourya" className="hover:text-[#8DBEFF]">
+                          Shivansh Mourya
                         </Link>
                       </h3>
                       <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
-                        Founder • Writer • Director • Producer
+                        Director & Creative Producer
                       </p>
                       <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
-                        Vivek develops original stories, screenplays, and directs projects with a vision to create films that leave a lasting impact.
+                        Director and creative producer focusing on narrative film development and visual production.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glassmorphism-card p-5 rounded-xl border border-white/5 flex flex-col items-center text-center space-y-4">
+                  <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-white/10 shadow-md bg-oldverse-card flex-shrink-0">
+                    <DefaultAvatar />
+                  </div>
+                  <div className="space-y-2 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-grotesk text-sm font-bold text-oldverse-text">
+                        <Link href="/founders/ujjawal-gurung" className="hover:text-[#8DBEFF]">
+                          Ujjawal Gurung
+                        </Link>
+                      </h3>
+                      <p className="text-[10px] text-oldverse-accent font-semibold uppercase tracking-wider font-grotesk mb-2">
+                        Cinematographer & Post-Production Lead
+                      </p>
+                      <p className="text-xs text-oldverse-secondary font-light leading-relaxed">
+                        Lead cinematographer and post-production specialist crafting high-impact visual aesthetics.
                       </p>
                     </div>
                   </div>

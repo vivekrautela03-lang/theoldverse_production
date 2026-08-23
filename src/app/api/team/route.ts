@@ -61,66 +61,6 @@ export const defaultStudioTeam = [
     profile_link: "/founders/ujjawal-gurung",
     display_order: 4,
     is_visible: true
-  },
-  {
-    id: "elena-rostova",
-    name: "Elena Rostova",
-    full_name: "Elena Rostova",
-    position: "Cinematic Storyteller & Senior Director",
-    role: "Cinematic Storyteller & Senior Director",
-    avatar_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&h=200&fit=crop",
-    bio: "Specializing in deeply intimate character studies, dramatic shorts, and rich visual symbolism.",
-    instagram_url: "https://instagram.com",
-    linkedin_url: "",
-    email: "elena@theoldverse.com",
-    profile_link: "/creator/creator-1",
-    display_order: 5,
-    is_visible: true
-  },
-  {
-    id: "marcus-vance",
-    name: "Marcus Vance",
-    full_name: "Marcus Vance",
-    position: "Action Director & Visual Effects Lead",
-    role: "Action Director & Visual Effects Lead",
-    avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&h=200&fit=crop",
-    bio: "Combining practical stunt work with visual effects to build immersive cyberpunk and futuristic narrative worlds.",
-    instagram_url: "https://instagram.com",
-    linkedin_url: "",
-    email: "marcus@theoldverse.com",
-    profile_link: "/creator/creator-2",
-    display_order: 6,
-    is_visible: true
-  },
-  {
-    id: "sarah-chen",
-    name: "Sarah Chen",
-    full_name: "Sarah Chen",
-    position: "Travel Documentarian & Street Photographer",
-    role: "Travel Documentarian & Street Photographer",
-    avatar_url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&h=200&fit=crop",
-    bio: "Documenting raw street culture, unscripted human stories, and high-contrast photography across 60+ countries.",
-    instagram_url: "https://instagram.com",
-    linkedin_url: "",
-    email: "sarah@theoldverse.com",
-    profile_link: "/creator/creator-3",
-    display_order: 7,
-    is_visible: true
-  },
-  {
-    id: "vikram-malhotra",
-    name: "Vikram Malhotra",
-    full_name: "Vikram Malhotra",
-    position: "Documentarian & Sound Scaper",
-    role: "Documentarian & Sound Scaper",
-    avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&h=200&fit=crop",
-    bio: "Creating immersive auditory and visual experiences exploring nature, industry, and ambient soundscapes.",
-    instagram_url: "https://instagram.com",
-    linkedin_url: "",
-    email: "vikram@theoldverse.com",
-    profile_link: "/creator/creator-4",
-    display_order: 8,
-    is_visible: true
   }
 ];
 
@@ -154,11 +94,15 @@ export async function GET() {
       profile_link: m.instagram_url || m.linkedin_url || ""
     }));
 
-    // Merge default roster with DB members to guarantee Shivansh Mourya, Ujjawal Gurung, Vivek, and Shivanshi are always active
-    const dbNames = new Set(formattedDbTeam.map(t => t.name.toLowerCase()));
+    // Filter out removed placeholder names
+    const removedNames = new Set(["elena rostova", "marcus vance", "sarah chen", "vikram malhotra"]);
+    const cleanedDbTeam = formattedDbTeam.filter(t => !removedNames.has(t.name.toLowerCase()));
+
+    // Merge default roster with cleaned DB members
+    const dbNames = new Set(cleanedDbTeam.map(t => t.name.toLowerCase()));
     const missingDefaults = defaultStudioTeam.filter(d => !dbNames.has(d.name.toLowerCase()));
 
-    const combinedTeam = [...formattedDbTeam, ...missingDefaults];
+    const combinedTeam = [...cleanedDbTeam, ...missingDefaults];
 
     return NextResponse.json({ success: true, team: combinedTeam, source: "database" });
   } catch (error: any) {
