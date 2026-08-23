@@ -9,6 +9,8 @@ import dynamic from "next/dynamic";
 import { getStoreData, mutateStore, syncLiveProjects } from "@/lib/supabaseStore";
 import { MediaItem, Creator } from "@/lib/mockData";
 
+import { getOrganizationSchema, getLocalBusinessSchema, getFAQSchema } from "@/lib/seo";
+
 const AuthPortal = dynamic(() => import("@/components/AuthPortal"), {
   ssr: false,
   loading: () => (
@@ -19,6 +21,23 @@ const AuthPortal = dynamic(() => import("@/components/AuthPortal"), {
 });
 
 export default function HomePage() {
+  const orgSchema = getOrganizationSchema();
+  const localSchema = getLocalBusinessSchema();
+  const homepageFaqs = [
+    {
+      question: "What is TheOldverse Productions?",
+      answer: "TheOldverse Productions is an independent film and video production house based in Dehradun, Uttarakhand, India, producing original short films, commercial brand media, and cinematic projects."
+    },
+    {
+      question: "What production services does TheOldverse offer in Dehradun?",
+      answer: "We offer end-to-end film production, cinematography, screenplay writing, direction, video editing, music video production, and commercial brand advertising."
+    },
+    {
+      question: "Who leads TheOldverse Productions?",
+      answer: "The studio is led by Founder & Director Vivek Rautela, Co-Founder & Creative Lead Shivanshi Rauthan, Editor & Screenplay Writer Shivansh Mourya, and Camera Team Head Ujjawal Gurung."
+    }
+  ];
+  const faqSchema = getFAQSchema(homepageFaqs);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
   const [isMuted, setIsMuted] = useState(true);
@@ -195,6 +214,10 @@ export default function HomePage() {
 
   return (
     <div className="bg-oldverse-bg min-h-screen pb-16 relative">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([orgSchema, localSchema, faqSchema]) }}
+      />
       {/* 1. Cinematic Autoplay Carousel Slide */}
       <section className="relative h-[85vh] sm:h-[90vh] md:h-screen w-full overflow-hidden flex items-end">
         {/* Animated Background Slide */}

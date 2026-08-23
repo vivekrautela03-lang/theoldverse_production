@@ -118,15 +118,17 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
     // 2. Structured Schema.org JSON-LD
     const schemaData = {
       "@context": "https://schema.org",
-      "@type": mediaItem.type === "series" ? "TVSeries" : "Movie",
+      "@type": "VideoObject",
       "name": mediaItem.title,
       "description": mediaItem.description,
-      "image": mediaItem.bannerUrl || mediaItem.posterUrl,
+      "thumbnailUrl": [mediaItem.bannerUrl || mediaItem.posterUrl],
+      "uploadDate": mediaItem.releaseDate ? `${mediaItem.releaseDate}-01-01T08:00:00+05:30` : "2026-01-01T08:00:00+05:30",
+      "contentUrl": activeVideoUrl || mediaItem.videoUrl || "https://theoldverse-productions.in",
       "genre": mediaItem.category,
-      "dateCreated": mediaItem.releaseDate || "2026",
-      "author": {
+      "productionCompany": {
         "@type": "Organization",
-        "name": "TheOldverse Production"
+        "name": "TheOldverse Productions",
+        "url": "https://theoldverse-productions.in"
       }
     };
 

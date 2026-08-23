@@ -24,7 +24,8 @@ import {
   Shield,
   ExternalLink,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Globe
 } from "lucide-react";
 import { ToastProvider, useToast } from "./ToastContainer";
 
@@ -147,6 +148,7 @@ function AdminLayoutContent({ children }: AdminLayoutContentProps) {
       badge: newApplications > 0 ? newApplications : undefined
     },
     { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    { label: "SEO Governance", href: "/admin/seo", icon: Globe, ownerOrAdminOnly: true },
     {
       label: "User Management",
       href: "/admin/settings/users",

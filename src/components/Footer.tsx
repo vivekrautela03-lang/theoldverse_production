@@ -55,46 +55,77 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Col 3: Directory / Sitemap links */}
+          {/* Col 3: Services & Navigation */}
           <div className="space-y-4">
-            <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Sitemap</h4>
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-widest">Production Services</h4>
             <ul className="space-y-2 text-xs font-light">
               <li>
-                <Link href="/" className="hover:text-oldverse-accent transition-colors">Home Archive</Link>
+                <Link href="/services/film-production" className="hover:text-[#8DBEFF] transition-colors">Film Production</Link>
               </li>
               <li>
-                <Link href="/projects" className="hover:text-oldverse-accent transition-colors">Films & Projects</Link>
+                <Link href="/services/cinematography" className="hover:text-[#8DBEFF] transition-colors">Cinematography</Link>
               </li>
               <li>
-                <Link href="/stage" className="hover:text-oldverse-accent transition-colors">The Stage</Link>
+                <Link href="/services/direction" className="hover:text-[#8DBEFF] transition-colors">Screenplay & Direction</Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-oldverse-accent transition-colors">About the Studio</Link>
+                <Link href="/services/video-editing" className="hover:text-[#8DBEFF] transition-colors">Video Editing & Post</Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-oldverse-accent transition-colors">Contact Details</Link>
+                <Link href="/services/music-video-production" className="hover:text-[#8DBEFF] transition-colors">Music Video Production</Link>
               </li>
               <li>
-                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">XML Sitemap</a>
+                <Link href="/services/commercial-video-production" className="hover:text-[#8DBEFF] transition-colors">Commercials & Brand Ads</Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 4: Connect details */}
+          {/* Col 4: Studio Navigation & Founder Profiles */}
           <div className="space-y-4">
-            <h4 className="text-[10px] font-bold text-oldverse-text uppercase tracking-widest">Connect</h4>
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-widest">Studio Directory</h4>
+            <ul className="space-y-2 text-xs font-light">
+              <li>
+                <Link href="/productions" className="hover:text-[#8DBEFF] transition-colors">Film Catalog</Link>
+              </li>
+              <li>
+                <Link href="/services" className="hover:text-[#8DBEFF] transition-colors">All Services</Link>
+              </li>
+              <li>
+                <Link href="/team" className="hover:text-[#8DBEFF] transition-colors">Studio Team Roster</Link>
+              </li>
+              <li>
+                <Link href="/journal" className="hover:text-[#8DBEFF] transition-colors">Filmmaking Journal</Link>
+              </li>
+              <li>
+                <Link href="/founders/vivek-rautela" className="hover:text-[#8DBEFF] transition-colors">Vivek Rautela (Founder)</Link>
+              </li>
+              <li>
+                <Link href="/founders/shivanshi-rauthan" className="hover:text-[#8DBEFF] transition-colors">Shivanshi Rauthan (Co-Founder)</Link>
+              </li>
+              <li>
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-[#8DBEFF] transition-colors">XML Sitemap</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 5: Connect & Location */}
+          <div className="space-y-4">
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-widest">Studio Headquarters</h4>
             <ul className="space-y-2.5 text-xs font-light">
-              <li>
-                <span className="text-oldverse-secondary">Instagram: </span>
-                <a href="https://instagram.com/theoldverse_" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">@theoldverse_</a>
+              <li className="text-white font-medium">
+                Dehradun, Uttarakhand, India
               </li>
               <li>
-                <span className="text-oldverse-secondary">YouTube: </span>
-                <a href="https://youtube.com/@The_oldverse" target="_blank" rel="noreferrer" className="hover:text-oldverse-accent transition-colors">@The_oldverse</a>
+                <span className="text-[#B8C2CC]">Email: </span>
+                <a href="mailto:theoldverse@gmail.com" className="hover:text-[#8DBEFF] transition-colors">theoldverse@gmail.com</a>
               </li>
               <li>
-                <span className="text-oldverse-secondary">Email: </span>
-                <a href="mailto:theoldverse@gmail.com" className="hover:text-oldverse-accent transition-colors">theoldverse@gmail.com</a>
+                <span className="text-[#B8C2CC]">Instagram: </span>
+                <a href="https://instagram.com/theoldverse_" target="_blank" rel="noreferrer" className="hover:text-[#8DBEFF] transition-colors">@theoldverse_</a>
+              </li>
+              <li>
+                <span className="text-[#B8C2CC]">YouTube: </span>
+                <a href="https://youtube.com/@The_oldverse" target="_blank" rel="noreferrer" className="hover:text-[#8DBEFF] transition-colors">@The_oldverse</a>
               </li>
             </ul>
           </div>

@@ -36,11 +36,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   ];
 
-  // Static site paths
+  // Static & Directory site paths
   const staticPaths: MetadataRoute.Sitemap = [
     "",
     "/about",
     "/contact",
+    "/productions",
+    "/services",
+    "/services/film-production",
+    "/services/video-production",
+    "/services/cinematography",
+    "/services/video-editing",
+    "/services/direction",
+    "/services/music-video-production",
+    "/services/commercial-video-production",
+    "/team",
+    "/journal",
     "/terms",
     "/privacy",
     "/cookies",
@@ -50,7 +61,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
-    priority: route === "" ? 1.0 : route === "/resources" ? 0.9 : 0.6,
+    priority: route === "" ? 1.0 : route.startsWith("/services") || route === "/productions" ? 0.9 : 0.7,
   }));
 
   // Dynamic catalog paths based on media database
