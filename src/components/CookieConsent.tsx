@@ -27,19 +27,23 @@ export default function CookieConsent() {
   }, []);
 
   const handleAcceptAll = () => {
-    const preferences = { essential: true, analytics: true, marketing: true };
+    const preferences = { essential: true, analytics: true, marketing: true, version: 1, timestamp: new Date().toISOString() };
     localStorage.setItem("oldverse_cookie_consent", JSON.stringify(preferences));
+    window.dispatchEvent(new Event("oldverse_cookie_consent_updated"));
     setIsVisible(false);
   };
 
   const handleRejectAll = () => {
-    const preferences = { essential: true, analytics: false, marketing: false };
+    const preferences = { essential: true, analytics: false, marketing: false, version: 1, timestamp: new Date().toISOString() };
     localStorage.setItem("oldverse_cookie_consent", JSON.stringify(preferences));
+    window.dispatchEvent(new Event("oldverse_cookie_consent_updated"));
     setIsVisible(false);
   };
 
   const handleSaveCustom = () => {
-    localStorage.setItem("oldverse_cookie_consent", JSON.stringify(consent));
+    const preferences = { ...consent, essential: true, version: 1, timestamp: new Date().toISOString() };
+    localStorage.setItem("oldverse_cookie_consent", JSON.stringify(preferences));
+    window.dispatchEvent(new Event("oldverse_cookie_consent_updated"));
     setIsVisible(false);
     setShowCustomize(false);
   };

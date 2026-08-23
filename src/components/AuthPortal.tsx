@@ -58,7 +58,7 @@ export default function AuthPortal({ onLoginSuccess }: AuthPortalProps) {
       if ((window as any).turnstile) {
         try {
           (window as any).turnstile.render("#turnstile-widget", {
-            sitekey: "1x00000000000000000000AA", // Cloudflare test sitekey
+            sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAAEZCWLgCEyOyGbjU",
             theme: "dark",
             callback: (token: string) => {
               setCaptchaVerified(true);

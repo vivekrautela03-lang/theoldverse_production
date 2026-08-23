@@ -46,10 +46,23 @@ export async function POST(request: Request) {
     const emailOrPhone = body.emailOrPhone?.trim();
     const password = body.password;
     const totpToken = body.totpToken?.trim();
+    const turnstileToken = body.turnstileToken;
+
+    // 1.5 Server-side Turnstile verification
+    if (turnstileToken || process.env.NODE_ENV === "production") {
+      const { verifyTurnstileToken } = await import("@/lib/turnstile");
+      const turnstileResult = await verifyTurnstileToken(turnstileToken, ip);
+      if (!turnstileResult.success) {
+        return NextResponse.json(
+          { success: false, error: turnstileResult.error || "Verification failed. Please try again." },
+          { status: 400 }
+        );
+      }
+    }
 
     if (!emailOrPhone || !password) {
       return NextResponse.json(
-        { success: false, error: "Email/phone and password are required fields." },
+        { success: false, error: "Invalid email/phone or password." },
         { status: 400 }
       );
     }

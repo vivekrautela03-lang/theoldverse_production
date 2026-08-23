@@ -18,18 +18,66 @@ function LoginFormContent() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileVerified, setTurnstileVerified] = useState(false);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAAEZCWLgCEyOyGbjU";
+
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if ((window as any).turnstile) {
+        try {
+          (window as any).turnstile.render("#admin-turnstile-container", {
+            sitekey: siteKey,
+            theme: "dark",
+            callback: (token: string) => {
+              setTurnstileVerified(true);
+              setTurnstileToken(token);
+            },
+            "error-callback": () => {
+              console.warn("Turnstile error");
+            }
+          });
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    return () => {
+      script.remove();
+    };
+  }, []);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
+
+    if (!turnstileVerified && !turnstileToken) {
+      setErrorMsg("Verification failed. Please complete Turnstile verification.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailOrPhone: email, password, authMethod: "password" }),
+        body: JSON.stringify({
+          emailOrPhone: email,
+          password,
+          authMethod: "password",
+          turnstileToken
+        }),
       });
 
       const data = await res.json();
@@ -217,6 +265,8 @@ function LoginFormContent() {
               </label>
             </div>
           </div>
+
+          <div id="admin-turnstile-container" className="flex justify-center my-3" />
 
           <button
             type="submit"
