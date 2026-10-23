@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Mail, Phone, Send, Lock, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -63,6 +63,7 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const submissionInProgress = useRef(false);
 
   useEffect(() => {
     fetch("/api/content?section=contact")
@@ -80,27 +81,56 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submissionInProgress.current) return;
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
       setSubmitError("Please fill in all required fields.");
       return;
     }
 
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+    if (!accessKey) {
+      setSubmitError("The contact form is not configured. Please try again later.");
+      return;
+    }
+
+    submissionInProgress.current = true;
     setIsSubmitting(true);
     setSubmitError(null);
     setSuccessMsg(null);
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          access_key: accessKey,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject,
+          message: formData.message.trim()
+        }),
       });
 
-      const result = await response.json();
+      const result: { success?: boolean; message?: string; error?: string } = await response.json();
 
       if (response.ok && result.success) {
+        let persistenceWarning: string | null = null;
+        try {
+          const persistenceResponse = await fetch("/api/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...formData, skipEmailDispatch: true }),
+          });
+          const persistenceResult: { success?: boolean } = await persistenceResponse.json();
+          if (!persistenceResponse.ok || !persistenceResult.success) {
+            persistenceWarning = " Your message was sent, but could not be saved to our internal inbox.";
+          }
+        } catch {
+          persistenceWarning = " Your message was sent, but could not be saved to our internal inbox.";
+        }
+
         setIsSubmitted(true);
-        setSuccessMsg(result.message || "Thanks for reaching out. We'll get back to you soon.");
+        setSuccessMsg(`Thanks for reaching out. We'll get back to you soon.${persistenceWarning || ""}`);
         
         // Reset form fields after successful submission
         setFormData({
@@ -117,11 +147,12 @@ export default function ContactPage() {
           colors: ["#8DBEFF", "#FFFFFF"]
         });
       } else {
-        setSubmitError(result.error || "Something went wrong. Please try again.");
+        setSubmitError(result.message || result.error || "Something went wrong. Please try again.");
       }
-    } catch (err: any) {
-      setSubmitError(err.message || "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
+      submissionInProgress.current = false;
       setIsSubmitting(false);
     }
   };
@@ -155,7 +186,7 @@ export default function ContactPage() {
               Have a film project, casting application, or brand collaboration in mind?
             </p>
             <p className="text-xs sm:text-sm text-[#8DBEFF] font-medium">
-              Let's create something extraordinary together.
+              Let&apos;s create something extraordinary together.
             </p>
           </div>
           <div className="w-16 h-1 bg-[#8DBEFF] mx-auto mt-4 rounded-full" />
