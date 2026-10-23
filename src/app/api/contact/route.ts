@@ -65,21 +65,25 @@ export async function POST(request: Request) {
     let dbError: any = null;
 
     // Try inserting basic payload (without explicit status key to ensure backward compatibility if column is missing)
-    const { data: dbData, error: err1 } = await supabaseAdmin
-      .from("contact_messages")
-      .insert({
-        name: trimmedName,
-        email: trimmedEmail,
-        subject: trimmedSubject,
-        message: trimmedMessage
-      })
-      .select("*");
+    try {
+      const { data: dbData, error: err1 } = await supabaseAdmin
+        .from("contact_messages")
+        .insert({
+          name: trimmedName,
+          email: trimmedEmail,
+          subject: trimmedSubject,
+          message: trimmedMessage
+        })
+        .select("*");
 
-    if (err1) {
-      console.warn("[Contact API] Standard insert error, attempting minimal payload:", err1.message);
-      dbError = err1;
-    } else {
-      insertedMsg = dbData && dbData.length > 0 ? dbData[0] : null;
+      if (err1) {
+        console.warn("[Contact API] Standard insert error, attempting minimal payload:", err1.message);
+        dbError = err1;
+      } else {
+        insertedMsg = dbData && dbData.length > 0 ? dbData[0] : null;
+      }
+    } catch (e: any) {
+      console.warn("[Contact API] Supabase db unavailable:", e.message);
     }
 
     // 5. Create Admin Notification event
@@ -119,12 +123,19 @@ export async function POST(request: Request) {
           })
         });
 
-        const web3Data = await web3Res.json();
-        if (web3Res.ok && web3Data.success) {
+        const rawText = await web3Res.text();
+        let web3Data: any = null;
+        try {
+          web3Data = JSON.parse(rawText);
+        } catch {
+          web3Data = null;
+        }
+
+        if (web3Res.ok && web3Data?.success) {
           emailDispatched = true;
           console.log("[Contact API] Web3Forms email forwarded successfully to theoldverse@gmail.com");
         } else {
-          console.warn("[Contact API] Web3Forms returned status:", web3Data);
+          console.warn("[Contact API] Web3Forms response status:", web3Data || rawText.slice(0, 100));
         }
       } catch (err: any) {
         console.warn("[Contact API] Web3Forms dispatch failed:", err.message);

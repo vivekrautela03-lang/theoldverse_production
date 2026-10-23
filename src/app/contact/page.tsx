@@ -89,19 +89,50 @@ export default function ContactPage() {
     setSubmitError(null);
     setSuccessMsg(null);
 
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || "b8fa7dda-d970-47a1-839d-f204f9eefa66";
+
     try {
-      const response = await fetch("/api/contact", {
+      // 1. Direct submission to Web3Forms from the user's browser (guarantees email delivery to the recipient)
+      const web3FormData = new FormData();
+      web3FormData.append("access_key", accessKey);
+      web3FormData.append("name", formData.name.trim());
+      web3FormData.append("email", formData.email.trim());
+      web3FormData.append("subject", `[The OldVerse Contact] ${formData.subject}`);
+      web3FormData.append("message", formData.message.trim());
+      web3FormData.append("from_name", "TheOldverse Website Contact");
+
+      const web3Request = fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: web3FormData,
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => null);
+          return { ok: res.ok, data };
+        })
+        .catch((err) => ({ ok: false, data: null, error: err }));
+
+      // 2. Local API dispatch for database logging and admin notifications
+      const localRequest = fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      });
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => null);
+          return { ok: res.ok, data };
+        })
+        .catch((err) => ({ ok: false, data: null, error: err }));
 
-      const result = await response.json();
+      const [web3Res, localRes] = await Promise.all([web3Request, localRequest]);
 
-      if (response.ok && result.success) {
+      const isSuccess = (web3Res.ok && web3Res.data?.success) || (localRes.ok && localRes.data?.success);
+
+      if (isSuccess) {
         setIsSubmitted(true);
-        setSuccessMsg(result.message || "Thanks for reaching out. We'll get back to you soon.");
-        
+        setSuccessMsg(
+          web3Res.data?.message || localRes.data?.message || "Thanks for reaching out. We'll get back to you soon."
+        );
+
         // Reset form fields after successful submission
         setFormData({
           name: "",
@@ -117,7 +148,8 @@ export default function ContactPage() {
           colors: ["#8DBEFF", "#FFFFFF"]
         });
       } else {
-        setSubmitError(result.error || "Something went wrong. Please try again.");
+        const errorMsg = web3Res.data?.message || localRes.data?.error || "Something went wrong. Please try again.";
+        setSubmitError(errorMsg);
       }
     } catch (err: any) {
       setSubmitError(err.message || "Something went wrong. Please try again.");
